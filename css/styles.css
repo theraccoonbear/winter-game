@@ -1,0 +1,87 @@
+body {
+	background: #eee;
+	/*background: url(../img/snow-texture.jpg);
+	background-repeat: repeat;*/
+}
+
+#gameOver {
+	font-size: 48px;
+	text-align: center;
+	color: red;
+	font-family: Arial;
+	font-weight: bold;
+	display: none;
+	position: fixed;
+	z-index: 100;
+}
+
+#message {
+	font-size: 36px;
+	text-align: center;
+	color: red;
+	font-family: Arial;
+	font-weight: bold;
+	display: none;
+	position: fixed;
+	z-index: 100;
+}
+
+#scoreBox {
+	position: fixed;
+	right: 0;
+	top: 0;
+}
+
+.sprite {
+	width: 32px;
+	height: 32px;
+	position: fixed;
+}
+
+.sprite.tall {
+	height: 64px;	
+}
+
+.player {
+	z-index: 50;
+}
+
+.player.left {
+	background-image: url(../img/boarder-left-01.png);
+}
+
+.player.right {
+	background-image: url(../img/boarder-right-01.png);
+}
+
+.player.step2.left {
+	background-image: url(../img/boarder-left-02.png);
+}
+
+.player.step2.right {
+	background-image: url(../img/boarder-right-02.png);
+}
+
+.tree {
+	background-image: url(../img/tree-01.png);
+}
+
+.bush {
+	background-image: url(../img/bush-01.png);
+}
+
+.rock {
+	background-image: url(../img/rock-01.png);
+}
+
+.gate {
+	background-image: url(../img/gate.png);
+}
+
+.track.left {
+	background-image: url(../img/track-left.png);
+}
+
+.track.right {
+	background-image: url(../img/track-right.png);
+}
