@@ -1,0 +1,12 @@
+#game {
+	position: fixed;
+}
+
+#touchSteer {
+	position: fixed;
+	bottom: 10px;
+	display: none;
+	background: url(../images/steer-bar.png);
+	width: 800px;
+	height: 100px;
+}

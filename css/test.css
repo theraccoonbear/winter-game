@@ -1,0 +1,29 @@
+.boarder {
+	background-image: url(../img/boarder-sm.png);
+	width: 150px;
+	height: 191px;
+	position: fixed;
+	overflow: hidden;
+}
+
+.boarder[data-steer="-3"] {
+	background-position: 0 0;
+}
+.boarder[data-steer="-2"] {
+	background-position: -150px 0;
+}
+.boarder[data-steer="-1"] {
+	background-position: -300px 0;
+}
+.boarder[data-steer="0"] {
+	background-position: -450px 0;
+}
+.boarder[data-steer="1"] {
+	background-position: -600px 0;
+}
+.boarder[data-steer="2"] {
+	background-position: -750px 0;
+}
+.boarder[data-steer="3"] {
+	background-position: -900px 0;
+}

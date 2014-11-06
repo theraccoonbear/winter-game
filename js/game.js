@@ -203,6 +203,7 @@ var GAME = BASE.extend({
 			.animate({
 				top: '-=50px',
 				left: (ctxt.player.direction == 'left' ? '+' : '-') + '=50px',
+				fontSize: '+=24',
 				opacity: '0'
 			}, 500, function() {
 				$msg.remove();
@@ -519,6 +520,7 @@ var COIN = SPRITE.extend({
 			game.score += 10000;
 			game.sweetMessage('Coin!');
 			ctxt.action = false;
+			ctxt.$elem.hide();
 		};
 		
 		ctxt.$elem
