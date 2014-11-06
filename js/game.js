@@ -187,6 +187,28 @@ var GAME = BASE.extend({
 		ctxt.$message.html(m).show().fadeOut(dur);
 	},
 	
+	sweetMessage: function(m) {
+		var ctxt = this;
+		var $msg = $('<div></div>');
+		
+		ctxt.centerElem($msg, true, true);
+		
+		$msg
+			.addClass('message')
+			.html(m)
+			.show()
+			.appendTo(ctxt.$game);
+			
+		$msg
+			.animate({
+				top: '-=50px',
+				left: (ctxt.player.direction == 'left' ? '+' : '-') + '=50px',
+				opacity: '0'
+			}, 500, function() {
+				$msg.remove();
+			});
+	},
+	
 	centerElem: function(e, x, y) {
 		var ctxt = this;
 		x = x === true;
@@ -346,7 +368,7 @@ var GAME = BASE.extend({
 	
 	addObstacle: function(type) {
 		var ctxt = this;
-		var itemType = Math.ceil(Math.random() * 4);
+		var itemType = Math.ceil(Math.random() * 6);
 		var $item = null;
 		var opts = {x: ctxt.rand('w'), y: ctxt.maxDim('h')};
 		switch (itemType) {
@@ -361,6 +383,12 @@ var GAME = BASE.extend({
 				break;
 			case 4:
 				item = new GATE(opts);
+				break;
+			case 5:
+				item = new COIN(opts);
+				break;
+			case 6:
+				item = new FIRE(opts);
 				break;
 			
 		}
@@ -462,12 +490,39 @@ var GATE = SPRITE.extend({
 		this.fatal = false;
 		this.action = function(game) {
 			game.score += 1000;
-			game.showMessage('Bonus 1000 Points!');
+			game.sweetMessage('Bonus 1000 Points!');
 			ctxt.action = false;
 		};
 		
 		ctxt.$elem
 			.addClass('gate')
+			.css({
+				left: ctxt.x,
+				top: ctxt.y
+			});
+	},
+	
+	_xyz: null
+});
+
+var COIN = SPRITE.extend({
+	animInt: 0,
+	frame: 1,
+	
+	constructor: function(o) {
+		var ctxt = this;
+		
+		COIN.super.constructor.call(this, o);
+		
+		this.fatal = false;
+		this.action = function(game) {
+			game.score += 10000;
+			game.sweetMessage('Coin!');
+			ctxt.action = false;
+		};
+		
+		ctxt.$elem
+			.addClass('coin')
 			.css({
 				left: ctxt.x,
 				top: ctxt.y
@@ -484,6 +539,22 @@ var BUSH = SPRITE.extend({
 		
 		ctxt.$elem
 			.addClass('bush')
+			.css({
+				left: ctxt.x,
+				top: ctxt.y
+			});
+	},
+	
+	_xyz: null
+});
+
+var FIRE = SPRITE.extend({
+	constructor: function(o) {
+		var ctxt = this;
+		FIRE.super.constructor.call(this, o);
+		
+		ctxt.$elem
+			.addClass('fire')
 			.css({
 				left: ctxt.x,
 				top: ctxt.y

@@ -15,7 +15,7 @@ body {
 	z-index: 100;
 }
 
-#message {
+#message, .message {
 	font-size: 36px;
 	text-align: center;
 	color: red;
@@ -84,6 +84,14 @@ body {
 
 .track.right {
 	background-image: url(../img/track-right.png);
+}
+
+.coin {
+	background-image: url(../img/coin.gif);
+}
+
+.fire {
+	background-image: url(../img/fire.gif);
 }
 
 
