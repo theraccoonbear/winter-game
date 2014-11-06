@@ -85,3 +85,23 @@ body {
 .track.right {
 	background-image: url(../img/track-right.png);
 }
+
+
+
+/* debug */
+#debugBox {
+	position: fixed;
+	left: 0px;
+	top: 0px;
+	width: 200px;
+	height: 200px;
+	border: 2px solid #000;
+	z-index: 1000;
+	background: #ddd;
+}
+
+#debug {
+	width: 100%;
+	height: 90%;
+	overflow: auto;
+}

@@ -1,5 +1,106 @@
-var GAME = Class.extend({
+var BASE = Class.extend({
+	toHook: [],
+	isTouch: false,
+	isOrient: false,
+	
+	pitch: 0,
+	roll: 0,
+	
+	constructor: function(o) {
+		var ctxt = this;
+		ctxt.hook();
+		ctxt.init();
+	},
+	
+	hook: function()  {
+		var ctxt = this;
+		$.each(ctxt.toHook, function(i, s) {
+			ctxt['$' + s.replace(/^[#\.]/, '')] = $(s);
+		});
+		
+		ctxt.$debug = $('#debug');
+	},
+	
+	dbg: function(m) {
+		var ctxt = this;
+		ctxt.$debug.append(m + "\n");
+		var height = ctxt.$debug[0].scrollHeight;
+		ctxt.$debug.scrollTop(height);
+	},
+	
+	init: function() {
+		var ctxt = this;
+		ctxt.isTouch = 'ontouchstart' in document.documentElement;
+		ctxt.isOrient = typeof window.DeviceOrientationEvent !== 'undefined' || typeof window.DeviceMotionEvent !== 'undefined';
+		if (window.DeviceOrientationEvent) {
+			window.addEventListener("deviceorientation", function () {
+				ctxt._tilt([event.beta, event.gamma]);
+			}, true);
+		} else if (window.DeviceMotionEvent) {
+			window.addEventListener('devicemotion', function () {
+				ctxt._tilt([event.acceleration.x * 2, event.acceleration.y * 2]);
+			}, true);
+		} else {
+			window.addEventListener("MozOrientation", function () {
+				ctxt._tilt([orientation.x * 50, orientation.y * 50]);
+			}, true);
+		}
+	},
+	
+	dimensions: function() {
+		return {
+			width: Math.max(document.documentElement.clientWidth, window.innerWidth || 0),
+			height: Math.max(document.documentElement.clientHeight, window.innerHeight || 0)
+		};
+	},
+	
+	_tilt: function(o) {
+		var ctxt = this;
+		if (o.length) {
+			if (o[0] !== null && o[1] !== null) {
+				var dim = ctxt.dimensions();
+				if (dim.width > dim.height) {
+					//o = [o[1], o[0]];
+					ctxt.$orientation.html('landscape');
+				} else {
+					ctxt.$orientation.html('portrait');
+				}
+				ctxt.$width.html(dim.width);
+				ctxt.$height.html(dim.height);
+				
+				ctxt.pitch = o[1];
+				ctxt.roll = o[0];
+				
+				ctxt.$pitch.html(ctxt.pitch.toFixed(2) + '&deg;');
+				ctxt.$roll.html(ctxt.roll.toFixed(2) + '&deg;');
+				
+				if (typeof ctxt.tilt === 'function') {
+					ctxt.tilt(o);
+				}
+			}
+		}
+		
+	},
+	
+	_zyz: null
+});
+
+var GAME = BASE.extend({
 	lastItemAt: 0,
+	toHook: [
+		'#game',
+		'#gameOver',
+		'#scoreBox',
+		'#score',
+		'#level',
+		'#message',
+		
+		'#orientation',
+		'#pitch',
+		'#roll',
+		'#width',
+		'#height'
+	],
 	
 	obstFreq: 250,
 	lastFreqIncrease: 0,
@@ -9,16 +110,24 @@ var GAME = Class.extend({
 	level: 0,
 	tickRate: 100,
 	
-	constructor: function() {
+	baselineTilt: false,
+	
+	constructor: function(o) {
 		var ctxt = this;
-		ctxt.$game = $('#game');
-		ctxt.$gameOver = $('#gameOver');
-		ctxt.$scoreBox = $('#scoreBox');
-		ctxt.$score = $('#score');
-		ctxt.$level = $('#level');
-		ctxt.$message = $('#message');
+		
+		GAME.super.constructor.call(this, o);
 		
 		ctxt.$window = $(window);
+		
+		if (ctxt.isOrient) {
+			//ctxt.showMessage('Orientable!', 2000);
+			//alert('Orientable');
+			$(window).on('orientationchange', function(e) {
+				console.log(e);
+				ctxt.dbg(JSON.stringify(e));
+			});
+			
+		}
 		
 		ctxt.player = new PLAYER({
 			x: Math.floor(ctxt.$window.width() / 2),
@@ -36,12 +145,40 @@ var GAME = Class.extend({
 		$(document).on('keydown', function(e) {
 			//console.log(e.which);
 			if (e.which == 37) {
-				ctxt.player.setDir('left');
+				ctxt.steer('left');
+				//ctxt.player.setDir('left');
+				//ctxt.dbg("Left");
 			} else if (e.which == 39) {
-				ctxt.player.setDir('right');
+				ctxt.steer('right');
+				//ctxt.player.setDir('right');
+				//ctxt.dbg("Right");
 			}
 		});
 		
+	},
+	
+	ts: function() {
+		return (new Date()).getTime();
+	},
+	
+	steer: function(dir) {
+		var ctxt = this;
+		dir = dir === 'left' ? 'left' : 'right';
+		ctxt.player.setDir(dir);
+		//ctxt.dbg(dir);
+	},
+	
+	tilt: function(o) {
+		var ctxt = this;
+		
+		
+		if (o[0] !== null && o[1] !== null) {
+			if (o[1] <= -5) {
+				ctxt.steer('right');
+			} else if (o[1] >= 5) {
+				ctxt.steer('left');
+			}
+		} 
 	},
 	
 	showMessage: function(m, dur) {
@@ -94,7 +231,7 @@ var GAME = Class.extend({
 			ctxt.score += 10;
 			ctxt.$score.html(ctxt.score);
 			
-			if (t - ctxt.lastFreqIncrease > 30000) {
+			if (t - ctxt.lastFreqIncrease > 1000) {
 				ctxt.showMessage("Level " + ++ctxt.level);
 				ctxt.$level.html(ctxt.level);
 				ctxt.lastFreqIncrease = t;
@@ -235,7 +372,7 @@ var GAME = Class.extend({
 	_xyz: null
 });
 
-var SPRITE = Class.extend({
+var SPRITE = BASE.extend({
 	x: 0,
 	y: 0,
 	collidable: true,
@@ -277,7 +414,12 @@ var PLAYER = SPRITE.extend({
 		
 		ctxt.animInt = setInterval(function() {
 			ctxt.$elem.toggleClass('step2');
-		}, 1000);
+		}, 500);
+	},
+	
+	die: function() {
+		var ctxt = this;
+		clearInterval(ctxt.animInt);
 	},
 	
 	setDir: function(newDir) {
