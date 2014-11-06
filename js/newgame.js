@@ -248,7 +248,7 @@ var GAME = BASE.extend({
 			var w = parseInt(ctxt.$touchSteer.width());
 			
 			var moveTick = w / ctxt.steerDirections.length;
-			console.log('Move Tick: ' + moveTick);
+			//console.log('Move Tick: ' + moveTick);
 			
 			var newPos = ctxt.steerDirections.length - Math.round(x / moveTick);
 			//console.log(selector, moveTick, newPos, event);
@@ -260,7 +260,7 @@ var GAME = BASE.extend({
 	steerAbs: function(where) {
 		var ctxt = this;
 		var dirName = ctxt.steerDirections[where];
-		console.log('steerAbs = ' + dirName);
+		//console.log('steerAbs = ' + dirName);
 		ctxt.direction = where;
 		ctxt.boarder.gotoAndPlay(dirName);
 	},
