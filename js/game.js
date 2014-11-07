@@ -138,6 +138,7 @@ var GAME = BASE.extend({
 		{src:"images/boarder-sm.png", id:"boarder"},
 		{src:"images/obstacles/snow-rock-1.gif", id:"rock-1"},
 		{src:"images/obstacles/snow-tree-1.gif", id:"tree-1"},
+		{src:"images/snow-bg.jpg", id:"snow-surface"},
 		{src:"sounds/snow.mp3", id: "snow-1", type: createjs.LoadQueue.SOUND}
 	],
 	
@@ -229,11 +230,29 @@ var GAME = BASE.extend({
 		createjs.Ticker.timingMode = createjs.Ticker.RAF;
 		createjs.Ticker.addEventListener("tick", function(event) { ctxt.tick(event); });
 		
-		ctxt.initControls();
+		ctxt.initSnow();
+		
 		ctxt.initBoarder();
 		
+		ctxt.initControls();
+		
 		ctxt.reflowUI();
+		
 		ctxt.$preloader.fadeOut(250);
+	},
+	
+	initSnow: function() {
+		var ctxt = this;
+		
+		var dim = ctxt.dimensions();
+		
+		var groundImg = ctxt.loader.getResult("snow-surface");
+		ctxt.ground = new createjs.Shape();
+		ctxt.ground.graphics.beginBitmapFill(groundImg).drawRect(-groundImg.width, 0, dim.width + (2 * groundImg.width), dim.height + groundImg.height);
+		ctxt.ground.tileW = groundImg.width;
+		ctxt.ground.tileH = groundImg.height;
+		ctxt.ground.y = dim.height - groundImg.height;
+		ctxt.stage.addChild(ctxt.ground);
 	},
 	
 	initControls: function() {
@@ -438,11 +457,16 @@ var GAME = BASE.extend({
 		
 		var dirName = ctxt.steerDirections[ctxt.direction];
 		var speed = ctxt.steerSpeeds[dirName]; 
-		//console.log(ctxt.direction, dirName, speed);
+		
+		ctxt.ground.x = (ctxt.ground.x + (speed.x * ctxt.scaleFactor)) % ctxt.ground.tileW;
+		ctxt.ground.y = (ctxt.ground.y + (speed.y * ctxt.scaleFactor)) % ctxt.ground.tileH;
+		
 		
 		$.each(ctxt.movingElements, function(i, e) {
 			e.x += speed.x * ctxt.scaleFactor;
 			e.y += speed.y * ctxt.scaleFactor;
+			e.scaleX = ctxt.scaleFactor;
+			e.scaleY = ctxt.scaleFactor;
 			if (e.y + e.image.height < -100) {
 				ctxt.stage.removeChild(e);
 			}
