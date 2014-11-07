@@ -111,12 +111,10 @@ var BASE = Class.extend({
 		var css = {};
 		
 		if (x) {
-			console.log(typeof x);
 			css.left = Math.floor(d.width / 2) - Math.floor($e.outerWidth(true) / 2);
 		}
 		
 		if (y) {
-			console.log(typeof x);
 			css.top = Math.floor(d.height / 2) - Math.floor($e.outerHeight(true) / 2);
 		}
 		
@@ -138,14 +136,16 @@ var GAME = BASE.extend({
 	
 	manifest: [
 		{src:"images/boarder-sm.png", id:"boarder"},
-		{src:"images/obstacles/snow-rock-1.gif", id:"rock-1"}
+		{src:"images/obstacles/snow-rock-1.gif", id:"rock-1"},
+		{src:"images/obstacles/snow-tree-1.gif", id:"tree-1"},
+		{src:"sounds/snow.mp3", id: "snow-1"}
 	],
 
 	sprites: {},
 	
 	movingElements: [],
 	
-	obstacles: ['rock-1'],
+	obstacles: ['rock-1', 'tree-1'],
 	
 	bonuses: ['gate', 'coin'],
 	
@@ -167,6 +167,8 @@ var GAME = BASE.extend({
 	
 	lastObstAt: 0,
 	obstEvery: 100,
+	
+	sounds: {},
 	
 	constructor: function(o) {
 		var ctxt = this;
@@ -211,6 +213,10 @@ var GAME = BASE.extend({
 		});
 		
 		ctxt.centerElem(ctxt.$touchSteer, true, false);
+		
+		createjs.Sound.registerPlugins([createjs.HTMLAudioPlugin]);
+		ctxt.sounds.snow = createjs.Sound.createInstance(ctxt.loader.getResult('snow-1'));
+		ctxt.sounds.snow.play({loop: -1});
 		
 		
 		createjs.Ticker.timingMode = createjs.Ticker.RAF;
@@ -364,7 +370,6 @@ var GAME = BASE.extend({
 		}
 		
 		ctxt.steerAbs(ctxt.direction);
-		//ctxt.boarder.gotoAndPlay(ctxt.steerDirections[ctxt.direction]);
 	},
 	
 	initBoarder: function() {
@@ -401,8 +406,10 @@ var GAME = BASE.extend({
 		
 		var image = ctxt.loader.getResult(id);
 		var myBitmap = new createjs.Bitmap(image);
-		myBitmap.x = Math.random() * dim.width;
-		myBitmap.y = dim.height - 100;
+		
+		
+		myBitmap.x = (Math.random() * (dim.width * 1.5)) - (dim.width * 0.25);
+		myBitmap.y = dim.height + 50;
 		myBitmap.scaleX = ctxt.scaleFactor;
 		myBitmap.scaleY = ctxt.scaleFactor;
 		
@@ -429,7 +436,7 @@ var GAME = BASE.extend({
 		$.each(ctxt.movingElements, function(i, e) {
 			e.x += speed.x * ctxt.scaleFactor;
 			e.y += speed.y * ctxt.scaleFactor;
-			if (e.y < -100) {
+			if (e.y + e.image.height < -100) {
 				ctxt.stage.removeChild(e);
 			}
 		});
