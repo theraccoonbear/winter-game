@@ -77,7 +77,13 @@ var BASE = Class.extend({
 	hook: function()  {
 		var ctxt = this;
 		$.each(ctxt.toHook, function(i, s) {
-			ctxt['$' + s.replace(/^[#\.]/, '')] = $(s);
+			if (s == window) {
+				ctxt.$window = $(window);
+			} else if (s == document) {
+				ctxt.$document = $(document);
+			} else {
+				ctxt['$' + s.replace(/^[#\.]/, '')] = $(s);
+			}
 		});
 		
 		ctxt.$debug = $('#debug');
@@ -89,12 +95,35 @@ var BASE = Class.extend({
 		return dim.width > dim.height ? 'landscape' : 'portrait';
 	},
 	
+	centerElem: function(e, x, y) {
+		var ctxt = this;
+		x = x === true;
+		y = y === true;
+		
+		var $e = $(e);
+		
+		var d = ctxt.dimensions();
+		
+		if (x) {
+			$e.css({
+				left: Math.floor(d.width / 2) - Math.floor($e.outerWidth(true) / 2)
+			});
+		}
+		
+		if (y) {
+			$e.css({
+				top: Math.floor(d.height / 2) - Math.floor($e.outerHeight(true) / 2)
+			});
+		}
+		
+	},
+	
 	_xyz: null
 });
 
 var GAME = BASE.extend({
 	toHook: [
-		'#gameArea', '#game', '#touchSteer'
+		'#gameArea', '#game', '#touchSteer', window, 'body', '#preloader', '#spinner'
 	],
 	
 	touchTargets: ['#touchSteer'],
@@ -126,9 +155,13 @@ var GAME = BASE.extend({
 		
 		GAME.super.constructor.call(this, o);
 		
+		ctxt.hook();
+		
+		ctxt.centerElem(ctxt.$spinner, true, true);
+		
 		var d = ctxt.dimensions();
-		var $game = $('<canvas></canvas>');
-		$game
+		ctxt.$game = $('<canvas></canvas>');
+		ctxt.$game
 			.attr('width', d.width)
 			.attr('height', d.height)
 			.attr('id', 'game')
@@ -138,39 +171,21 @@ var GAME = BASE.extend({
 		ctxt.width = ctxt.stage.canvas.width;
 		ctxt.height = ctxt.stage.canvas.height;
 		
+		ctxt.$window.resize(function(e) {
+			console.log('resized');
+			ctxt.reflowUI();
+		});
+		
+		
+		
 		loader = new createjs.LoadQueue();
 		loader.addEventListener("complete", function() { ctxt.init(); });
 		loader.loadManifest(ctxt.manifest);
 	},
 	
-	centerElem: function(e, x, y) {
-		var ctxt = this;
-		x = x === true;
-		y = y === true;
-		
-		var $e = $(e);
-		
-		var d = ctxt.dimensions();
-		
-		if (x) {
-			$e.css({
-				left: Math.floor(d.width / 2) - Math.floor($e.width() / 2)
-			});
-		}
-		
-		if (y) {
-			$e.css({
-				top: Math.floor(d.height / 2) - Math.floor($e.height() / 2)
-			});
-		}
-		
-	},
-	
 	init: function() {
 		var ctxt = this;
 		var d = ctxt.dimensions();
-		
-		ctxt.hook();
 		
 		ctxt.$game.css({
 			left: ((d.width / 2) - (ctxt.width / 2)),
@@ -178,16 +193,16 @@ var GAME = BASE.extend({
 		});
 		
 		ctxt.centerElem(ctxt.$touchSteer, true, false);
-		if (ctxt.isTouchDevice()) {
-			ctxt.$touchSteer.show();
-			
-		}
+		
 		
 		createjs.Ticker.timingMode = createjs.Ticker.RAF;
 		createjs.Ticker.addEventListener("tick", function(event) { ctxt.tick(event); });
 		
 		ctxt.initControls();
 		ctxt.initBoarder();
+		
+		ctxt.reflowUI();
+		ctxt.$preloader.fadeOut(250);
 	},
 	
 	initControls: function() {
@@ -201,8 +216,51 @@ var GAME = BASE.extend({
 		});
 		
 		ctxt.touchHandling();
-		
 		ctxt.tiltHandling();
+		
+		if (ctxt.isTouchDevice()) {
+			ctxt.$touchSteer.show();
+		}
+	},
+	
+	reflowUI: function() {
+		var ctxt = this;
+		var dim = ctxt.dimensions();
+		
+		var height_factor = ctxt.layout() == 'landscape' ? 12 : 6;
+		var radius_factor = ctxt.layout() == 'landscape' ? 12 : 10;
+		
+		var touch_width = Math.min(dim.width - 30, 800);
+		var touch_height = Math.round(dim.width / height_factor);
+		var radius = Math.round(touch_width / radius_factor);
+		
+		ctxt.width = dim.width;
+		ctxt.height = dim.height;
+		
+		ctxt.$game
+			.attr('width', dim.width)
+			.attr('height', dim.height)
+			.css({
+				left: ((dim.width / 2) - (ctxt.width / 2)),
+				top: ((dim.height / 2) - (ctxt.height / 2))
+			});
+		
+		ctxt.$touchSteer
+			.css({
+				'-webkit-border-radius': radius + 'px',
+				'-moz-border-radius': radius + 'px',
+				'border-radius': radius + 'px',
+				'font-size': radius * .75,
+				'width': touch_width,
+				'height': touch_height
+			});
+			
+		ctxt.centerElem(ctxt.$spinner, true, true);
+		
+		ctxt.centerElem(ctxt.$touchSteer, true, false);
+		ctxt.boarder.x = (ctxt.width / 2) - (ctxt.boarder.spriteSheet._frameWidth / 2);
+		ctxt.boarder.y = (ctxt.height / 2) - (ctxt.boarder.spriteSheet._frameHeight / 2);
+		
 	},
 	
 	tilt: function(o) {
@@ -248,10 +306,8 @@ var GAME = BASE.extend({
 			var w = parseInt(ctxt.$touchSteer.width());
 			
 			var moveTick = w / ctxt.steerDirections.length;
-			//console.log('Move Tick: ' + moveTick);
 			
 			var newPos = ctxt.steerDirections.length - Math.round(x / moveTick);
-			//console.log(selector, moveTick, newPos, event);
 			ctxt.steerAbs(newPos);
 			
 		}
@@ -260,7 +316,6 @@ var GAME = BASE.extend({
 	steerAbs: function(where) {
 		var ctxt = this;
 		var dirName = ctxt.steerDirections[where];
-		//console.log('steerAbs = ' + dirName);
 		ctxt.direction = where;
 		ctxt.boarder.gotoAndPlay(dirName);
 	},
