@@ -1,49 +1,73 @@
 var BASE = Class.extend({
-	toHook: [],
-	isTouch: false,
-	isOrient: false,
-	
-	pitch: 0,
-	roll: 0,
+	baseline: {
+		width: 1366,
+		height: 768
+	},
 	
 	constructor: function(o) {
 		var ctxt = this;
-		ctxt.hook();
-		ctxt.init();
+		//ctxt.touchHandling();
+		//ctxt.tiltHandling();
 	},
 	
-	hook: function()  {
+	isTouchDevice: function() {
+		return 'ontouchstart' in document.documentElement;
+	},
+	
+	touchHandling: function() {
 		var ctxt = this;
-		$.each(ctxt.toHook, function(i, s) {
-			ctxt['$' + s.replace(/^[#\.]/, '')] = $(s);
-		});
 		
-		ctxt.$debug = $('#debug');
+		$.each(ctxt.touchTargets, function(i, sel) {
+			$(sel).on('touchstart', function(e) {
+				ctxt._touch(e, sel);
+			}).on('touchmove', function(e) {
+				ctxt._touch(e, sel);
+			}).on('touchend', function(e) {
+				ctxt._touch(e, sel);
+			});
+		});
+		//$('body').on('ontouchstart', function(e) {
+		//	ctxt._touch(e);
+		//});
 	},
 	
-	dbg: function(m) {
+	_touch: function(e, sel) {
 		var ctxt = this;
-		ctxt.$debug.append(m + "\n");
-		var height = ctxt.$debug[0].scrollHeight;
-		ctxt.$debug.scrollTop(height);
+		if (typeof ctxt.touch === 'function') {
+			if (e.type == 'touchmove') {
+				e.touchX = e.originalEvent.touches[0].pageX;
+				e.touchY = e.originalEvent.touches[0].pageY;
+			} else {
+				e.touchX = 0;
+				e.touchY = 0;
+			}
+			
+			ctxt.touch(e, sel);
+		}
 	},
 	
-	init: function() {
+	tiltHandling: function() {
 		var ctxt = this;
-		ctxt.isTouch = 'ontouchstart' in document.documentElement;
-		ctxt.isOrient = typeof window.DeviceOrientationEvent !== 'undefined' || typeof window.DeviceMotionEvent !== 'undefined';
+		
 		if (window.DeviceOrientationEvent) {
 			window.addEventListener("deviceorientation", function () {
-				ctxt._tilt([event.beta, event.gamma]);
+				ctxt._tilt({roll: event.beta, pitch: event.gamma});
 			}, true);
 		} else if (window.DeviceMotionEvent) {
 			window.addEventListener('devicemotion', function () {
-				ctxt._tilt([event.acceleration.x * 2, event.acceleration.y * 2]);
+				ctxt._tilt({roll: event.acceleration.x * 2, pitch: event.acceleration.y * 2});
 			}, true);
 		} else {
 			window.addEventListener("MozOrientation", function () {
-				ctxt._tilt([orientation.x * 50, orientation.y * 50]);
+				ctxt._tilt({roll: orientation.x * 50, pitch: orientation.y * 50});
 			}, true);
+		}
+	},
+	
+	_tilt: function(o) {
+		var ctxt = this;
+		if (typeof ctxt.tilt === 'function') {
+			ctxt.tilt(o);
 		}
 	},
 	
@@ -54,137 +78,25 @@ var BASE = Class.extend({
 		};
 	},
 	
-	_tilt: function(o) {
+	hook: function()  {
 		var ctxt = this;
-		if (o.length) {
-			if (o[0] !== null && o[1] !== null) {
-				var dim = ctxt.dimensions();
-				if (dim.width > dim.height) {
-					//o = [o[1], o[0]];
-					ctxt.$orientation.html('landscape');
-				} else {
-					ctxt.$orientation.html('portrait');
-				}
-				ctxt.$width.html(dim.width);
-				ctxt.$height.html(dim.height);
-				
-				ctxt.pitch = o[1];
-				ctxt.roll = o[0];
-				
-				ctxt.$pitch.html(ctxt.pitch.toFixed(2) + '&deg;');
-				ctxt.$roll.html(ctxt.roll.toFixed(2) + '&deg;');
-				
-				if (typeof ctxt.tilt === 'function') {
-					ctxt.tilt(o);
-				}
-			}
-		}
-		
-	},
-	
-	_zyz: null
-});
-
-var GAME = BASE.extend({
-	lastItemAt: 0,
-	toHook: [
-		'#game',
-		'#gameOver',
-		'#scoreBox',
-		'#score',
-		'#level',
-		'#message',
-		
-		'#orientation',
-		'#pitch',
-		'#roll',
-		'#width',
-		'#height'
-	],
-	
-	obstFreq: 250,
-	lastFreqIncrease: 0,
-	obstacles: [],
-	score: 0,
-	lastTrack: 0,
-	level: 0,
-	tickRate: 100,
-	
-	baselineTilt: false,
-	
-	constructor: function(o) {
-		var ctxt = this;
-		
-		GAME.super.constructor.call(this, o);
-		
-		ctxt.$window = $(window);
-		
-		if (ctxt.isOrient) {
-			//ctxt.showMessage('Orientable!', 2000);
-			//alert('Orientable');
-			$(window).on('orientationchange', function(e) {
-				console.log(e);
-				ctxt.dbg(JSON.stringify(e));
-			});
-			
-		}
-		
-		ctxt.player = new PLAYER({
-			x: Math.floor(ctxt.$window.width() / 2),
-			y: Math.floor(ctxt.$window.height() / 2)
-		});
-
-		ctxt.centerElem(ctxt.$gameOver, true, true);
-		ctxt.centerElem(ctxt.$scoreBox, true, false);
-		ctxt.centerElem(ctxt.$message, true, true);
-		
-		ctxt.$game.append(ctxt.player.$elem);
-		
-		ctxt.start();
-		
-		$(document).on('keydown', function(e) {
-			//console.log(e.which);
-			if (e.which == 37) {
-				ctxt.steer('left');
-				//ctxt.player.setDir('left');
-				//ctxt.dbg("Left");
-			} else if (e.which == 39) {
-				ctxt.steer('right');
-				//ctxt.player.setDir('right');
-				//ctxt.dbg("Right");
+		$.each(ctxt.toHook, function(i, s) {
+			if (s == window) {
+				ctxt.$window = $(window);
+			} else if (s == document) {
+				ctxt.$document = $(document);
+			} else {
+				ctxt['$' + s.replace(/^[#\.]/, '')] = $(s);
 			}
 		});
 		
+		ctxt.$debug = $('#debug');
 	},
 	
-	ts: function() {
-		return (new Date()).getTime();
-	},
-	
-	steer: function(dir) {
+	layout: function() {
 		var ctxt = this;
-		dir = dir === 'left' ? 'left' : 'right';
-		ctxt.player.setDir(dir);
-		//ctxt.dbg(dir);
-	},
-	
-	tilt: function(o) {
-		var ctxt = this;
-		
-		
-		if (o[0] !== null && o[1] !== null) {
-			if (o[1] <= -5) {
-				ctxt.steer('right');
-			} else if (o[1] >= 5) {
-				ctxt.steer('left');
-			}
-		} 
-	},
-	
-	showMessage: function(m, dur) {
-		var ctxt = this;
-		dur = typeof dur === 'undefined' ? 1500 : dur;
-		ctxt.$message.html(m).show().fadeOut(dur);
+		var dim = ctxt.dimensions();
+		return dim.width > dim.height ? 'landscape' : 'portrait';
 	},
 	
 	centerElem: function(e, x, y) {
@@ -194,343 +106,361 @@ var GAME = BASE.extend({
 		
 		var $e = $(e);
 		
+		var d = ctxt.dimensions();
+		
+		var css = {};
+		
 		if (x) {
-			$e.css({
-				left: Math.floor(ctxt.$window.width() / 2) - Math.floor($e.width() / 2)
-			});
+			css.left = Math.floor(d.width / 2) - Math.floor($e.outerWidth(true) / 2);
 		}
 		
 		if (y) {
-			$e.css({
-				top: Math.floor(ctxt.$window.height() / 2) - Math.floor($e.height() / 2)
-			});
+			css.top = Math.floor(d.height / 2) - Math.floor($e.outerHeight(true) / 2);
 		}
 		
+		$e.css(css);
+		
 	},
 	
-	start: function() {
-		var ctxt = this;
-		
-		ctxt.$game.focus();
-		
-		ctxt.tickInt = setInterval(function() {
-			var t = (new Date()).getTime();
-			var delta = t - ctxt.lastItemAt
-			
-			if (delta > ctxt.obstFreq) {
-				ctxt.addObstacle();
-				ctxt.lastItemAt = t;
-			}
-			
-			var trackDelta = t - ctxt.lastTrack;
-			if (trackDelta > 250) {
-				ctxt.addTrack();
-			}
-			
-			
-			ctxt.score += 10;
-			ctxt.$score.html(ctxt.score);
-			
-			if (t - ctxt.lastFreqIncrease > 1000) {
-				ctxt.showMessage("Level " + ++ctxt.level);
-				ctxt.$level.html(ctxt.level);
-				ctxt.lastFreqIncrease = t;
-				ctxt.obstFreq *= .9;
-			}
-			
-			ctxt.animate();
-			
-		}, ctxt.tickRate);
+	_xyz: null
+});
+
+var GAME = BASE.extend({
+	toHook: [
+		'#gameArea', '#game', '#touchSteer', window, 'body', '#preloader', '#spinner'
+	],
+	
+	playerVertPositionFactor: 0.3,
+	
+	touchTargets: ['#touchSteer'],
+	
+	manifest: [
+		{src:"images/boarder-sm.png", id:"boarder"},
+		{src:"images/obstacles/snow-rock-1.gif", id:"rock-1"},
+		{src:"images/obstacles/snow-tree-1.gif", id:"tree-1"},
+		{src:"sounds/snow.mp3", id: "snow-1", type: createjs.LoadQueue.SOUND}
+	],
+	
+	sprites: {},
+	
+	movingElements: [],
+	
+	obstacles: ['rock-1', 'tree-1'],
+	
+	bonuses: ['gate', 'coin'],
+	
+	steerDirections: ['left3', 'left2', 'left1', 'straight', 'right1', 'right2', 'right3'],
+	steerSpeeds: {
+		'left3': 		{x: -14, y: -14},
+		'left2': 		{x: -10, y: -17},
+		'left1': 		{x: -6,  y: -19},
+		'straight': {x: 0,   y: -20},
+		'right1': 	{x: 6,   y: -19},
+		'right2': 	{x: 10,  y: -17},
+		'right3': 	{x: 14,  y: -14}
 	},
 	
-	animate: function() {
+	direction: 3,
+	stage: null,
+	width: 0,
+	height: 0,
+	
+	lastObstAt: 0,
+	obstEvery: 100,
+	
+	sounds: {},
+	
+	constructor: function(o) {
 		var ctxt = this;
-		var toRm = [];
 		
-		var xDelta = ctxt.player.direction === 'left' ? 15 : -15;
+		GAME.super.constructor.call(this, o);
 		
-		$.each(ctxt.obstacles, function(i, e) {
-			var $e = e.$elem;
-			e.y -= ctxt.player.speed;
-			if (e.y < 0) {
-				toRm.push(i);
-			}
-			
-			e.x += xDelta;
-			
-			if (e.collidable) {
-				if (ctxt.checkCollision(e)) {
-					if (typeof e.action === 'function') {
-						e.action(ctxt);
-					}
-					
-					if (e.fatal) {
-						clearInterval(ctxt.tickInt);
-						ctxt.$gameOver.fadeIn(1000);
-					}
-				}
-			}
-			
-			
-			
-			$e.css({
-				top: e.y,
-				left: e.x
-			});
+		ctxt.hook();
+		
+		//ctxt.centerElem(ctxt.$spinner, true, true);
+		
+		var d = ctxt.dimensions();
+		ctxt.$game = $('<canvas></canvas>');
+		ctxt.$game
+			.attr('width', d.width)
+			.attr('height', d.height)
+			.attr('id', 'game')
+			.prependTo('#gameArea');
+		
+		ctxt.stage = new createjs.Stage("game");
+		ctxt.width = ctxt.stage.canvas.width;
+		ctxt.height = ctxt.stage.canvas.height;
+		
+		ctxt.$window.resize(function(e) {
+			console.log('resized');
+			ctxt.reflowUI();
 		});
 		
-		$.each(toRm.reverse(), function(i, eIdx) {
-			var item = ctxt.obstacles[eIdx];
-			item.$elem.remove();
-			ctxt.obstacles.splice(eIdx, 1);
+		
+		
+		ctxt.loader = new createjs.LoadQueue();
+		ctxt.loader.installPlugin(createjs.Sound);
+		ctxt.loader.addEventListener("complete", function() { ctxt.init(); });
+		ctxt.loader.loadManifest(ctxt.manifest);
+	},
+	
+	init: function() {
+		var ctxt = this;
+		var d = ctxt.dimensions();
+		
+		ctxt.$game.css({
+			left: ((d.width / 2) - (ctxt.width / 2)),
+			top: ((d.height / 2) - (ctxt.height / 2))
 		});
 		
+		ctxt.centerElem(ctxt.$touchSteer, true, false);
+		
+		createjs.Sound.registerPlugins([createjs.WebAudioPlugin, createjs.HTMLAudioPlugin, createjs.FlashPlugin]);
+		////ctxt.sounds.snow = createjs.Sound.createInstance(ctxt.loader.getResult('snow-1'));
+		////ctxt.sounds.snow.play({loop: -1});
+		//var inst = createjs.Sound.play('snow-1');
+		var instance = createjs.Sound.createInstance('snow-1');
+		var pinst = instance.play('any', 0, 0, -1);
+		console.log(instance, pinst);
+
+
+		
+		
+		createjs.Ticker.timingMode = createjs.Ticker.RAF;
+		createjs.Ticker.addEventListener("tick", function(event) { ctxt.tick(event); });
+		
+		ctxt.initControls();
+		ctxt.initBoarder();
+		
+		ctxt.reflowUI();
+		ctxt.$preloader.fadeOut(250);
 	},
 	
-	checkCollision: function(e) {
+	initControls: function() {
 		var ctxt = this;
-		var p = ctxt.player;
-		
-		var pCenter = {
-			x: (p.x + Math.floor(p.$elem.width() / 2)),
-			y: (p.y + Math.floor(p.$elem.height() / 2)),
-		};
-		
-		var eCenter = {
-			x: (e.x + Math.floor(e.$elem.width() / 2)),
-			y: (e.y + Math.floor(e.$elem.height() / 2)),
-		};
-		
-		var dist = Math.sqrt(Math.pow(Math.abs(eCenter.x - pCenter.x), 2) + Math.pow(Math.abs(eCenter.y - pCenter.y), 2));
-	
-		return dist < p.$elem.width();
-		
-	},
-	
-	rand: function(dim) {
-		var ctxt = this;
-		var val = 0;
-		if (dim.toLowerCase() === 'w') {
-			val = Math.ceil(Math.random() * ctxt.$window.width());
-		} else {
-			val = Math.ceil(Math.random() * ctxt.$window.height());
-		}
-		return val;
-	},
-	
-	maxDim: function(dim) {
-		var ctxt = this;
-		var val = 0;
-		
-		if (dim.toLowerCase() === 'w') {
-			val = ctxt.$window.width();
-		} else {
-			val = ctxt.$window.height();
-		}
-		
-		return val;
-	},
-	
-	addTrack: function() {
-		var ctxt = this;
-		var p = ctxt.player;
-		var track = new TRACK({
-			direction: p.direction,
-			x: p.x,
-			y: p.y + 10
+		$(document).on('keydown', function(e) {
+			if (e.which == 37) {
+				ctxt.steer('left');
+			} else if (e.which == 39) {
+				ctxt.steer('right');
+			}
 		});
 		
-		ctxt.$game.append(track.$elem);
-		ctxt.obstacles.push(track);	
+		ctxt.touchHandling();
+		ctxt.tiltHandling();
+		
+		if (ctxt.isTouchDevice()) {
+			ctxt.$touchSteer.show();
+		}
 	},
 	
-	addObstacle: function(type) {
+	reflowUI: function() {
 		var ctxt = this;
-		var itemType = Math.ceil(Math.random() * 4);
-		var $item = null;
-		var opts = {x: ctxt.rand('w'), y: ctxt.maxDim('h')};
-		switch (itemType) {
-			case 1:
-				item = new ROCK(opts);
-				break;
-			case 2:
-				item = new BUSH(opts);
-				break;
-			case 3:
-				item = new TREE(opts);
-				break;
-			case 4:
-				item = new GATE(opts);
-				break;
+		var dim = ctxt.dimensions();
+		
+		var height_factor = ctxt.layout() == 'landscape' ? 12 : 6;
+		var radius_factor = ctxt.layout() == 'landscape' ? 12 : 10;
+		
+		var touch_width = Math.min(dim.width - 30, 600);
+		var touch_height = Math.round(dim.width / height_factor);
+		var radius = Math.round(touch_height / 2); //Math.round(touch_width / radius_factor);
+		var font_size = Math.round(touch_height * .7);
+		
+		ctxt.width = dim.width;
+		ctxt.height = dim.height;
+		
+		ctxt.$game
+			.attr('width', dim.width)
+			.attr('height', dim.height)
+			.css({
+				left: ((dim.width / 2) - (ctxt.width / 2)),
+				top: ((dim.height / 2) - (ctxt.height / 2))
+			});
+		
+		ctxt.$touchSteer
+			.css({
+				'-webkit-border-radius': radius + 'px',
+				'-moz-border-radius': radius + 'px',
+				'border-radius': radius + 'px',
+				'font-size': font_size,
+				'width': touch_width,
+				'height': touch_height
+			});
+			
+		
+			
+		//ctxt.centerElem(ctxt.$spinner, true, true);
+		
+		ctxt.centerElem(ctxt.$touchSteer, true, false);
+		
+		var targetHeight = dim.height * 0.1;
+		ctxt.scaleFactor = targetHeight / ctxt.boarder.spriteSheet._frameHeight;
+		var targetWidth = ctxt.boarder.spriteSheet._frameWidth * ctxt.scaleFactor;
+		
+		ctxt.boarder.scaleX = ctxt.scaleFactor;
+		ctxt.boarder.scaleY = ctxt.scaleFactor;
+		
+		ctxt.boarder.x = (ctxt.width / 2) - (targetWidth / 2);
+		ctxt.boarder.y = (ctxt.height * ctxt.playerVertPositionFactor) - (targetHeight / 2);
+		
+	},
+	
+	tilt: function(o) {
+		var ctxt = this;
+		//console.log(ctxt.layout(), o);
+	
+		return;
+	
+		var steerAxis = ctxt.layout() === 'landscape' ? o.roll : o.pitch;
+		
+		if (steerAxis == null) {
+			return;
+		}
+		
+		var steerMap = {
+			6: [-1000, -15],
+			5: [-15, -10],
+			4: [-10, -5],
+			3: [-5, 5],
+			2: [5, 10],
+			1: [10, 15],
+			0: [15, 1000]
+		};
+		
+		var newDir = 3;
+		$.each(steerMap, function(idx, range) {
+			if (steerAxis >= range[0] && steerAxis < range[1]) {
+				newDir = idx;
+			}
+		});
+		
+		ctxt.steerAbs(newDir);;
+	},
+	
+	touch: function(event, selector) {
+		var ctxt = this;
+		
+		if (event.type == 'touchmove') {
+			var pos = ctxt.$touchSteer.position();
+			var x = event.touchX - pos.left;
+			var y = event.touchY - pos.top;
+			
+			var w = parseInt(ctxt.$touchSteer.width());
+			
+			var moveTick = w / ctxt.steerDirections.length;
+			
+			var newPos = ctxt.steerDirections.length - Math.round(x / moveTick);
+			ctxt.steerAbs(newPos);
 			
 		}
-		
-		ctxt.$game.append(item.$elem);
-		ctxt.obstacles.push(item);
 	},
 	
-	_xyz: null
-});
-
-var SPRITE = BASE.extend({
-	x: 0,
-	y: 0,
-	collidable: true,
-	fatal: true,
-	action: false,
-	tall: false,
-	
-	$elem: null,
-	
-	constructor: function(o) {
+	steerAbs: function(where) {
 		var ctxt = this;
-		$.extend(this, o);
-		ctxt.$elem = $('<div></div>');
-		ctxt.$elem.addClass('sprite');
+		var dirName = ctxt.steerDirections[where];
+		ctxt.direction = where;
+		ctxt.boarder.gotoAndPlay(dirName);
 	},
 	
-	_xyz: null
-});
-
-var PLAYER = SPRITE.extend({
-	direction: 'left',
-	speed: 20,
-	
-	constructor: function(o) {
+	steer: function(dir) {
 		var ctxt = this;
+		dir = dir === 'left' ? 'left' : 'right';
 		
-		
-		PLAYER.super.constructor.call(this, o);
-		
-		this.collidable = false;
-		this.fatal = false;
-		
-		ctxt.$elem
-			.addClass('player left')
-			.css({
-				left: ctxt.x,
-				top: ctxt.y
-			});
-		
-		ctxt.animInt = setInterval(function() {
-			ctxt.$elem.toggleClass('step2');
-		}, 500);
-	},
-	
-	die: function() {
-		var ctxt = this;
-		clearInterval(ctxt.animInt);
-	},
-	
-	setDir: function(newDir) {
-		var ctxt = this;
-		newDir = newDir.toLowerCase();
-		if (newDir == 'left') {
-			ctxt.direction = 'left';
-			ctxt.$elem.removeClass('right').addClass('left');
+		if (dir == 'left') {
+			if (ctxt.direction < ctxt.steerDirections.length - 1) {
+				ctxt.direction++;
+			}
 		} else {
-			ctxt.direction = 'right';
-			ctxt.$elem.removeClass('left').addClass('right');
+			if (ctxt.direction > 0) {
+				ctxt.direction--;
+			}	
 		}
+		
+		ctxt.steerAbs(ctxt.direction);
 	},
+	
+	initBoarder: function() {
+		var ctxt = this;
+		
+		ctxt.sprites.boarder = new createjs.SpriteSheet({
+			"images": [ctxt.loader.getResult("boarder")],
+			"frames": {"height": 191, "width": 150},
+			"animations": {
+				"left3": [0],
+				"left2": [1],
+				"left1": [2],
+				"straight": [3],
+				"right1": [4],
+				"right2": [5],
+				"right3": [6]
+			}
+		});
+		
+		ctxt.boarder = new createjs.Sprite(ctxt.sprites.boarder, "straight");
+		ctxt.boarder.x = (ctxt.width / 2) - (ctxt.boarder.spriteSheet._frameWidth / 2);
+		ctxt.boarder.y = (ctxt.height * ctxt.playerVertPositionFactor) - (ctxt.boarder.spriteSheet._frameHeight / 2);
+		ctxt.boarder.framerate = 30;
+		ctxt.stage.addChild(ctxt.boarder);
+	},
+	
+	addObst: function(id) {
+		var ctxt = this;
+		id = typeof id === 'undefined' ? ctxt.obstacles[Math.floor(Math.random() * ctxt.obstacles.length)] : id;
+		
+		//console.log('Adding ', id);
+		
+		var dim = ctxt.dimensions();
+		
+		var image = ctxt.loader.getResult(id);
+		var myBitmap = new createjs.Bitmap(image);
+		
+		
+		myBitmap.x = (Math.random() * (dim.width * 1.5)) - (dim.width * 0.25);
+		myBitmap.y = dim.height + 50;
+		myBitmap.scaleX = ctxt.scaleFactor;
+		myBitmap.scaleY = ctxt.scaleFactor;
+		
+		ctxt.stage.addChild(myBitmap);
+		
+		ctxt.movingElements.push(myBitmap);
+		
+		// steerSpeeds
+		// movingElements
+		
+	},
+	
+	
+	tick: function(event) {
+		var ctxt = this;
+		
+		
+		var t = (new Date()).getTime();
+		
+		var dirName = ctxt.steerDirections[ctxt.direction];
+		var speed = ctxt.steerSpeeds[dirName]; 
+		//console.log(ctxt.direction, dirName, speed);
+		
+		$.each(ctxt.movingElements, function(i, e) {
+			e.x += speed.x * ctxt.scaleFactor;
+			e.y += speed.y * ctxt.scaleFactor;
+			if (e.y + e.image.height < -100) {
+				ctxt.stage.removeChild(e);
+			}
+		});
+		
+		var obst_delta = t - ctxt.lastObstAt;
+		if (obst_delta >= ctxt.obstEvery) {
+			ctxt.addObst();
+			ctxt.lastObstAt = t;
+		}
+		
+		ctxt.stage.update(event);
+	},
+	
 	
 	_xyz: null
 });
 
-var ROCK = SPRITE.extend({
-	constructor: function(o) {
-		var ctxt = this;
-		ROCK.super.constructor.call(this, o);
-		ctxt.$elem
-			.addClass('rock')
-			.css({
-				left: ctxt.x,
-				top: ctxt.y
-			});
-	},
-	
-	_xyz: null
-});
-
-var GATE = SPRITE.extend({
-	
-	constructor: function(o) {
-		var ctxt = this;
-		
-		GATE.super.constructor.call(this, o);
-		
-		this.fatal = false;
-		this.action = function(game) {
-			game.score += 1000;
-			game.showMessage('Bonus 1000 Points!');
-			ctxt.action = false;
-		};
-		
-		ctxt.$elem
-			.addClass('gate')
-			.css({
-				left: ctxt.x,
-				top: ctxt.y
-			});
-	},
-	
-	_xyz: null
-});
-
-var BUSH = SPRITE.extend({
-	constructor: function(o) {
-		var ctxt = this;
-		BUSH.super.constructor.call(this, o);
-		
-		ctxt.$elem
-			.addClass('bush')
-			.css({
-				left: ctxt.x,
-				top: ctxt.y
-			});
-	},
-	
-	_xyz: null
-});
-
-var TREE = SPRITE.extend({
-	constructor: function(o) {
-		var ctxt = this;
-		TREE.super.constructor.call(this, o);
-		
-		ctxt.$elem
-			.addClass('tree tall')
-			.css({
-				left: ctxt.x,
-				top: ctxt.y
-			});
-	},
-	
-	_xyz: null
-});
-
-var TRACK = SPRITE.extend({
-	direction: 'left',
-	
-	constructor: function(o) {
-		var ctxt = this;
-		TRACK.super.constructor.call(this, o);
-		
-		ctxt.collidable = false;
-		ctxt.fatal = false;
-		ctxt.direction = o.direction == 'left' ? 'left' : 'right';
-		
-		
-		ctxt.$elem
-			.addClass('track ' + ctxt.direction)
-			.css({
-				left: ctxt.x,
-				top: ctxt.y
-			});
-	},
-	
-	_xyz: null
-});
 
 
 var game = new GAME();
