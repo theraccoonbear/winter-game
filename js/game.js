@@ -138,9 +138,9 @@ var GAME = BASE.extend({
 		{src:"images/boarder-sm.png", id:"boarder"},
 		{src:"images/obstacles/snow-rock-1.gif", id:"rock-1"},
 		{src:"images/obstacles/snow-tree-1.gif", id:"tree-1"},
-		{src:"sounds/snow.mp3", id: "snow-1"}
+		{src:"sounds/snow.mp3", id: "snow-1", type: createjs.LoadQueue.SOUND}
 	],
-
+	
 	sprites: {},
 	
 	movingElements: [],
@@ -199,6 +199,7 @@ var GAME = BASE.extend({
 		
 		
 		ctxt.loader = new createjs.LoadQueue();
+		ctxt.loader.installPlugin(createjs.Sound);
 		ctxt.loader.addEventListener("complete", function() { ctxt.init(); });
 		ctxt.loader.loadManifest(ctxt.manifest);
 	},
@@ -214,9 +215,15 @@ var GAME = BASE.extend({
 		
 		ctxt.centerElem(ctxt.$touchSteer, true, false);
 		
-		createjs.Sound.registerPlugins([createjs.HTMLAudioPlugin]);
-		ctxt.sounds.snow = createjs.Sound.createInstance(ctxt.loader.getResult('snow-1'));
-		ctxt.sounds.snow.play({loop: -1});
+		createjs.Sound.registerPlugins([createjs.WebAudioPlugin, createjs.HTMLAudioPlugin, createjs.FlashPlugin]);
+		////ctxt.sounds.snow = createjs.Sound.createInstance(ctxt.loader.getResult('snow-1'));
+		////ctxt.sounds.snow.play({loop: -1});
+		//var inst = createjs.Sound.play('snow-1');
+		var instance = createjs.Sound.createInstance('snow-1');
+		var pinst = instance.play('any', 0, 0, -1);
+		console.log(instance, pinst);
+
+
 		
 		
 		createjs.Ticker.timingMode = createjs.Ticker.RAF;
