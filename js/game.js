@@ -14,7 +14,10 @@ var GAME = BASE.extend({
 		{src:"images/obstacles/snow-rock-1.gif", id:"rock-1"},
 		{src:"images/obstacles/snow-tree-1.gif", id:"tree-1"},
 		{src:"images/snow-bg.jpg", id:"snow-surface"},
-		{src:"sounds/snow.mp3", id: "snow-1", type: createjs.LoadQueue.SOUND}
+		{src:"sounds/snow-1.ogg", id: "snow-1", type: createjs.LoadQueue.SOUND},
+		{src:"sounds/snow-2.ogg", id: "snow-2", type: createjs.LoadQueue.SOUND},
+		{src:"sounds/snow-3.ogg", id: "snow-3", type: createjs.LoadQueue.SOUND},
+		{src:"sounds/snow-4.ogg", id: "snow-4", type: createjs.LoadQueue.SOUND}
 	],
 	
 	sprites: {},
@@ -30,13 +33,13 @@ var GAME = BASE.extend({
 	
 	steerDirections: ['left3', 'left2', 'left1', 'straight', 'right1', 'right2', 'right3'],
 	steerSpeeds: {
-		'left3': 		{d: 159.51},
-		'left2': 		{d: 145.91},
-		'left1': 		{d: 124.76},
-		'straight': {d: 90},
-		'right1': 	{d: 55.24},
-		'right2': 	{d: 34.09},
-		'right3': 	{d: 20.49}
+		'left3': 		{d: 159.51, sound: 'snow-1'},
+		'left2': 		{d: 145.91, sound: 'snow-2'},
+		'left1': 		{d: 124.76, sound: 'snow-3'},
+		'straight': {d: 90,     sound: 'snow-4'},
+		'right1': 	{d: 55.24,  sound: 'snow-3'},
+		'right2': 	{d: 34.09,  sound: 'snow-2'},
+		'right3': 	{d: 20.49,  sound: 'snow-1'}
 	},
 	
 	speed: 20,
@@ -99,15 +102,6 @@ var GAME = BASE.extend({
 		
 		ctxt.centerElem(ctxt.$touchSteer, true, false);
 		
-		//createjs.Sound.registerPlugins([createjs.WebAudioPlugin, createjs.HTMLAudioPlugin, createjs.FlashPlugin]);
-		////ctxt.sounds.snow = createjs.Sound.createInstance(ctxt.loader.getResult('snow-1'));
-		////ctxt.sounds.snow.play({loop: -1});
-		//var inst = createjs.Sound.play('snow-1');
-		//var instance = createjs.Sound.createInstance('snow-1');
-		//var pinst = instance.play('any', 0, 0, -1);
-		
-		
-		
 		ctxt.initSnow();
 		
 		ctxt.initBoarder();
@@ -118,10 +112,18 @@ var GAME = BASE.extend({
 		
 		ctxt.$preloader.fadeOut(250);
 		
+		ctxt.initSound();
+		
 		createjs.Ticker.timingMode = createjs.Ticker.RAF;
 		createjs.Ticker.addEventListener("tick", function(event) { ctxt.tick(event); });
 		
 		
+	},
+	
+	initSound: function() {
+		var ctxt = this;
+		
+		ctxt.snowSound = createjs.Sound.play('snow-4');
 	},
 	
 	initSnow: function() {
@@ -209,38 +211,6 @@ var GAME = BASE.extend({
 		
 	},
 	
-	//tilt: function(o) {
-	//	var ctxt = this;
-	//	//console.log(ctxt.layout(), o);
-	//
-	//	return;
-	//
-	//	var steerAxis = ctxt.layout() === 'landscape' ? o.roll : o.pitch;
-	//	
-	//	if (steerAxis == null) {
-	//		return;
-	//	}
-	//	
-	//	var steerMap = {
-	//		6: [-1000, -15],
-	//		5: [-15, -10],
-	//		4: [-10, -5],
-	//		3: [-5, 5],
-	//		2: [5, 10],
-	//		1: [10, 15],
-	//		0: [15, 1000]
-	//	};
-	//	
-	//	var newDir = 3;
-	//	$.each(steerMap, function(idx, range) {
-	//		if (steerAxis >= range[0] && steerAxis < range[1]) {
-	//			newDir = idx;
-	//		}
-	//	});
-	//	
-	//	ctxt.steerAbs(newDir);;
-	//},
-	
 	touch: function(event, selector) {
 		var ctxt = this;
 		
@@ -262,6 +232,10 @@ var GAME = BASE.extend({
 	steerAbs: function(where) {
 		var ctxt = this;
 		var dirName = ctxt.steerDirections[where];
+		var speed = ctxt.steerSpeeds[dirName];
+		
+		ctxt.snowSound = createjs.Sound.play(speed.sound);
+		//ctxt.snowSound.play(speed.sound);
 		ctxt.direction = where;
 		ctxt.boarder.gotoAndPlay(dirName);
 	},
