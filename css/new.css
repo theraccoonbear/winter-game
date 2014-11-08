@@ -1,5 +1,6 @@
 #game {
 	position: fixed;
+	z-index: 10;
 }
 
 #touchSteer {
@@ -27,4 +28,11 @@
 	top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+}
+
+#scorePanel {
+	position: fixed;
+	left: 0;
+	top: 0;
+	z-index: 1000;
 }

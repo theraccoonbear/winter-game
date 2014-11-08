@@ -1,133 +1,8 @@
-var BASE = Class.extend({
-	baseline: {
-		width: 1366,
-		height: 768
-	},
-	
-	constructor: function(o) {
-		var ctxt = this;
-		//ctxt.touchHandling();
-		//ctxt.tiltHandling();
-	},
-	
-	isTouchDevice: function() {
-		return 'ontouchstart' in document.documentElement;
-	},
-	
-	touchHandling: function() {
-		var ctxt = this;
-		
-		$.each(ctxt.touchTargets, function(i, sel) {
-			$(sel).on('touchstart', function(e) {
-				ctxt._touch(e, sel);
-			}).on('touchmove', function(e) {
-				ctxt._touch(e, sel);
-			}).on('touchend', function(e) {
-				ctxt._touch(e, sel);
-			});
-		});
-		//$('body').on('ontouchstart', function(e) {
-		//	ctxt._touch(e);
-		//});
-	},
-	
-	_touch: function(e, sel) {
-		var ctxt = this;
-		if (typeof ctxt.touch === 'function') {
-			if (e.type == 'touchmove') {
-				e.touchX = e.originalEvent.touches[0].pageX;
-				e.touchY = e.originalEvent.touches[0].pageY;
-			} else {
-				e.touchX = 0;
-				e.touchY = 0;
-			}
-			
-			ctxt.touch(e, sel);
-		}
-	},
-	
-	tiltHandling: function() {
-		var ctxt = this;
-		
-		if (window.DeviceOrientationEvent) {
-			window.addEventListener("deviceorientation", function () {
-				ctxt._tilt({roll: event.beta, pitch: event.gamma});
-			}, true);
-		} else if (window.DeviceMotionEvent) {
-			window.addEventListener('devicemotion', function () {
-				ctxt._tilt({roll: event.acceleration.x * 2, pitch: event.acceleration.y * 2});
-			}, true);
-		} else {
-			window.addEventListener("MozOrientation", function () {
-				ctxt._tilt({roll: orientation.x * 50, pitch: orientation.y * 50});
-			}, true);
-		}
-	},
-	
-	_tilt: function(o) {
-		var ctxt = this;
-		if (typeof ctxt.tilt === 'function') {
-			ctxt.tilt(o);
-		}
-	},
-	
-	dimensions: function() {
-		return {
-			width: Math.max(document.documentElement.clientWidth, window.innerWidth || 0),
-			height: Math.max(document.documentElement.clientHeight, window.innerHeight || 0)
-		};
-	},
-	
-	hook: function()  {
-		var ctxt = this;
-		$.each(ctxt.toHook, function(i, s) {
-			if (s == window) {
-				ctxt.$window = $(window);
-			} else if (s == document) {
-				ctxt.$document = $(document);
-			} else {
-				ctxt['$' + s.replace(/^[#\.]/, '')] = $(s);
-			}
-		});
-		
-		ctxt.$debug = $('#debug');
-	},
-	
-	layout: function() {
-		var ctxt = this;
-		var dim = ctxt.dimensions();
-		return dim.width > dim.height ? 'landscape' : 'portrait';
-	},
-	
-	centerElem: function(e, x, y) {
-		var ctxt = this;
-		x = x === true;
-		y = y === true;
-		
-		var $e = $(e);
-		
-		var d = ctxt.dimensions();
-		
-		var css = {};
-		
-		if (x) {
-			css.left = Math.floor(d.width / 2) - Math.floor($e.outerWidth(true) / 2);
-		}
-		
-		if (y) {
-			css.top = Math.floor(d.height / 2) - Math.floor($e.outerHeight(true) / 2);
-		}
-		
-		$e.css(css);
-		
-	},
-	
-	_xyz: null
-});
+
 
 var GAME = BASE.extend({
 	toHook: [
-		'#gameArea', '#game', '#touchSteer', window, 'body', '#preloader', '#spinner'
+		'#gameArea', '#game', '#touchSteer', window, 'body', '#preloader', '#spinner', '#distance', '#score'
 	],
 	
 	playerVertPositionFactor: 0.3,
@@ -146,21 +21,25 @@ var GAME = BASE.extend({
 	
 	movingElements: [],
 	
-	obstacles: ['rock-1', 'tree-1'],
+	obstacles: [
+		{id: 'rock-1', cls: "Rock"},
+		{id: 'tree-1', cls: "Tree"}
+	],
 	
 	bonuses: ['gate', 'coin'],
 	
 	steerDirections: ['left3', 'left2', 'left1', 'straight', 'right1', 'right2', 'right3'],
 	steerSpeeds: {
-		'left3': 		{x: -14, y: -14},
-		'left2': 		{x: -10, y: -17},
-		'left1': 		{x: -6,  y: -19},
-		'straight': {x: 0,   y: -20},
-		'right1': 	{x: 6,   y: -19},
-		'right2': 	{x: 10,  y: -17},
-		'right3': 	{x: 14,  y: -14}
+		'left3': 		{d: 159.51},
+		'left2': 		{d: 145.91},
+		'left1': 		{d: 124.76},
+		'straight': {d: 90},
+		'right1': 	{d: 55.24},
+		'right2': 	{d: 34.09},
+		'right3': 	{d: 20.49}
 	},
 	
+	speed: 20,
 	direction: 3,
 	stage: null,
 	width: 0,
@@ -168,6 +47,9 @@ var GAME = BASE.extend({
 	
 	lastObstAt: 0,
 	obstEvery: 100,
+	
+	score: 0,
+	distance: 0,
 	
 	sounds: {},
 	
@@ -201,7 +83,8 @@ var GAME = BASE.extend({
 		
 		ctxt.loader = new createjs.LoadQueue();
 		ctxt.loader.installPlugin(createjs.Sound);
-		ctxt.loader.addEventListener("complete", function() { ctxt.init(); });
+		//ctxt.loader.addEventListener("complete", function() { ctxt.init(); });
+		ctxt.loader.on('complete', ctxt.init, ctxt);
 		ctxt.loader.loadManifest(ctxt.manifest);
 	},
 	
@@ -216,19 +99,14 @@ var GAME = BASE.extend({
 		
 		ctxt.centerElem(ctxt.$touchSteer, true, false);
 		
-		createjs.Sound.registerPlugins([createjs.WebAudioPlugin, createjs.HTMLAudioPlugin, createjs.FlashPlugin]);
+		//createjs.Sound.registerPlugins([createjs.WebAudioPlugin, createjs.HTMLAudioPlugin, createjs.FlashPlugin]);
 		////ctxt.sounds.snow = createjs.Sound.createInstance(ctxt.loader.getResult('snow-1'));
 		////ctxt.sounds.snow.play({loop: -1});
 		//var inst = createjs.Sound.play('snow-1');
-		var instance = createjs.Sound.createInstance('snow-1');
-		var pinst = instance.play('any', 0, 0, -1);
-		console.log(instance, pinst);
-
-
+		//var instance = createjs.Sound.createInstance('snow-1');
+		//var pinst = instance.play('any', 0, 0, -1);
 		
 		
-		createjs.Ticker.timingMode = createjs.Ticker.RAF;
-		createjs.Ticker.addEventListener("tick", function(event) { ctxt.tick(event); });
 		
 		ctxt.initSnow();
 		
@@ -239,6 +117,11 @@ var GAME = BASE.extend({
 		ctxt.reflowUI();
 		
 		ctxt.$preloader.fadeOut(250);
+		
+		createjs.Ticker.timingMode = createjs.Ticker.RAF;
+		createjs.Ticker.addEventListener("tick", function(event) { ctxt.tick(event); });
+		
+		
 	},
 	
 	initSnow: function() {
@@ -246,12 +129,12 @@ var GAME = BASE.extend({
 		
 		var dim = ctxt.dimensions();
 		
-		var groundImg = ctxt.loader.getResult("snow-surface");
+		ctxt.groundImg = ctxt.loader.getResult("snow-surface");
 		ctxt.ground = new createjs.Shape();
-		ctxt.ground.graphics.beginBitmapFill(groundImg).drawRect(-groundImg.width, 0, dim.width + (2 * groundImg.width), dim.height + groundImg.height);
-		ctxt.ground.tileW = groundImg.width;
-		ctxt.ground.tileH = groundImg.height;
-		ctxt.ground.y = dim.height - groundImg.height;
+		ctxt.ground.graphics.beginBitmapFill(ctxt.groundImg).drawRect(-ctxt.groundImg.width, 0, dim.width + (2 * ctxt.groundImg.width), dim.height + ctxt.groundImg.height);
+		ctxt.ground.tileW = ctxt.groundImg.width;
+		ctxt.ground.tileH = ctxt.groundImg.height;
+		ctxt.ground.y = dim.height - ctxt.groundImg.height;
 		ctxt.stage.addChild(ctxt.ground);
 	},
 	
@@ -305,8 +188,10 @@ var GAME = BASE.extend({
 				'width': touch_width,
 				'height': touch_height
 			});
-			
 		
+		//ctxt.ground.scaleX = ctxt.scaleFactor;
+		//ctxt.ground.scaleY = ctxt.scaleFactor;
+		ctxt.ground.graphics.beginBitmapFill(ctxt.groundImg).drawRect(-ctxt.groundImg.width, 0, dim.width + (2 * ctxt.groundImg.width), dim.height + ctxt.groundImg.height);
 			
 		//ctxt.centerElem(ctxt.$spinner, true, true);
 		
@@ -324,37 +209,37 @@ var GAME = BASE.extend({
 		
 	},
 	
-	tilt: function(o) {
-		var ctxt = this;
-		//console.log(ctxt.layout(), o);
-	
-		return;
-	
-		var steerAxis = ctxt.layout() === 'landscape' ? o.roll : o.pitch;
-		
-		if (steerAxis == null) {
-			return;
-		}
-		
-		var steerMap = {
-			6: [-1000, -15],
-			5: [-15, -10],
-			4: [-10, -5],
-			3: [-5, 5],
-			2: [5, 10],
-			1: [10, 15],
-			0: [15, 1000]
-		};
-		
-		var newDir = 3;
-		$.each(steerMap, function(idx, range) {
-			if (steerAxis >= range[0] && steerAxis < range[1]) {
-				newDir = idx;
-			}
-		});
-		
-		ctxt.steerAbs(newDir);;
-	},
+	//tilt: function(o) {
+	//	var ctxt = this;
+	//	//console.log(ctxt.layout(), o);
+	//
+	//	return;
+	//
+	//	var steerAxis = ctxt.layout() === 'landscape' ? o.roll : o.pitch;
+	//	
+	//	if (steerAxis == null) {
+	//		return;
+	//	}
+	//	
+	//	var steerMap = {
+	//		6: [-1000, -15],
+	//		5: [-15, -10],
+	//		4: [-10, -5],
+	//		3: [-5, 5],
+	//		2: [5, 10],
+	//		1: [10, 15],
+	//		0: [15, 1000]
+	//	};
+	//	
+	//	var newDir = 3;
+	//	$.each(steerMap, function(idx, range) {
+	//		if (steerAxis >= range[0] && steerAxis < range[1]) {
+	//			newDir = idx;
+	//		}
+	//	});
+	//	
+	//	ctxt.steerAbs(newDir);;
+	//},
 	
 	touch: function(event, selector) {
 		var ctxt = this;
@@ -422,55 +307,113 @@ var GAME = BASE.extend({
 		ctxt.stage.addChild(ctxt.boarder);
 	},
 	
-	addObst: function(id) {
+	getEntityById: function(id) {
 		var ctxt = this;
-		id = typeof id === 'undefined' ? ctxt.obstacles[Math.floor(Math.random() * ctxt.obstacles.length)] : id;
+		var ret = false;
+		for (var i = 0, l = ctxt.obstacles.length; i < l; i++) {
+			var ent = ctxt.obstacles[i];
+			if (ent.id == id) {
+				ret = ent;
+				break;
+			}
+		}
 		
-		//console.log('Adding ', id);
+		return ret;
+	},
+	
+	addObst: function(id, o) {
+		var ctxt = this;
 		
-		var dim = ctxt.dimensions();
 		
-		var image = ctxt.loader.getResult(id);
-		var myBitmap = new createjs.Bitmap(image);
+		id = typeof id === 'undefined' ? ctxt.obstacles[Math.floor(Math.random() * ctxt.obstacles.length)].id : id;
 		
+		var ent = ctxt.getEntityById(id);
+		if (ent == false) {
+			console.log("Missing entity: ", ent, id)
+			return;
+		}
 		
-		myBitmap.x = (Math.random() * (dim.width * 1.5)) - (dim.width * 0.25);
-		myBitmap.y = dim.height + 50;
-		myBitmap.scaleX = ctxt.scaleFactor;
-		myBitmap.scaleY = ctxt.scaleFactor;
+		var entity = new window[ent.cls]({game: ctxt});
 		
-		ctxt.stage.addChild(myBitmap);
+		//console.log(entity);
 		
-		ctxt.movingElements.push(myBitmap);
+		//var dim = ctxt.dimensions();
+		//
+		//var image = ctxt.loader.getResult(id);
+		//var myBitmap = new createjs.Bitmap(image);
+		//
+		//var x = typeof o.x === 'undefined' ? (Math.random() * (dim.width * 1.5)) - (dim.width * 0.25) : o.x;
+		//var y = typeof o.y === 'undefined' ? myBitmap.y = dim.height + 50 : o.y;
+		//
+		//myBitmap.x = x;
+		//myBitmap.y = y;
+		//myBitmap.scaleX = ctxt.scaleFactor;
+		//myBitmap.scaleY = ctxt.scaleFactor;
+		//
+		//ctxt.stage.addChild(myBitmap);
+		
+		//ctxt.movingElements.push(myBitmap);
+		ctxt.movingElements.push(entity);
 		
 		// steerSpeeds
 		// movingElements
 		
 	},
 	
+	getSpeedVector: function() {
+		var ctxt = this;
+		var dirName = ctxt.steerDirections[ctxt.direction];
+		var dir = ctxt.steerSpeeds[dirName];
+		
+		var rads = (((dir.d + 90)/360)*(2*Math.PI));
+		var ret = {
+			d: dir.d,
+			r: rads,
+			x: Math.sin(rads) * ctxt.speed,
+			y: Math.cos(rads) * ctxt.speed,
+		};
+		
+		return ret;
+	},
 	
 	tick: function(event) {
 		var ctxt = this;
 		
+		//return;
 		
 		var t = (new Date()).getTime();
 		
 		var dirName = ctxt.steerDirections[ctxt.direction];
 		var speed = ctxt.steerSpeeds[dirName]; 
+		var speedVector = ctxt.getSpeedVector()
+		//console.log(speed, speedVector);
+		speed = speedVector;
 		
 		ctxt.ground.x = (ctxt.ground.x + (speed.x * ctxt.scaleFactor)) % ctxt.ground.tileW;
 		ctxt.ground.y = (ctxt.ground.y + (speed.y * ctxt.scaleFactor)) % ctxt.ground.tileH;
 		
+		var distThisTick = (Math.abs(speed.y) * ctxt.scaleFactor) / 32;
+		ctxt.distance += distThisTick;
+		ctxt.$distance.html(parseInt(ctxt.distance) + "'");
+		ctxt.score += distThisTick * 10;
+		ctxt.$score.html(parseInt(ctxt.score));
 		
-		$.each(ctxt.movingElements, function(i, e) {
+		//$.each(ctxt.movingElements, function(i, ent) {
+		for (var i = ctxt.movingElements.length - 1; i >= 0; i--) {
+			var entity = ctxt.movingElements[i];
+			var e = entity.sprite;
 			e.x += speed.x * ctxt.scaleFactor;
 			e.y += speed.y * ctxt.scaleFactor;
 			e.scaleX = ctxt.scaleFactor;
 			e.scaleY = ctxt.scaleFactor;
-			if (e.y + e.image.height < -100) {
+			//console.log(e);
+			
+			if (e.y + entity.spriteSheet._frameHeight < -100) {
 				ctxt.stage.removeChild(e);
+				ctxt.movingElements.splice(i, 1);
 			}
-		});
+		}
+		//});
 		
 		var obst_delta = t - ctxt.lastObstAt;
 		if (obst_delta >= ctxt.obstEvery) {
