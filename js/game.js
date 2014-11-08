@@ -231,9 +231,15 @@ var GAME = BASE.extend({
 	
 	steerAbs: function(where) {
 		var ctxt = this;
+		
+		if (where == ctxt.direction) {
+			return;
+		}
+		
 		var dirName = ctxt.steerDirections[where];
 		var speed = ctxt.steerSpeeds[dirName];
 		
+		ctxt.snowSound.stop();
 		ctxt.snowSound = createjs.Sound.play(speed.sound);
 		//ctxt.snowSound.play(speed.sound);
 		ctxt.direction = where;
