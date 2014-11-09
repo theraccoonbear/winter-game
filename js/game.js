@@ -25,8 +25,8 @@ var GAME = BASE.extend({
 	movingElements: [],
 	
 	obstacles: [
-		{id: 'rock-1', cls: "Rock"},
-		{id: 'tree-1', cls: "Tree"}
+		{id: 'rock-1', "class": Rock},
+		{id: 'tree-1', "class": Tree}
 	],
 	
 	bonuses: ['gate', 'coin'],
@@ -270,25 +270,27 @@ var GAME = BASE.extend({
 	initBoarder: function() {
 		var ctxt = this;
 		
-		ctxt.sprites.boarder = new createjs.SpriteSheet({
-			"images": [ctxt.loader.getResult("boarder")],
-			"frames": {"height": 191, "width": 150},
-			"animations": {
-				"left3": [0],
-				"left2": [1],
-				"left1": [2],
-				"straight": [3],
-				"right1": [4],
-				"right2": [5],
-				"right3": [6]
-			}
-		});
+		ctxt.boarder = new Boarder({game: ctxt});
 		
-		ctxt.boarder = new createjs.Sprite(ctxt.sprites.boarder, "straight");
-		ctxt.boarder.x = (ctxt.width / 2) - (ctxt.boarder.spriteSheet._frameWidth / 2);
-		ctxt.boarder.y = (ctxt.height * ctxt.playerVertPositionFactor) - (ctxt.boarder.spriteSheet._frameHeight / 2);
-		ctxt.boarder.framerate = 30;
-		ctxt.stage.addChild(ctxt.boarder);
+		//ctxt.sprites.boarder = new createjs.SpriteSheet({
+		//	"images": [ctxt.loader.getResult("boarder")],
+		//	"frames": {"height": 191, "width": 150},
+		//	"animations": {
+		//		"left3": [0],
+		//		"left2": [1],
+		//		"left1": [2],
+		//		"straight": [3],
+		//		"right1": [4],
+		//		"right2": [5],
+		//		"right3": [6]
+		//	}
+		//});
+		//
+		//ctxt.boarder = new createjs.Sprite(ctxt.sprites.boarder, "straight");
+		//ctxt.boarder.x = (ctxt.width / 2) - (ctxt.boarder.spriteSheet._frameWidth / 2);
+		//ctxt.boarder.y = (ctxt.height * ctxt.playerVertPositionFactor) - (ctxt.boarder.spriteSheet._frameHeight / 2);
+		//ctxt.boarder.framerate = 30;
+		//ctxt.stage.addChild(ctxt.boarder);
 	},
 	
 	getEntityById: function(id) {
@@ -316,31 +318,10 @@ var GAME = BASE.extend({
 			console.log("Missing entity: ", ent, id)
 			return;
 		}
+	
+		var entity = new ent["class"]({game: ctxt});
 		
-		var entity = new window[ent.cls]({game: ctxt});
-		
-		//console.log(entity);
-		
-		//var dim = ctxt.dimensions();
-		//
-		//var image = ctxt.loader.getResult(id);
-		//var myBitmap = new createjs.Bitmap(image);
-		//
-		//var x = typeof o.x === 'undefined' ? (Math.random() * (dim.width * 1.5)) - (dim.width * 0.25) : o.x;
-		//var y = typeof o.y === 'undefined' ? myBitmap.y = dim.height + 50 : o.y;
-		//
-		//myBitmap.x = x;
-		//myBitmap.y = y;
-		//myBitmap.scaleX = ctxt.scaleFactor;
-		//myBitmap.scaleY = ctxt.scaleFactor;
-		//
-		//ctxt.stage.addChild(myBitmap);
-		
-		//ctxt.movingElements.push(myBitmap);
 		ctxt.movingElements.push(entity);
-		
-		// steerSpeeds
-		// movingElements
 		
 	},
 	
