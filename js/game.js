@@ -239,10 +239,12 @@ var GAME = BASE.extend({
 		var dirName = ctxt.steerDirections[where];
 		var speed = ctxt.steerSpeeds[dirName];
 		
+		console.log(dirName);
+		
 		ctxt.snowSound.stop();
 		ctxt.snowSound = createjs.Sound.play(speed.sound);
-		//ctxt.snowSound.play(speed.sound);
 		ctxt.direction = where;
+		
 		ctxt.boarder.gotoAndPlay(dirName);
 	},
 	
@@ -250,17 +252,19 @@ var GAME = BASE.extend({
 		var ctxt = this;
 		dir = dir === 'left' ? 'left' : 'right';
 		
+		var where = ctxt.direction;
+		
 		if (dir == 'left') {
 			if (ctxt.direction < ctxt.steerDirections.length - 1) {
-				ctxt.direction++;
+				where++;
 			}
 		} else {
 			if (ctxt.direction > 0) {
-				ctxt.direction--;
+				where--;
 			}	
 		}
 		
-		ctxt.steerAbs(ctxt.direction);
+		ctxt.steerAbs(where);
 	},
 	
 	initBoarder: function() {
