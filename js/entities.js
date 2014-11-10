@@ -83,7 +83,38 @@ var Tree = Obstacle.extend({
 		
 		ctxt.spriteSheet = new createjs.SpriteSheet({
 			"images": [ctxt.game.loader.getResult("tree-1")],
-			"frames": {"width": 242, "height": 444},
+			"frames": {"width": 229, "height": 287},
+			"animations": {
+				"default": [0]
+			}
+		});
+		
+	},
+	
+	
+	
+	collided: function(o) {
+		
+	},
+	
+	_xyz: null
+});
+
+var Stump = Obstacle.extend({
+	name: "Stump",
+	
+	constructor: function(options) {
+		var ctxt = this;
+		
+		Tree.super.constructor.call(this, options);
+	},
+	
+	initSprite: function() {
+		var ctxt = this;
+		
+		ctxt.spriteSheet = new createjs.SpriteSheet({
+			"images": [ctxt.game.loader.getResult("stump-1")],
+			"frames": {"width": 100, "height": 84},
 			"animations": {
 				"default": [0]
 			}
@@ -103,10 +134,14 @@ var Tree = Obstacle.extend({
 var Rock = Obstacle.extend({
 	name: "Rock",
 	
+	width: 0,
+	height: 0,
+	imageID: false,
+	
 	constructor: function(options) {
 		var ctxt = this;
 		
-		Tree.super.constructor.call(this, options);
+		Rock.super.constructor.call(this, options);
 	},
 	
 	collided: function(o) {
@@ -117,12 +152,72 @@ var Rock = Obstacle.extend({
 		var ctxt = this;
 		
 		ctxt.spriteSheet = new createjs.SpriteSheet({
-			"images": [ctxt.game.loader.getResult("rock-1")],
-			"frames": {"width": 150, "height": 79},
+			"images": [ctxt.game.loader.getResult(ctxt.imageID)],
+			"frames": {"width": ctxt.width, "height": ctxt.height},
 			"animations": {
 				"default": [0]
 			}
 		});
+	},
+	
+	_xyz: null
+});
+
+var Rock1 = Rock.extend({
+	constructor: function(options) {
+		var ctxt = this;
+		
+		ctxt.width = 111;
+		ctxt.height = 94;
+		ctxt.imageID = 'rock-1';
+		
+		Rock1.super.constructor.call(this, options);
+		
+	},
+	
+	_xyz: null
+});
+
+var Rock2 = Rock.extend({
+	constructor: function(options) {
+		var ctxt = this;
+		
+		ctxt.width = 109;
+		ctxt.height = 88;
+		ctxt.imageID = 'rock-2';
+		
+		Rock2.super.constructor.call(this, options);
+		
+	},
+	
+	_xyz: null
+});
+
+var Rock3 = Rock.extend({
+	constructor: function(options) {
+		var ctxt = this;
+		
+		ctxt.width = 105;
+		ctxt.height = 76;
+		ctxt.imageID = 'rock-3';
+		
+		Rock3.super.constructor.call(this, options);
+		
+	},
+	
+	_xyz: null
+});
+
+var Rock4 = Rock.extend({
+	constructor: function(options) {
+		var ctxt = this;
+		
+		ctxt.width = 98;
+		ctxt.height = 89;
+		ctxt.imageID = 'rock-4';
+		
+		Rock4.super.constructor.call(this, options);
+		
 	},
 	
 	_xyz: null

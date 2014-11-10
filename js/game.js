@@ -13,8 +13,15 @@ var GAME = BASE.extend({
 		//{src:"images/boarder-sm.png", id:"boarder-original"},
 		//{src:"images/boarder-large.png", id:"boarder-large"},
 		{src:"images/boarder-small.png", id:"boarder-small"},
-		{src:"images/obstacles/snow-rock-1.gif", id:"rock-1"},
-		{src:"images/obstacles/snow-tree-1.gif", id:"tree-1"},
+		{src:"images/obstacles/rock-1.jpg", id:"rock-1"},
+		{src:"images/obstacles/rock-2.jpg", id:"rock-2"},
+		{src:"images/obstacles/rock-3.jpg", id:"rock-3"},
+		{src:"images/obstacles/rock-3.jpg", id:"rock-4"},
+		
+		{src:"images/obstacles/tree-single.jpg", id:"tree-1"},
+		{src:"images/obstacles/tree-stump.jpg", id:"stump-1"},
+		//{src:"images/obstacles/snow-rock-1.gif", id:"rock-1"},
+		//{src:"images/obstacles/snow-tree-1.gif", id:"tree-1"},
 		{src:"images/snow-bg.jpg", id:"snow-surface"},
 		{src:"sounds/snow-1.ogg", id: "snow-1", type: createjs.LoadQueue.SOUND},
 		{src:"sounds/snow-2.ogg", id: "snow-2", type: createjs.LoadQueue.SOUND},
@@ -29,21 +36,32 @@ var GAME = BASE.extend({
 	movingElements: [],
 	
 	obstacles: [
-		{id: 'rock-1', cls: "Rock"},
-		{id: 'tree-1', cls: "Tree"}
+		{id: 'rock-1', cls: "Rock1"},
+		{id: 'rock-2', cls: "Rock2"},
+		{id: 'rock-3', cls: "Rock3"},
+		{id: 'rock-4', cls: "Rock4"},
+		{id: 'tree', cls: "Tree"},
+		{id: 'stump', cls: "Stump"}
 	],
 	
 	bonuses: ['gate', 'coin'],
 	
 	steerDirections: ['left3', 'left2', 'left1', 'straight', 'right1', 'right2', 'right3'],
 	steerSpeeds: {
-		'left3': 		{d: 159.51, sound: 'snow-1'},
-		'left2': 		{d: 145.91, sound: 'snow-2'},
-		'left1': 		{d: 124.76, sound: 'snow-3'},
-		'straight': {d: 90,     sound: 'snow-4'},
-		'right1': 	{d: 55.24,  sound: 'snow-3'},
-		'right2': 	{d: 34.09,  sound: 'snow-2'},
-		'right3': 	{d: 20.49,  sound: 'snow-1'}
+		//'left3': 		{d: 159.51, sound: 'snow-1'},
+		//'left2': 		{d: 145.91, sound: 'snow-2'},
+		//'left1': 		{d: 124.76, sound: 'snow-3'},
+		//'straight': {d: 90,     sound: 'snow-4'},
+		//'right1': 	{d: 55.24,  sound: 'snow-3'},
+		//'right2': 	{d: 34.09,  sound: 'snow-2'},
+		//'right3': 	{d: 20.49,  sound: 'snow-1'}
+		'left3': 		{d: 147.65, sound: 'snow-1'},
+		'left2': 		{d: 131.59, sound: 'snow-2'},
+		'left1': 		{d: 111.59, sound: 'snow-3'},
+		'straight': {d: 90.00,  sound: 'snow-4'},
+		'right1': 	{d: 68.41,  sound: 'snow-3'},
+		'right2': 	{d: 48.81,  sound: 'snow-2'},
+		'right3': 	{d: 32.35,  sound: 'snow-1'}
 	},
 	
 	speed: 20,
@@ -182,7 +200,7 @@ var GAME = BASE.extend({
 		ctxt.ground.tileW = ctxt.groundImg.width;
 		ctxt.ground.tileH = ctxt.groundImg.height;
 		ctxt.ground.y = dim.height - ctxt.groundImg.height;
-		ctxt.stage.addChild(ctxt.ground);
+		//ctxt.stage.addChild(ctxt.ground);
 	},
 	
 	initControls: function() {
