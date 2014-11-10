@@ -24,6 +24,8 @@ var BASE = Class.extend({
 				ctxt._touch(e, sel);
 			}).on('touchend', function(e) {
 				ctxt._touch(e, sel);
+			}).on('click', function(e) {
+				ctxt._touch(e, sel);
 			});
 		});
 		//$('body').on('ontouchstart', function(e) {

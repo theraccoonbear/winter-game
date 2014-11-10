@@ -2,7 +2,7 @@
 
 var GAME = BASE.extend({
 	toHook: [
-		'#gameArea', '#game', '#touchSteer', window, 'body', '#preloader', '#spinner', '#distance', '#score'
+		'#gameArea', '#game', '#touchSteer', window, 'body', '#preloader', '#spinner', '#progBox', '#progBar', '#distance', '#score'
 	],
 	
 	playerVertPositionFactor: 0.3,
@@ -10,7 +10,9 @@ var GAME = BASE.extend({
 	touchTargets: ['#touchSteer'],
 	
 	manifest: [
-		{src:"images/boarder-sm.png", id:"boarder"},
+		//{src:"images/boarder-sm.png", id:"boarder-original"},
+		//{src:"images/boarder-large.png", id:"boarder-large"},
+		{src:"images/boarder-small.png", id:"boarder-small"},
 		{src:"images/obstacles/snow-rock-1.gif", id:"rock-1"},
 		{src:"images/obstacles/snow-tree-1.gif", id:"tree-1"},
 		{src:"images/snow-bg.jpg", id:"snow-surface"},
@@ -19,6 +21,8 @@ var GAME = BASE.extend({
 		{src:"sounds/snow-3.ogg", id: "snow-3", type: createjs.LoadQueue.SOUND},
 		{src:"sounds/snow-4.ogg", id: "snow-4", type: createjs.LoadQueue.SOUND}
 	],
+	
+	totalBytesLoaded: 0,
 	
 	sprites: {},
 	
@@ -53,6 +57,7 @@ var GAME = BASE.extend({
 	
 	score: 0,
 	distance: 0,
+	jumping: false,
 	
 	sounds: {},
 	
@@ -82,14 +87,54 @@ var GAME = BASE.extend({
 			ctxt.reflowUI();
 		});
 		
-		
-		
-		ctxt.loader = new createjs.LoadQueue();
-		ctxt.loader.installPlugin(createjs.Sound);
-		//ctxt.loader.addEventListener("complete", function() { ctxt.init(); });
-		ctxt.loader.on('complete', ctxt.init, ctxt);
-		ctxt.loader.loadManifest(ctxt.manifest);
+		ctxt.getManSize(function() {
+			
+			ctxt.loader = new createjs.LoadQueue();
+			ctxt.loader.installPlugin(createjs.Sound);
+			//ctxt.loader.addEventListener("complete", function() { ctxt.init(); });
+			ctxt.loader.on('complete', ctxt.init, ctxt);
+			ctxt.loader.on('fileload', ctxt.fileComplete, ctxt);
+			//ctxt.loader.on('progress', ctxt.loadProgress, ctxt);
+			ctxt.loader.on('fileprogress', ctxt.fileProg, ctxt);
+			ctxt.loader.loadManifest(ctxt.manifest);
+		});
 	},
+	
+	getManSize: function(after) {
+		var ctxt = this;
+		
+		$.post('manifest-size.php', {manifest: ctxt.manifest}, function(data) {
+			ctxt.manifestSizes = data;
+			if (typeof after === 'function') {
+				after.apply(ctxt);
+			}
+		}, 'json');
+	},
+	
+	
+	fileProg: function(ev) {
+		var ctxt = this;
+		var manID = ev.item.id;
+		var file = ctxt.manifestSizes.assets[manID];
+		var bytesLoaded = file.size * ev.progress;
+		ctxt.manifestSizes.assets[manID].loaded = bytesLoaded;
+		
+		ctxt.totalBytesLoaded = 0;
+		$.each(ctxt.manifestSizes.assets, function(id, e) {
+			ctxt.totalBytesLoaded += e.loaded || 0;
+		});
+		
+		var file_percent = ((bytesLoaded / file.size) * 100).toFixed(2) + '%';
+		var total_percent = ((ctxt.totalBytesLoaded / ctxt.manifestSizes.total) * 100).toFixed(2) + '%';
+		
+		console.log(ev.item.id, file_percent, total_percent);
+	},
+	
+	fileComplete: function(ev) {
+		var ctxt = this;
+		//console.log('complete', ev);
+	},
+	
 	
 	init: function() {
 		var ctxt = this;
@@ -147,6 +192,8 @@ var GAME = BASE.extend({
 				ctxt.steer('left');
 			} else if (e.which == 39) {
 				ctxt.steer('right');
+			} else if (e.which == 32) {
+				ctxt.jump();
 			}
 		});
 		
@@ -156,6 +203,16 @@ var GAME = BASE.extend({
 		if (ctxt.isTouchDevice()) {
 			ctxt.$touchSteer.show();
 		}
+	},
+	
+	jump: function() {
+		var ctxt = this;
+		if (ctxt.jumping) {
+			return;
+		}
+		ctxt.jumping = true;
+		var dirName = ctxt.steerDirections[ctxt.direction];
+		ctxt.boarder.gotoAndPlay(dirName + "-jump");
 	},
 	
 	reflowUI: function() {
@@ -199,7 +256,7 @@ var GAME = BASE.extend({
 		
 		ctxt.centerElem(ctxt.$touchSteer, true, false);
 		
-		var targetHeight = dim.height * 0.1;
+		var targetHeight = dim.height * 0.2;
 		ctxt.scaleFactor = targetHeight / ctxt.boarder.spriteSheet._frameHeight;
 		var targetWidth = ctxt.boarder.spriteSheet._frameWidth * ctxt.scaleFactor;
 		
@@ -214,25 +271,29 @@ var GAME = BASE.extend({
 	touch: function(event, selector) {
 		var ctxt = this;
 		
-		if (event.type == 'touchmove') {
-			var pos = ctxt.$touchSteer.position();
-			var x = event.touchX - pos.left;
-			var y = event.touchY - pos.top;
-			
-			var w = parseInt(ctxt.$touchSteer.width());
-			
-			var moveTick = w / ctxt.steerDirections.length;
-			
-			var newPos = ctxt.steerDirections.length - Math.round(x / moveTick);
-			ctxt.steerAbs(newPos);
-			
+		switch (event.type) {
+			case 'touchmove':
+				var pos = ctxt.$touchSteer.position();
+				var x = event.touchX - pos.left;
+				var y = event.touchY - pos.top;
+				
+				var w = parseInt(ctxt.$touchSteer.width());
+				
+				var moveTick = w / ctxt.steerDirections.length;
+				
+				var newPos = ctxt.steerDirections.length - Math.round(x / moveTick);
+				ctxt.steerAbs(newPos);
+				break;
+			case 'click':
+				ctxt.jump();
+				break;
 		}
 	},
 	
 	steerAbs: function(where) {
 		var ctxt = this;
 		
-		if (where == ctxt.direction) {
+		if (where == ctxt.direction || ctxt.jumping) {
 			return;
 		}
 		
@@ -270,21 +331,39 @@ var GAME = BASE.extend({
 	initBoarder: function() {
 		var ctxt = this;
 		
+		//ctxt.sprites.boarder = new createjs.SpriteSheet({
+		//	"images": [ctxt.loader.getResult("boarder")],
+		//	"frames": {"height": 191, "width": 150},
+		//	"animations": {
+		//		"left3": [0],
+		//		"left2": [1],
+		//		"left1": [2],
+		//		"straight": [3],
+		//		"right1": [4],
+		//		"right2": [5],
+		//		"right3": [6],
+		//	}
+		//});
+		
+		var animations = {};
+		
+		$.each(ctxt.steerDirections, function(i, d) {
+			animations[d] = (i * 13);
+			animations[d + '-jump'] = [i * 13, (i * 13) + 12, d, .5];
+		});
+		
+		console.log(animations);
+		
 		ctxt.sprites.boarder = new createjs.SpriteSheet({
-			"images": [ctxt.loader.getResult("boarder")],
-			"frames": {"height": 191, "width": 150},
-			"animations": {
-				"left3": [0],
-				"left2": [1],
-				"left1": [2],
-				"straight": [3],
-				"right1": [4],
-				"right2": [5],
-				"right3": [6]
-			}
+			"images": [ctxt.loader.getResult("boarder-small")],
+			"frames": {"width": 100, "height": 125},
+			"animations": animations
 		});
 		
 		ctxt.boarder = new createjs.Sprite(ctxt.sprites.boarder, "straight");
+		ctxt.boarder.on('animationend', function() {
+			ctxt.jumping = false;
+		});
 		ctxt.boarder.x = (ctxt.width / 2) - (ctxt.boarder.spriteSheet._frameWidth / 2);
 		ctxt.boarder.y = (ctxt.height * ctxt.playerVertPositionFactor) - (ctxt.boarder.spriteSheet._frameHeight / 2);
 		ctxt.boarder.framerate = 30;
