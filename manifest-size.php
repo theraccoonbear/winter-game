@@ -1,6 +1,6 @@
 <?php
 
-header('Content-type: text/plain');
+header('Content-type: text/html');
 
 $sizes = array();
 $total_size = 0;
@@ -13,7 +13,7 @@ if (array_key_exists('manifest', $_POST)) {
 	foreach ($man as $idx => $entry) {
 		$src = $entry['src'];
 		$size = 0;
-		if (!preg_match('/\.{2}/g', $src)) {
+		if (!preg_match('/\.{2}/', $src)) {
 			$path = $root . $src;
 			if (file_exists($path)) {
 				$size = filesize($path);

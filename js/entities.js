@@ -1,3 +1,5 @@
+/* jshint quotmark:false, strict:false, eqeqeq:false */
+/* global createjs, Class */
 var Entity = Class.extend({
 	collidable: false,   // true/false - can the player interact with this
 	jumpable: false,     // true/false - can the player jump this
@@ -29,25 +31,19 @@ var Entity = Class.extend({
 	
 	placeSprite: function(o)  {
 		var ctxt = this;
-		var dim = ctxt.game.dimensions();
+		var dim = ctxt.game.baseline;
 		
 		o = typeof o === 'undefined' ? {} : o;
 		
 		ctxt.sprite = new createjs.Sprite(ctxt.spriteSheet, "default");
 		
-		var bufferAmount = 1;
-		var buffer = bufferAmount + 1;
-		
-		var x = typeof o.x === 'undefined' ? (Math.random() * (dim.width * buffer)) - (dim.width * (buffer / 2)) : o.x;
+		var x = typeof o.x === 'undefined' ? (Math.random() * dim.width) : o.x;
 		var y = typeof o.y === 'undefined' ? dim.height + 50 : o.y;
 		
 		ctxt.sprite.x = x;
 		ctxt.sprite.y = y;
-		ctxt.sprite.scaleX = ctxt.game.scaleFactor;
-		ctxt.sprite.scaleY = ctxt.game.scaleFactor;
 		
 		ctxt.game.stage.addChild(ctxt.sprite);
-		//ctxt.stage.addChild(myBitmap);
 	},
 	
 	_xyz: null

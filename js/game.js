@@ -1,5 +1,5 @@
-
-
+/* jshint quotmark:false, strict:false, eqeqeq:false */
+/* global createjs, BASE */
 var GAME = BASE.extend({
 	toHook: [
 		'#gameArea', '#game', '#touchSteer', window, 'body', '#preloader', '#spinner', '#progBox', '#progBar', '#distance', '#score', '#dispPercent'
@@ -85,11 +85,11 @@ var GAME = BASE.extend({
 		
 		//ctxt.centerElem(ctxt.$spinner, true, true);
 		
-		var d = ctxt.dimensions();
+		//var d = ctxt.dimensions();
 		ctxt.$game = $('<canvas></canvas>');
 		ctxt.$game
-			.attr('width', d.width)
-			.attr('height', d.height)
+			.attr('width', ctxt.baseline.width)
+			.attr('height', ctxt.baseline.height)
 			.attr('id', 'game')
 			.prependTo('#gameArea');
 		
@@ -167,10 +167,10 @@ var GAME = BASE.extend({
 		var ctxt = this;
 		var d = ctxt.dimensions();
 		
-		ctxt.$game.css({
-			left: ((d.width / 2) - (ctxt.width / 2)),
-			top: ((d.height / 2) - (ctxt.height / 2))
-		});
+		// ctxt.$game.css({
+		// 	left: ((d.width / 2) - (ctxt.width / 2)),
+		// 	top: ((d.height / 2) - (ctxt.height / 2))
+		// });
 		
 		ctxt.centerElem(ctxt.$touchSteer, true, false);
 		
@@ -256,14 +256,15 @@ var GAME = BASE.extend({
 		
 		ctxt.width = dim.width;
 		ctxt.height = dim.height;
-		
-		ctxt.$game
-			.attr('width', dim.width)
-			.attr('height', dim.height)
-			.css({
-				left: ((dim.width / 2) - (ctxt.width / 2)),
-				top: ((dim.height / 2) - (ctxt.height / 2))
-			});
+
+		var viewportWidth = ctxt.$window.width();
+		var viewportHeight = ctxt.$window.height();
+		var scale = Math.min(viewportWidth / ctxt.baseline.width, viewportHeight / ctxt.baseline.height);
+		ctxt.stage.scaleX = scale;
+		ctxt.stage.scaleY = scale;
+		ctxt.stage.canvas.width = ctxt.baseline.width * scale;
+		ctxt.stage.canvas.height = ctxt.baseline.height * scale;
+		ctxt.stage.update();
 		
 		ctxt.$touchSteer
 			.css({
@@ -275,24 +276,10 @@ var GAME = BASE.extend({
 				'height': touch_height
 			});
 		
-		//ctxt.ground.scaleX = ctxt.scaleFactor;
-		//ctxt.ground.scaleY = ctxt.scaleFactor;
 		ctxt.ground.graphics.beginBitmapFill(ctxt.groundImg).drawRect(-ctxt.groundImg.width, 0, dim.width + (2 * ctxt.groundImg.width), dim.height + ctxt.groundImg.height);
 			
-		//ctxt.centerElem(ctxt.$spinner, true, true);
 		
 		ctxt.centerElem(ctxt.$touchSteer, true, false);
-		
-		var targetHeight = dim.height * 0.2;
-		ctxt.scaleFactor = targetHeight / ctxt.boarder.spriteSheet._frameHeight;
-		var targetWidth = ctxt.boarder.spriteSheet._frameWidth * ctxt.scaleFactor;
-		
-		ctxt.boarder.scaleX = ctxt.scaleFactor;
-		ctxt.boarder.scaleY = ctxt.scaleFactor;
-		
-		ctxt.boarder.x = (ctxt.width / 2) - (targetWidth / 2);
-		ctxt.boarder.y = (ctxt.height * ctxt.playerVertPositionFactor) - (targetHeight / 2);
-		
 	},
 	
 	touch: function(event, selector) {
@@ -391,8 +378,8 @@ var GAME = BASE.extend({
 		ctxt.boarder.on('animationend', function() {
 			ctxt.jumping = false;
 		});
-		ctxt.boarder.x = (ctxt.width / 2) - (ctxt.boarder.spriteSheet._frameWidth / 2);
-		ctxt.boarder.y = (ctxt.height * ctxt.playerVertPositionFactor) - (ctxt.boarder.spriteSheet._frameHeight / 2);
+		ctxt.boarder.x = (ctxt.$game.width() / 2) - (ctxt.boarder.spriteSheet._frameWidth / 2);
+		ctxt.boarder.y = (ctxt.$game.height() * ctxt.playerVertPositionFactor) - (ctxt.boarder.spriteSheet._frameHeight / 2);
 		ctxt.boarder.framerate = 30;
 		ctxt.stage.addChild(ctxt.boarder);
 	},
@@ -425,29 +412,7 @@ var GAME = BASE.extend({
 		
 		var entity = new window[ent.cls]({game: ctxt});
 		
-		//console.log(entity);
-		
-		//var dim = ctxt.dimensions();
-		//
-		//var image = ctxt.loader.getResult(id);
-		//var myBitmap = new createjs.Bitmap(image);
-		//
-		//var x = typeof o.x === 'undefined' ? (Math.random() * (dim.width * 1.5)) - (dim.width * 0.25) : o.x;
-		//var y = typeof o.y === 'undefined' ? myBitmap.y = dim.height + 50 : o.y;
-		//
-		//myBitmap.x = x;
-		//myBitmap.y = y;
-		//myBitmap.scaleX = ctxt.scaleFactor;
-		//myBitmap.scaleY = ctxt.scaleFactor;
-		//
-		//ctxt.stage.addChild(myBitmap);
-		
-		//ctxt.movingElements.push(myBitmap);
 		ctxt.movingElements.push(entity);
-		
-		// steerSpeeds
-		// movingElements
-		
 	},
 	
 	getSpeedVector: function() {
@@ -475,35 +440,30 @@ var GAME = BASE.extend({
 		
 		var dirName = ctxt.steerDirections[ctxt.direction];
 		var speed = ctxt.steerSpeeds[dirName]; 
-		var speedVector = ctxt.getSpeedVector()
-		//console.log(speed, speedVector);
+		var speedVector = ctxt.getSpeedVector();
 		speed = speedVector;
 		
-		ctxt.ground.x = (ctxt.ground.x + (speed.x * ctxt.scaleFactor)) % ctxt.ground.tileW;
-		ctxt.ground.y = (ctxt.ground.y + (speed.y * ctxt.scaleFactor)) % ctxt.ground.tileH;
+		ctxt.ground.x = (ctxt.ground.x + speed.x) % ctxt.ground.tileW;
+		ctxt.ground.y = (ctxt.ground.y + speed.y) % ctxt.ground.tileH;
 		
-		var distThisTick = (Math.abs(speed.y) * ctxt.scaleFactor) / 32;
+		var distThisTick = Math.abs(speed.y) / 32;
 		ctxt.distance += distThisTick;
 		ctxt.$distance.html(parseInt(ctxt.distance) + "'");
 		ctxt.score += distThisTick * 10;
 		ctxt.$score.html(parseInt(ctxt.score));
 		
-		//$.each(ctxt.movingElements, function(i, ent) {
 		for (var i = ctxt.movingElements.length - 1; i >= 0; i--) {
 			var entity = ctxt.movingElements[i];
 			var e = entity.sprite;
-			e.x += speed.x * ctxt.scaleFactor;
-			e.y += speed.y * ctxt.scaleFactor;
-			e.scaleX = ctxt.scaleFactor;
-			e.scaleY = ctxt.scaleFactor;
-			//console.log(e);
+
+			e.x += speed.x;
+			e.y += speed.y;
 			
 			if (e.y + entity.spriteSheet._frameHeight < -100) {
 				ctxt.stage.removeChild(e);
 				ctxt.movingElements.splice(i, 1);
 			}
 		}
-		//});
 		
 		var obst_delta = t - ctxt.lastObstAt;
 		if (obst_delta >= ctxt.obstEvery) {
