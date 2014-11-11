@@ -307,6 +307,8 @@ var GAME = BASE.extend({
 		ctxt.stage.canvas.height = ctxt.baseline.height * scale;
 		ctxt.stage.update();
 		
+		ctxt.centerElem(ctxt.$game, true, true);
+		
 		ctxt.$touchSteer
 			.css({
 				'-webkit-border-radius': radius + 'px',
