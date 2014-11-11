@@ -2,26 +2,23 @@
 
 var GAME = BASE.extend({
 	toHook: [
-		'#gameArea', '#game', '#touchSteer', window, 'body', '#preloader', '#spinner', '#progBox', '#progBar', '#distance', '#score'
+		'#gameArea', '#game', '#touchSteer', window, 'body', '#preloader', '#spinner', '#progBox', '#progBar', '#distance', '#score', '#dispPercent'
 	],
 	
-	playerVertPositionFactor: 0.3,
+	playerVertPositionFactor: 0.2,
 	
 	touchTargets: ['#touchSteer'],
 	
 	manifest: [
-		//{src:"images/boarder-sm.png", id:"boarder-original"},
-		//{src:"images/boarder-large.png", id:"boarder-large"},
 		{src:"images/boarder-small.png", id:"boarder-small"},
 		{src:"images/obstacles/rock-1.jpg", id:"rock-1"},
 		{src:"images/obstacles/rock-2.jpg", id:"rock-2"},
 		{src:"images/obstacles/rock-3.jpg", id:"rock-3"},
 		{src:"images/obstacles/rock-3.jpg", id:"rock-4"},
 		
-		{src:"images/obstacles/tree-single.jpg", id:"tree-1"},
+		{src:"images/obstacles/tree-single.png", id:"tree-1"},
 		{src:"images/obstacles/tree-stump.jpg", id:"stump-1"},
-		//{src:"images/obstacles/snow-rock-1.gif", id:"rock-1"},
-		//{src:"images/obstacles/snow-tree-1.gif", id:"tree-1"},
+
 		{src:"images/snow-bg.jpg", id:"snow-surface"},
 		{src:"sounds/snow-1.ogg", id: "snow-1", type: createjs.LoadQueue.SOUND},
 		{src:"sounds/snow-2.ogg", id: "snow-2", type: createjs.LoadQueue.SOUND},
@@ -64,7 +61,7 @@ var GAME = BASE.extend({
 		'right3': 	{d: 32.35,  sound: 'snow-1'}
 	},
 	
-	speed: 20,
+	speed: 15,
 	direction: 3,
 	stage: null,
 	width: 0,
@@ -129,6 +126,15 @@ var GAME = BASE.extend({
 		}, 'json');
 	},
 	
+	updateProgress: function() {
+		var ctxt = this;
+		
+		var total_percent = ((ctxt.totalBytesLoaded / ctxt.manifestSizes.total) * 100);
+		
+		var disp_tota_percent = total_percent.toFixed(2) + '%';
+		ctxt.$progBar.val(total_percent);
+		ctxt.$dispPercent.html(disp_tota_percent);
+	},
 	
 	fileProg: function(ev) {
 		var ctxt = this;
@@ -145,12 +151,15 @@ var GAME = BASE.extend({
 		var file_percent = ((bytesLoaded / file.size) * 100).toFixed(2) + '%';
 		var total_percent = ((ctxt.totalBytesLoaded / ctxt.manifestSizes.total) * 100).toFixed(2) + '%';
 		
-		console.log(ev.item.id, file_percent, total_percent);
+		//console.log('PROGRESS', ev.item.id, ev.item.src, file_percent, total_percent);
 	},
 	
 	fileComplete: function(ev) {
 		var ctxt = this;
-		//console.log('complete', ev);
+		
+		ctxt.manifestSizes.assets[ev.item.id].loaded = ctxt.manifestSizes.assets[ev.item.id].size;
+		ctxt.updateProgress();
+		//console.log('COMPLETE', ev.item.id, ev.item.src);
 	},
 	
 	
