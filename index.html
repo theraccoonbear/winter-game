@@ -14,8 +14,9 @@
 
         <link rel="stylesheet" href="css/normalize.css">
         <link rel="stylesheet" href="css/main.css">
-				<link rel="stylesheet" href="css/styles.css">
-				<link rel="stylesheet" href="css/new.css">
+		<link rel="stylesheet" href="css/styles.css">
+        <link rel="stylesheet" href="css/new.css">
+        <link rel="stylesheet" href="css/grid.css">
         <script src="js/vendor/modernizr-2.6.2.min.js"></script>
     </head>
     <body>
@@ -35,12 +36,17 @@
 				</div>				
 
         <div id="gameArea">
-					<div id="scorePanel">
-						<strong>Score:</strong> <span id="score">0</span><br>
-						<strong>Distance:</strong> <span id="distance">0</span><br>
-					</div>
-					<div id="touchSteer">Slide to Steer</div>
+			<div id="scorePanel" class="sPanel cf">
+				<div class="grid-30 left">
+					<img src="images/wg-logo-wide.svg" alt="Winter Games" class="wgLogo">
 				</div>
+				<div class="grid-70 left">
+					<strong>Score:</strong> <span id="score">0</span><br>
+				<strong>Distance:</strong> <span id="distance">0</span><br>
+				</div>
+         	 </div>
+          	<div id="touchSteer">Slide to Steer</div>
+        </div><!-- /#gameArea -->
 				
         <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
         <script>window.jQuery || document.write('<script src="js/vendor/jquery-1.10.2.min.js"><\/script>')</script>

@@ -4,6 +4,12 @@ body {
 	background-repeat: repeat;*/
 }
 
+*, *:before, *:after {
+  -webkit-box-sizing: border-box; 
+  -moz-box-sizing: border-box; 
+  box-sizing: border-box;
+}
+
 #gameOver {
 	font-size: 48px;
 	text-align: center;
@@ -94,7 +100,16 @@ body {
 	background-image: url(../img/fire.gif);
 }
 
-
+/* =Scoreboard
+------------------------------------------------ */
+.sPanel{
+  background: rgba(101,103,106,0.90);
+  width: 100%;
+  height: 95px;
+}
+.wgLogo{
+	margin: 35px;
+}
 
 /* debug */
 #debugBox {
