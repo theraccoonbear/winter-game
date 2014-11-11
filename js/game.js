@@ -1,5 +1,5 @@
-
-
+/* jshint quotmark:false, strict:false, eqeqeq:false */
+/* global createjs, BASE */
 var GAME = BASE.extend({
 	toHook: [
 		'#gameArea', '#game', '#touchSteer', window, 'body', '#preloader', '#spinner', '#progBox', '#progBar', '#distance', '#score', '#dispPercent'
@@ -11,13 +11,15 @@ var GAME = BASE.extend({
 	
 	manifest: [
 		{src:"images/boarder-small.png", id:"boarder-small"},
-		{src:"images/obstacles/rock-1.jpg", id:"rock-1"},
-		{src:"images/obstacles/rock-2.jpg", id:"rock-2"},
-		{src:"images/obstacles/rock-3.jpg", id:"rock-3"},
-		{src:"images/obstacles/rock-3.jpg", id:"rock-4"},
+		{src:"images/obstacles/rock-1.png", id:"rock-1"},
+		{src:"images/obstacles/rock-2.png", id:"rock-2"},
+		{src:"images/obstacles/rock-3.png", id:"rock-3"},
+		{src:"images/obstacles/rock-4.png", id:"rock-4"},
 		
 		{src:"images/obstacles/tree-single.png", id:"tree-1"},
-		{src:"images/obstacles/tree-stump.jpg", id:"stump-1"},
+		{src:"images/obstacles/tree-stump.png", id:"stump-1"},
+		
+		{src:"images/banners/start.png", id:"start-banner"},
 
 		{src:"images/snow-bg.jpg", id:"snow-surface"},
 		{src:"sounds/snow-1.ogg", id: "snow-1", type: createjs.LoadQueue.SOUND},
@@ -32,6 +34,10 @@ var GAME = BASE.extend({
 	
 	movingElements: [],
 	
+	entities: [
+		{id: 'start-banner', cls: 'StartBanner'}
+	],
+	
 	obstacles: [
 		{id: 'rock-1', cls: "Rock1"},
 		{id: 'rock-2', cls: "Rock2"},
@@ -45,13 +51,6 @@ var GAME = BASE.extend({
 	
 	steerDirections: ['left3', 'left2', 'left1', 'straight', 'right1', 'right2', 'right3'],
 	steerSpeeds: {
-		//'left3': 		{d: 159.51, sound: 'snow-1'},
-		//'left2': 		{d: 145.91, sound: 'snow-2'},
-		//'left1': 		{d: 124.76, sound: 'snow-3'},
-		//'straight': {d: 90,     sound: 'snow-4'},
-		//'right1': 	{d: 55.24,  sound: 'snow-3'},
-		//'right2': 	{d: 34.09,  sound: 'snow-2'},
-		//'right3': 	{d: 20.49,  sound: 'snow-1'}
 		'left3': 		{d: 147.65, sound: 'snow-1'},
 		'left2': 		{d: 131.59, sound: 'snow-2'},
 		'left1': 		{d: 111.59, sound: 'snow-3'},
@@ -76,6 +75,8 @@ var GAME = BASE.extend({
 	
 	sounds: {},
 	
+	state: 'loading',
+	
 	constructor: function(o) {
 		var ctxt = this;
 		
@@ -85,11 +86,11 @@ var GAME = BASE.extend({
 		
 		//ctxt.centerElem(ctxt.$spinner, true, true);
 		
-		var d = ctxt.dimensions();
+		//var d = ctxt.dimensions();
 		ctxt.$game = $('<canvas></canvas>');
 		ctxt.$game
-			.attr('width', d.width)
-			.attr('height', d.height)
+			.attr('width', ctxt.baseline.width)
+			.attr('height', ctxt.baseline.height)
 			.attr('id', 'game')
 			.prependTo('#gameArea');
 		
@@ -98,12 +99,12 @@ var GAME = BASE.extend({
 		ctxt.height = ctxt.stage.canvas.height;
 		
 		ctxt.$window.resize(function(e) {
-			console.log('resized');
+			//console.log('resized');
 			ctxt.reflowUI();
 		});
 		
 		ctxt.getManSize(function() {
-			
+			ctxt.state = 'loading';
 			ctxt.loader = new createjs.LoadQueue();
 			ctxt.loader.installPlugin(createjs.Sound);
 			//ctxt.loader.addEventListener("complete", function() { ctxt.init(); });
@@ -167,16 +168,22 @@ var GAME = BASE.extend({
 		var ctxt = this;
 		var d = ctxt.dimensions();
 		
-		ctxt.$game.css({
-			left: ((d.width / 2) - (ctxt.width / 2)),
-			top: ((d.height / 2) - (ctxt.height / 2))
-		});
+		ctxt.state = 'initializing';
+		
+		// ctxt.$game.css({
+		// 	left: ((d.width / 2) - (ctxt.width / 2)),
+		// 	top: ((d.height / 2) - (ctxt.height / 2))
+		// });
 		
 		ctxt.centerElem(ctxt.$touchSteer, true, false);
 		
-		ctxt.initSnow();
+		
+		
+		ctxt.initHill();
 		
 		ctxt.initBoarder();
+		
+		ctxt.setupStart();
 		
 		ctxt.initControls();
 		
@@ -187,18 +194,29 @@ var GAME = BASE.extend({
 		ctxt.initSound();
 		
 		createjs.Ticker.timingMode = createjs.Ticker.RAF;
-		createjs.Ticker.addEventListener("tick", function(event) { ctxt.tick(event); });
+		//createjs.Ticker.setPaused(true)
+		createjs.Ticker.addEventListener("tick", function(event) {
+			ctxt.tick(event);
+		});
+		//ctxt.stage.update();
 		
-		
+	},
+	
+	setupStart: function() {
+		var ctxt = this;
+		ctxt.addEntity('start-banner', {
+			x: (ctxt.dimensions().width / 2) - (715 / 2),
+			y: 800
+		});
 	},
 	
 	initSound: function() {
 		var ctxt = this;
 		
-		ctxt.snowSound = createjs.Sound.play('snow-4');
+		//ctxt.snowSound = createjs.Sound.play('snow-4');
 	},
 	
-	initSnow: function() {
+	initHill: function() {
 		var ctxt = this;
 		
 		var dim = ctxt.dimensions();
@@ -209,7 +227,9 @@ var GAME = BASE.extend({
 		ctxt.ground.tileW = ctxt.groundImg.width;
 		ctxt.ground.tileH = ctxt.groundImg.height;
 		ctxt.ground.y = dim.height - ctxt.groundImg.height;
-		//ctxt.stage.addChild(ctxt.ground);
+		
+		ctxt.stage.addChild(ctxt.ground);
+		
 	},
 	
 	initControls: function() {
@@ -256,14 +276,15 @@ var GAME = BASE.extend({
 		
 		ctxt.width = dim.width;
 		ctxt.height = dim.height;
-		
-		ctxt.$game
-			.attr('width', dim.width)
-			.attr('height', dim.height)
-			.css({
-				left: ((dim.width / 2) - (ctxt.width / 2)),
-				top: ((dim.height / 2) - (ctxt.height / 2))
-			});
+
+		var viewportWidth = ctxt.$window.width();
+		var viewportHeight = ctxt.$window.height();
+		var scale = Math.min(viewportWidth / ctxt.baseline.width, viewportHeight / ctxt.baseline.height);
+		ctxt.stage.scaleX = scale;
+		ctxt.stage.scaleY = scale;
+		ctxt.stage.canvas.width = ctxt.baseline.width * scale;
+		ctxt.stage.canvas.height = ctxt.baseline.height * scale;
+		ctxt.stage.update();
 		
 		ctxt.$touchSteer
 			.css({
@@ -275,24 +296,10 @@ var GAME = BASE.extend({
 				'height': touch_height
 			});
 		
-		//ctxt.ground.scaleX = ctxt.scaleFactor;
-		//ctxt.ground.scaleY = ctxt.scaleFactor;
 		ctxt.ground.graphics.beginBitmapFill(ctxt.groundImg).drawRect(-ctxt.groundImg.width, 0, dim.width + (2 * ctxt.groundImg.width), dim.height + ctxt.groundImg.height);
 			
-		//ctxt.centerElem(ctxt.$spinner, true, true);
 		
 		ctxt.centerElem(ctxt.$touchSteer, true, false);
-		
-		var targetHeight = dim.height * 0.2;
-		ctxt.scaleFactor = targetHeight / ctxt.boarder.spriteSheet._frameHeight;
-		var targetWidth = ctxt.boarder.spriteSheet._frameWidth * ctxt.scaleFactor;
-		
-		ctxt.boarder.scaleX = ctxt.scaleFactor;
-		ctxt.boarder.scaleY = ctxt.scaleFactor;
-		
-		ctxt.boarder.x = (ctxt.width / 2) - (targetWidth / 2);
-		ctxt.boarder.y = (ctxt.height * ctxt.playerVertPositionFactor) - (targetHeight / 2);
-		
 	},
 	
 	touch: function(event, selector) {
@@ -327,10 +334,10 @@ var GAME = BASE.extend({
 		var dirName = ctxt.steerDirections[where];
 		var speed = ctxt.steerSpeeds[dirName];
 		
-		console.log(dirName);
+		//console.log(dirName);
 		
-		ctxt.snowSound.stop();
-		ctxt.snowSound = createjs.Sound.play(speed.sound);
+		//ctxt.snowSound.stop();
+		//ctxt.snowSound = createjs.Sound.play(speed.sound);
 		ctxt.direction = where;
 		
 		ctxt.boarder.gotoAndPlay(dirName);
@@ -358,28 +365,14 @@ var GAME = BASE.extend({
 	initBoarder: function() {
 		var ctxt = this;
 		
-		//ctxt.sprites.boarder = new createjs.SpriteSheet({
-		//	"images": [ctxt.loader.getResult("boarder")],
-		//	"frames": {"height": 191, "width": 150},
-		//	"animations": {
-		//		"left3": [0],
-		//		"left2": [1],
-		//		"left1": [2],
-		//		"straight": [3],
-		//		"right1": [4],
-		//		"right2": [5],
-		//		"right3": [6],
-		//	}
-		//});
-		
 		var animations = {};
 		
 		$.each(ctxt.steerDirections, function(i, d) {
 			animations[d] = (i * 13);
-			animations[d + '-jump'] = [i * 13, (i * 13) + 12, d, .5];
+			animations[d + '-jump'] = [i * 13, (i * 13) + 12, d, 0.5];
 		});
 		
-		console.log(animations);
+		//console.log(animations);
 		
 		ctxt.sprites.boarder = new createjs.SpriteSheet({
 			"images": [ctxt.loader.getResult("boarder-small")],
@@ -391,8 +384,8 @@ var GAME = BASE.extend({
 		ctxt.boarder.on('animationend', function() {
 			ctxt.jumping = false;
 		});
-		ctxt.boarder.x = (ctxt.width / 2) - (ctxt.boarder.spriteSheet._frameWidth / 2);
-		ctxt.boarder.y = (ctxt.height * ctxt.playerVertPositionFactor) - (ctxt.boarder.spriteSheet._frameHeight / 2);
+		ctxt.boarder.x = (ctxt.$game.width() / 2) - (ctxt.boarder.spriteSheet._frameWidth / 2);
+		ctxt.boarder.y = (ctxt.$game.height() * ctxt.playerVertPositionFactor) - (ctxt.boarder.spriteSheet._frameHeight / 2);
 		ctxt.boarder.framerate = 30;
 		ctxt.stage.addChild(ctxt.boarder);
 	},
@@ -400,6 +393,15 @@ var GAME = BASE.extend({
 	getEntityById: function(id) {
 		var ctxt = this;
 		var ret = false;
+		
+		for (var i = 0, l = ctxt.entities.length; i < l; i++) {
+			var ent = ctxt.entities[i];
+			if (ent.id == id) {
+				ret = ent;
+				break;
+			}
+		}
+		
 		for (var i = 0, l = ctxt.obstacles.length; i < l; i++) {
 			var ent = ctxt.obstacles[i];
 			if (ent.id == id) {
@@ -411,7 +413,7 @@ var GAME = BASE.extend({
 		return ret;
 	},
 	
-	addObst: function(id, o) {
+	addEntity: function(id, o) {
 		var ctxt = this;
 		
 		
@@ -420,34 +422,16 @@ var GAME = BASE.extend({
 		var ent = ctxt.getEntityById(id);
 		if (ent == false) {
 			console.log("Missing entity: ", ent, id)
-			return;
+			return false;
 		}
 		
-		var entity = new window[ent.cls]({game: ctxt});
+		o = typeof o === 'undefined' ? {} : o;
 		
-		//console.log(entity);
+		o.game = ctxt;
 		
-		//var dim = ctxt.dimensions();
-		//
-		//var image = ctxt.loader.getResult(id);
-		//var myBitmap = new createjs.Bitmap(image);
-		//
-		//var x = typeof o.x === 'undefined' ? (Math.random() * (dim.width * 1.5)) - (dim.width * 0.25) : o.x;
-		//var y = typeof o.y === 'undefined' ? myBitmap.y = dim.height + 50 : o.y;
-		//
-		//myBitmap.x = x;
-		//myBitmap.y = y;
-		//myBitmap.scaleX = ctxt.scaleFactor;
-		//myBitmap.scaleY = ctxt.scaleFactor;
-		//
-		//ctxt.stage.addChild(myBitmap);
-		
-		//ctxt.movingElements.push(myBitmap);
+		var entity = new window[ent.cls](o);
 		ctxt.movingElements.push(entity);
-		
-		// steerSpeeds
-		// movingElements
-		
+		return entity;
 	},
 	
 	getSpeedVector: function() {
@@ -469,45 +453,42 @@ var GAME = BASE.extend({
 	tick: function(event) {
 		var ctxt = this;
 		
-		//return;
+		if (event.paused) {
+			return;
+		}
 		
 		var t = (new Date()).getTime();
 		
 		var dirName = ctxt.steerDirections[ctxt.direction];
 		var speed = ctxt.steerSpeeds[dirName]; 
-		var speedVector = ctxt.getSpeedVector()
-		//console.log(speed, speedVector);
+		var speedVector = ctxt.getSpeedVector();
 		speed = speedVector;
 		
-		ctxt.ground.x = (ctxt.ground.x + (speed.x * ctxt.scaleFactor)) % ctxt.ground.tileW;
-		ctxt.ground.y = (ctxt.ground.y + (speed.y * ctxt.scaleFactor)) % ctxt.ground.tileH;
+		ctxt.ground.x = (ctxt.ground.x + speed.x) % ctxt.ground.tileW;
+		ctxt.ground.y = (ctxt.ground.y + speed.y) % ctxt.ground.tileH;
 		
-		var distThisTick = (Math.abs(speed.y) * ctxt.scaleFactor) / 32;
+		var distThisTick = Math.abs(speed.y);
 		ctxt.distance += distThisTick;
 		ctxt.$distance.html(parseInt(ctxt.distance) + "'");
 		ctxt.score += distThisTick * 10;
 		ctxt.$score.html(parseInt(ctxt.score));
 		
-		//$.each(ctxt.movingElements, function(i, ent) {
 		for (var i = ctxt.movingElements.length - 1; i >= 0; i--) {
 			var entity = ctxt.movingElements[i];
 			var e = entity.sprite;
-			e.x += speed.x * ctxt.scaleFactor;
-			e.y += speed.y * ctxt.scaleFactor;
-			e.scaleX = ctxt.scaleFactor;
-			e.scaleY = ctxt.scaleFactor;
-			//console.log(e);
+
+			e.x += speed.x;
+			e.y += speed.y;
 			
 			if (e.y + entity.spriteSheet._frameHeight < -100) {
 				ctxt.stage.removeChild(e);
 				ctxt.movingElements.splice(i, 1);
 			}
 		}
-		//});
 		
 		var obst_delta = t - ctxt.lastObstAt;
 		if (obst_delta >= ctxt.obstEvery) {
-			ctxt.addObst();
+			ctxt.addEntity();
 			ctxt.lastObstAt = t;
 		}
 		

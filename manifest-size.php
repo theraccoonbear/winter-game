@@ -1,6 +1,6 @@
 <?php
 
-header('Content-type: text/plain');
+header('Content-type: text/html');
 
 $sizes = array();
 $total_size = 0;

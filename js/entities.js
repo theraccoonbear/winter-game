@@ -1,3 +1,5 @@
+/* jshint quotmark:false, strict:false, eqeqeq:false */
+/* global createjs, Class */
 var Entity = Class.extend({
 	collidable: false,   // true/false - can the player interact with this
 	jumpable: false,     // true/false - can the player jump this
@@ -11,7 +13,20 @@ var Entity = Class.extend({
 	spriteSheet: false,
 	sprite: false,
 	
-	footprint: 0,
+	x: false,
+	y: false,
+	
+	collisionProperties: {
+		x: 0,
+		y: 0,
+		w: 0,
+		h: 0
+	},
+	
+	dimensions: function() {
+		var ctxt = this;
+		console.log(ctxt.spriteSheet);
+	},
 	
 	constructor: function(options) {
 		var ctxt = this;
@@ -29,7 +44,7 @@ var Entity = Class.extend({
 	
 	placeSprite: function(o)  {
 		var ctxt = this;
-		var dim = ctxt.game.dimensions();
+		var dim = ctxt.game.baseline;
 		
 		o = typeof o === 'undefined' ? {} : o;
 		
@@ -38,20 +53,23 @@ var Entity = Class.extend({
 		var bufferAmount = 1;
 		var buffer = bufferAmount + 1;
 		
-		var x = typeof o.x === 'undefined' ? (Math.random() * (dim.width * buffer)) - (dim.width * (buffer / 2)) : o.x;
-		var y = typeof o.y === 'undefined' ? dim.height + 50 : o.y;
+		//var x = typeof o.x === 'undefined' ? (Math.random() * (dim.width * buffer)) - (dim.width * (buffer / 2)) : o.x;
+		//var y = typeof o.y === 'undefined' ? dim.height + 50 : o.y;
+		var x = ctxt.x === false ? (Math.random() * dim.width * buffer) - (dim.width * (buffer / 2)) : ctxt.x;
+		var y = ctxt.y === false ? dim.height + 50 : ctxt.y;
 		
 		ctxt.sprite.x = x;
 		ctxt.sprite.y = y;
-		ctxt.sprite.scaleX = ctxt.game.scaleFactor;
-		ctxt.sprite.scaleY = ctxt.game.scaleFactor;
 		
 		ctxt.game.stage.addChild(ctxt.sprite);
-		//ctxt.stage.addChild(myBitmap);
+	},
+	
+	checkCollisionAgainst: function(entity) {
+		
 	},
 	
 	_xyz: null
-});
+}); // class Entity
 
 var Obstacle = Entity.extend({
 	constructor: function(options) {
@@ -67,7 +85,7 @@ var Obstacle = Entity.extend({
 	},
 	
 	_xyz: null
-});
+}); // class Obstacle
 
 var Tree = Obstacle.extend({
 	name: "Tree",
@@ -83,7 +101,7 @@ var Tree = Obstacle.extend({
 		
 		ctxt.spriteSheet = new createjs.SpriteSheet({
 			"images": [ctxt.game.loader.getResult("tree-1")],
-			"frames": {"width": 229, "height": 287},
+			"frames": {"width": 170, "height": 267},
 			"animations": {
 				"default": [0]
 			}
@@ -98,7 +116,7 @@ var Tree = Obstacle.extend({
 	},
 	
 	_xyz: null
-});
+}); // class Tree
 
 var Stump = Obstacle.extend({
 	name: "Stump",
@@ -129,7 +147,7 @@ var Stump = Obstacle.extend({
 	},
 	
 	_xyz: null
-});
+}); // class Stump
 
 var Rock = Obstacle.extend({
 	name: "Rock",
@@ -161,7 +179,7 @@ var Rock = Obstacle.extend({
 	},
 	
 	_xyz: null
-});
+}); // class Rock
 
 var Rock1 = Rock.extend({
 	constructor: function(options) {
@@ -176,7 +194,7 @@ var Rock1 = Rock.extend({
 	},
 	
 	_xyz: null
-});
+}); // class Rock1
 
 var Rock2 = Rock.extend({
 	constructor: function(options) {
@@ -191,7 +209,7 @@ var Rock2 = Rock.extend({
 	},
 	
 	_xyz: null
-});
+}); // class Rock2
 
 var Rock3 = Rock.extend({
 	constructor: function(options) {
@@ -206,7 +224,7 @@ var Rock3 = Rock.extend({
 	},
 	
 	_xyz: null
-});
+}); // class Rock3
 
 var Rock4 = Rock.extend({
 	constructor: function(options) {
@@ -221,4 +239,31 @@ var Rock4 = Rock.extend({
 	},
 	
 	_xyz: null
-});
+}); // class Rock4
+
+var StartBanner = Entity.extend({
+	constructor: function(options) {
+		var ctxt = this;
+		
+		StartBanner.super.constructor.call(this, options);
+		
+		ctxt.collidable = false;
+	},
+	
+	initSprite: function() {
+		var ctxt = this;
+		
+		ctxt.spriteSheet = new createjs.SpriteSheet({
+			"images": [ctxt.game.loader.getResult('start-banner')],
+			"frames": {"width": 715, "height": 163},
+			"animations": {
+				"default": [0]
+			}
+		});
+	},
+	
+	_xyz: null
+}); // class StartBanner
+
+
+
