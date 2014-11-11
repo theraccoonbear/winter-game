@@ -5,10 +5,11 @@ header('Content-type: text/html');
 $sizes = array();
 $total_size = 0;
 
+
 if (array_key_exists('manifest', $_POST)) {
 	$man = $_POST['manifest'];
 
-	$root = $_SERVER['DOCUMENT_ROOT'] . '/';
+	$root = dirname(__FILE__) . '/';
 	
 	foreach ($man as $idx => $entry) {
 		$src = $entry['src'];
@@ -30,4 +31,4 @@ $payload = array(
 	'total' => $total_size
 );
 
-print json_encode($payload, JSON_PRETTY_PRINT);
+print json_encode($payload);

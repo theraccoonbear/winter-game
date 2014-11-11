@@ -20,6 +20,10 @@ var GAME = BASE.extend({
 		{src:"images/obstacles/tree-stump.png", id:"stump-1"},
 		
 		{src:"images/banners/start.png", id:"start-banner"},
+		
+		{src:"images/interaction/jump-center.jpg", id:"jump-center"},
+		{src:"images/interaction/jump-left.jpg", id:"jump-left"},
+		{src:"images/interaction/jump-right.jpg", id:"jump-right"},
 
 		{src:"images/snow-bg.jpg", id:"snow-surface"},
 		{src:"sounds/snow-1.ogg", id: "snow-1", type: createjs.LoadQueue.SOUND},
@@ -34,8 +38,15 @@ var GAME = BASE.extend({
 	
 	movingElements: [],
 	
-	entities: [
+	
+	props: [
 		{id: 'start-banner', cls: 'StartBanner'}
+	],
+	
+	interactives: [
+		{id: 'jump-left', cls: 'JumpLeft'},
+		{id: 'jump-center', cls: 'JumpCenter'},
+		{id: 'jump-right', cls: 'JumpRight'},
 	],
 	
 	obstacles: [
@@ -60,7 +71,12 @@ var GAME = BASE.extend({
 		'right3': 	{d: 32.35,  sound: 'snow-1'}
 	},
 	
-	speed: 15,
+	speed: 10,
+	level: 1,
+	nextLevelAt: 150,
+	score: 0,
+	distance: 0,
+	
 	direction: 3,
 	stage: null,
 	width: 0,
@@ -69,8 +85,10 @@ var GAME = BASE.extend({
 	lastObstAt: 0,
 	obstEvery: 100,
 	
-	score: 0,
-	distance: 0,
+	lastInterAt: 0,
+	interEvery: 500,
+	
+	
 	jumping: false,
 	
 	sounds: {},
@@ -84,9 +102,6 @@ var GAME = BASE.extend({
 		
 		ctxt.hook();
 		
-		//ctxt.centerElem(ctxt.$spinner, true, true);
-		
-		//var d = ctxt.dimensions();
 		ctxt.$game = $('<canvas></canvas>');
 		ctxt.$game
 			.attr('width', ctxt.baseline.width)
@@ -130,11 +145,16 @@ var GAME = BASE.extend({
 	updateProgress: function() {
 		var ctxt = this;
 		
-		var total_percent = ((ctxt.totalBytesLoaded / ctxt.manifestSizes.total) * 100);
 		
-		var disp_tota_percent = total_percent.toFixed(2) + '%';
+		ctxt.totalBytesLoaded = 0;
+		$.each(ctxt.manifestSizes.assets, function(id, e) {
+			ctxt.totalBytesLoaded += e.loaded || 0;
+		});
+		
+		var total_percent = ((ctxt.totalBytesLoaded / ctxt.manifestSizes.total) * 100);
+		var disp_total_percent = total_percent.toFixed(2) + '%';
 		ctxt.$progBar.val(total_percent);
-		ctxt.$dispPercent.html(disp_tota_percent);
+		ctxt.$dispPercent.html(disp_total_percent);
 	},
 	
 	fileProg: function(ev) {
@@ -144,13 +164,9 @@ var GAME = BASE.extend({
 		var bytesLoaded = file.size * ev.progress;
 		ctxt.manifestSizes.assets[manID].loaded = bytesLoaded;
 		
-		ctxt.totalBytesLoaded = 0;
-		$.each(ctxt.manifestSizes.assets, function(id, e) {
-			ctxt.totalBytesLoaded += e.loaded || 0;
-		});
-		
 		var file_percent = ((bytesLoaded / file.size) * 100).toFixed(2) + '%';
 		var total_percent = ((ctxt.totalBytesLoaded / ctxt.manifestSizes.total) * 100).toFixed(2) + '%';
+		ctxt.updateProgress();
 		
 		//console.log('PROGRESS', ev.item.id, ev.item.src, file_percent, total_percent);
 	},
@@ -204,10 +220,15 @@ var GAME = BASE.extend({
 	
 	setupStart: function() {
 		var ctxt = this;
-		ctxt.addEntity('start-banner', {
-			x: (ctxt.dimensions().width / 2) - (715 / 2),
-			y: 800
-		});
+		
+		var banner = ctxt.getAssetById('start-banner');
+		if (banner) {
+			ctxt.addEntity({
+				id: 'start-banner',
+				x: (ctxt.baseline.width / 2) - (banner.tag.width / 2),
+				y: 800
+			});
+		}
 	},
 	
 	initSound: function() {
@@ -264,7 +285,7 @@ var GAME = BASE.extend({
 	
 	reflowUI: function() {
 		var ctxt = this;
-		var dim = ctxt.dimensions();
+		var dim = ctxt.baseline; //ctxt.dimensions();
 		
 		var height_factor = ctxt.layout() == 'landscape' ? 12 : 6;
 		var radius_factor = ctxt.layout() == 'landscape' ? 12 : 10;
@@ -285,6 +306,8 @@ var GAME = BASE.extend({
 		ctxt.stage.canvas.width = ctxt.baseline.width * scale;
 		ctxt.stage.canvas.height = ctxt.baseline.height * scale;
 		ctxt.stage.update();
+		
+		ctxt.centerElem(ctxt.$game, true, true);
 		
 		ctxt.$touchSteer
 			.css({
@@ -390,22 +413,14 @@ var GAME = BASE.extend({
 		ctxt.stage.addChild(ctxt.boarder);
 	},
 	
-	getEntityById: function(id) {
+	getAssetById: function(id) {
 		var ctxt = this;
 		var ret = false;
 		
-		for (var i = 0, l = ctxt.entities.length; i < l; i++) {
-			var ent = ctxt.entities[i];
-			if (ent.id == id) {
-				ret = ent;
-				break;
-			}
-		}
-		
-		for (var i = 0, l = ctxt.obstacles.length; i < l; i++) {
-			var ent = ctxt.obstacles[i];
-			if (ent.id == id) {
-				ret = ent;
+		for (var i = 0, l = ctxt.manifest.length; i < l; i++) {
+			var asset = ctxt.manifest[i];
+			if (asset.id == id) {
+				ret = asset;
 				break;
 			}
 		}
@@ -413,25 +428,35 @@ var GAME = BASE.extend({
 		return ret;
 	},
 	
-	addEntity: function(id, o) {
+	getEntityById: function(id) {
 		var ctxt = this;
+		var ret = false;
 		
 		
-		id = typeof id === 'undefined' ? ctxt.obstacles[Math.floor(Math.random() * ctxt.obstacles.length)].id : id;
+		var pool = [];
 		
-		var ent = ctxt.getEntityById(id);
-		if (ent == false) {
-			console.log("Missing entity: ", ent, id)
-			return false;
+		pool = pool.concat(ctxt.obstacles, ctxt.interactives, ctxt.props);
+		
+		for (var i = 0, l = pool.length; i < l; i++) {
+			var ent = pool[i];
+			if (ent.id == id) {
+				ret = ent;
+				break;
+			}
 		}
+		//
+		//if (ret === false) {
+		//		
+		//	for (var i = 0, l = ctxt.obstacles.length; i < l; i++) {
+		//		var ent = ctxt.obstacles[i];
+		//		if (ent.id == id) {
+		//			ret = ent;
+		//			break;
+		//		}
+		//	}
+		//}
 		
-		o = typeof o === 'undefined' ? {} : o;
-		
-		o.game = ctxt;
-		
-		var entity = new window[ent.cls](o);
-		ctxt.movingElements.push(entity);
-		return entity;
+		return ret;
 	},
 	
 	getSpeedVector: function() {
@@ -448,6 +473,72 @@ var GAME = BASE.extend({
 		};
 		
 		return ret;
+	},
+	
+	sweetMessage: function(o) {
+		var ctxt = this;
+		var opts = {
+			message: "No message",
+			x: ctxt.baseline.width / 2,
+			y: ctxt.boarder.y
+		};
+		
+		opts = $.extend({}, opts, o);
+		
+		var $message = $('<span></span>');
+		$message
+			.addClass('sweetMessage')
+			.hide()
+			.appendTo(ctxt.$body)
+			.html(opts.message);
+			
+			
+		console.log($message.width() + 'x' + $message.height());
+			
+		$message
+			.show()
+			.css({
+				left: opts.x - ($message.width() / 2),
+				top: opts.y - ($message.height() / 2)
+			})
+			.animate({
+				top: '-=25px'
+			}, 500, function() {
+				$message.remove();
+			});
+	},
+	
+	addEntity: function(o) {
+		var ctxt = this;
+		var defaults = {
+			obstacles: true,
+			interactives: false,
+			props: false
+		};
+		
+		o = $.extend({}, defaults, o);
+		
+		var pool = [];
+		
+		if (o.obstacles) { pool = pool.concat(ctxt.obstacles); }
+		if (o.interactives) { pool = pool.concat(ctxt.interactives); }
+		if (o.props) { pool = pool.concat(ctxt.props); }
+		
+		
+		//id = typeof id === 'undefined' ? ctxt.obstacles[Math.floor(Math.random() * ctxt.obstacles.length)].id : id;
+		o.id = typeof o.id === 'undefined' ? pool[Math.floor(Math.random() * pool.length)].id : o.id;
+		
+		var ent = ctxt.getEntityById(o.id);
+		if (ent == false) {
+			console.log("Missing entity: ", o.id)
+			return false;
+		}
+		
+		o.game = ctxt;
+		
+		var entity = new window[ent.cls](o);
+		ctxt.movingElements.push(entity);
+		return entity;
 	},
 	
 	tick: function(event) {
@@ -468,7 +559,7 @@ var GAME = BASE.extend({
 		ctxt.ground.y = (ctxt.ground.y + speed.y) % ctxt.ground.tileH;
 		
 		var distThisTick = Math.abs(speed.y);
-		ctxt.distance += distThisTick;
+		ctxt.distance += distThisTick / 20;
 		ctxt.$distance.html(parseInt(ctxt.distance) + "'");
 		ctxt.score += distThisTick * 10;
 		ctxt.$score.html(parseInt(ctxt.score));
@@ -488,9 +579,22 @@ var GAME = BASE.extend({
 		
 		var obst_delta = t - ctxt.lastObstAt;
 		if (obst_delta >= ctxt.obstEvery) {
-			ctxt.addEntity();
+			ctxt.addEntity({interactives: false, obstacles: true});
 			ctxt.lastObstAt = t;
 		}
+		
+		var inter_delta = t - ctxt.lastInterAt;
+		if (inter_delta >= ctxt.interEvery) {
+			ctxt.addEntity({interactives: true, obstacles: false});
+			ctxt.lastInterAt = t;
+		}
+		
+		if (ctxt.distance > ctxt.nextLevelAt) {
+			//ctxt.nextLevelAt *= 2;
+			//ctxt.level++;
+			//ctxt.sweetMessage({message: "Level " + ctxt.level});
+		}
+		
 		
 		ctxt.stage.update(event);
 	},

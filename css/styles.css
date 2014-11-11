@@ -107,9 +107,26 @@ body {
   width: 100%;
   height: 95px;
 }
-.wgLogo{
-	margin: 35px;
+.logo-col{
+	padding: 35px 10px 35px 35px;
+	width: 180px;
+	float: left;
 }
+.wgLogo{
+/*	margin: 35px;*/
+/*	width: 100%;*/
+}
+.txt-sPanel{
+	font-family: 'Source Sans Pro', sans-serif;
+	color: #DBD99F;
+	font-size: 20px;
+	font-weight: 700;;
+}
+.help{
+	width: 30px;
+	padding: 10px 60px 0 15px;
+}
+
 
 /* debug */
 #debugBox {
