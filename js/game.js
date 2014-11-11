@@ -145,11 +145,16 @@ var GAME = BASE.extend({
 	updateProgress: function() {
 		var ctxt = this;
 		
-		var total_percent = ((ctxt.totalBytesLoaded / ctxt.manifestSizes.total) * 100);
 		
-		var disp_tota_percent = total_percent.toFixed(2) + '%';
+		ctxt.totalBytesLoaded = 0;
+		$.each(ctxt.manifestSizes.assets, function(id, e) {
+			ctxt.totalBytesLoaded += e.loaded || 0;
+		});
+		
+		var total_percent = ((ctxt.totalBytesLoaded / ctxt.manifestSizes.total) * 100);
+		var disp_total_percent = total_percent.toFixed(2) + '%';
 		ctxt.$progBar.val(total_percent);
-		ctxt.$dispPercent.html(disp_tota_percent);
+		ctxt.$dispPercent.html(disp_total_percent);
 	},
 	
 	fileProg: function(ev) {
@@ -159,13 +164,9 @@ var GAME = BASE.extend({
 		var bytesLoaded = file.size * ev.progress;
 		ctxt.manifestSizes.assets[manID].loaded = bytesLoaded;
 		
-		ctxt.totalBytesLoaded = 0;
-		$.each(ctxt.manifestSizes.assets, function(id, e) {
-			ctxt.totalBytesLoaded += e.loaded || 0;
-		});
-		
 		var file_percent = ((bytesLoaded / file.size) * 100).toFixed(2) + '%';
 		var total_percent = ((ctxt.totalBytesLoaded / ctxt.manifestSizes.total) * 100).toFixed(2) + '%';
+		ctxt.updateProgress();
 		
 		//console.log('PROGRESS', ev.item.id, ev.item.src, file_percent, total_percent);
 	},
