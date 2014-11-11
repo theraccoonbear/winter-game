@@ -11,13 +11,13 @@ var GAME = BASE.extend({
 	
 	manifest: [
 		{src:"images/boarder-small.png", id:"boarder-small"},
-		{src:"images/obstacles/rock-1.jpg", id:"rock-1"},
-		{src:"images/obstacles/rock-2.jpg", id:"rock-2"},
-		{src:"images/obstacles/rock-3.jpg", id:"rock-3"},
-		{src:"images/obstacles/rock-3.jpg", id:"rock-4"},
+		{src:"images/obstacles/rock-1.png", id:"rock-1"},
+		{src:"images/obstacles/rock-2.png", id:"rock-2"},
+		{src:"images/obstacles/rock-3.png", id:"rock-3"},
+		{src:"images/obstacles/rock-4.png", id:"rock-4"},
 		
 		{src:"images/obstacles/tree-single.png", id:"tree-1"},
-		{src:"images/obstacles/tree-stump.jpg", id:"stump-1"},
+		{src:"images/obstacles/tree-stump.png", id:"stump-1"},
 		
 		{src:"images/banners/start.png", id:"start-banner"},
 
@@ -170,10 +170,10 @@ var GAME = BASE.extend({
 		
 		ctxt.state = 'initializing';
 		
-		ctxt.$game.css({
-			left: ((d.width / 2) - (ctxt.width / 2)),
-			top: ((d.height / 2) - (ctxt.height / 2))
-		});
+		// ctxt.$game.css({
+		// 	left: ((d.width / 2) - (ctxt.width / 2)),
+		// 	top: ((d.height / 2) - (ctxt.height / 2))
+		// });
 		
 		ctxt.centerElem(ctxt.$touchSteer, true, false);
 		
@@ -467,7 +467,7 @@ var GAME = BASE.extend({
 		ctxt.ground.x = (ctxt.ground.x + speed.x) % ctxt.ground.tileW;
 		ctxt.ground.y = (ctxt.ground.y + speed.y) % ctxt.ground.tileH;
 		
-		var distThisTick = Math.abs(speed.y) / 32;
+		var distThisTick = Math.abs(speed.y);
 		ctxt.distance += distThisTick;
 		ctxt.$distance.html(parseInt(ctxt.distance) + "'");
 		ctxt.score += distThisTick * 10;

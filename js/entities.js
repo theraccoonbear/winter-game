@@ -55,7 +55,7 @@ var Entity = Class.extend({
 		
 		//var x = typeof o.x === 'undefined' ? (Math.random() * (dim.width * buffer)) - (dim.width * (buffer / 2)) : o.x;
 		//var y = typeof o.y === 'undefined' ? dim.height + 50 : o.y;
-		var x = ctxt.x === false ? (Math.random() * dim.width * buffer)) - (dim.width * (buffer / 2)) : ctxt.x;
+		var x = ctxt.x === false ? (Math.random() * dim.width * buffer) - (dim.width * (buffer / 2)) : ctxt.x;
 		var y = ctxt.y === false ? dim.height + 50 : ctxt.y;
 		
 		ctxt.sprite.x = x;
