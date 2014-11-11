@@ -15,6 +15,8 @@ var Entity = Class.extend({
 	
 	x: false,
 	y: false,
+	width: false,
+	height: false,
 	
 	collisionProperties: {
 		x: 0,
@@ -92,6 +94,8 @@ var Tree = Obstacle.extend({
 	
 	constructor: function(options) {
 		var ctxt = this;
+		options.width = 170;
+		options.height = 267;
 		
 		Tree.super.constructor.call(this, options);
 	},
@@ -101,7 +105,7 @@ var Tree = Obstacle.extend({
 		
 		ctxt.spriteSheet = new createjs.SpriteSheet({
 			"images": [ctxt.game.loader.getResult("tree-1")],
-			"frames": {"width": 170, "height": 267},
+			"frames": {"width": ctxt.width, "height": ctxt.height},
 			"animations": {
 				"default": [0]
 			}
@@ -123,7 +127,8 @@ var Stump = Obstacle.extend({
 	
 	constructor: function(options) {
 		var ctxt = this;
-		
+		options.width = 100;
+		options.height = 84;
 		Tree.super.constructor.call(this, options);
 	},
 	
@@ -132,7 +137,7 @@ var Stump = Obstacle.extend({
 		
 		ctxt.spriteSheet = new createjs.SpriteSheet({
 			"images": [ctxt.game.loader.getResult("stump-1")],
-			"frames": {"width": 100, "height": 84},
+			"frames": {"width": ctxt.width, "height": ctxt.height},
 			"animations": {
 				"default": [0]
 			}
@@ -152,8 +157,6 @@ var Stump = Obstacle.extend({
 var Rock = Obstacle.extend({
 	name: "Rock",
 	
-	width: 0,
-	height: 0,
 	imageID: false,
 	
 	constructor: function(options) {
@@ -266,4 +269,72 @@ var StartBanner = Entity.extend({
 }); // class StartBanner
 
 
+var Jump = Entity.extend({
+	contstructor: function(options) {
+		var ctxt = this;
+		
+		Jump.super.constructor.call(this, options);
+	},
+	
+	initSprite: function() {
+		var ctxt = this;
+		
+		ctxt.spriteSheet = new createjs.SpriteSheet({
+			"images": [ctxt.game.loader.getResult(ctxt.imageID)],
+			"frames": {"width": ctxt.width, "height": ctxt.height},
+			"animations": {
+				"default": [0]
+			}
+		});
+	},
+	
+	_xyz: null
+}); // class Jump
+
+
+var JumpLeft = Jump.extend({
+	constructor: function(options) {
+		var ctxt = this;
+		
+		ctxt.imageID = 'jump-left';
+		ctxt.width = 208;
+		ctxt.height = 150;
+		
+		JumpLeft.super.constructor.call(this, options);
+		
+	},
+	
+	_xyz: null
+}); // class JumpLeft
+
+var JumpRight = Jump.extend({
+	constructor: function(options) {
+		var ctxt = this;
+		
+		ctxt.imageID = 'jump-right';
+		ctxt.width = 220;
+		ctxt.height = 145;
+		
+		JumpRight.super.constructor.call(this, options);
+		
+	},
+	
+	_xyz: null
+}); // class JumpRight
+
+
+var JumpCenter = Jump.extend({
+	constructor: function(options) {
+		var ctxt = this;
+		
+		ctxt.imageID = 'jump-center';
+		ctxt.width = 220;
+		ctxt.height = 156;
+		
+		JumpCenter.super.constructor.call(this, options);
+		
+	},
+	
+	_xyz: null
+}); // class JumpCenter
 

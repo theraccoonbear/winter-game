@@ -20,6 +20,10 @@ var GAME = BASE.extend({
 		{src:"images/obstacles/tree-stump.png", id:"stump-1"},
 		
 		{src:"images/banners/start.png", id:"start-banner"},
+		
+		{src:"images/interaction/jump-center.jpg", id:"jump-center"},
+		{src:"images/interaction/jump-left.jpg", id:"jump-left"},
+		{src:"images/interaction/jump-right.jpg", id:"jump-right"},
 
 		{src:"images/snow-bg.jpg", id:"snow-surface"},
 		{src:"sounds/snow-1.ogg", id: "snow-1", type: createjs.LoadQueue.SOUND},
@@ -34,8 +38,15 @@ var GAME = BASE.extend({
 	
 	movingElements: [],
 	
-	entities: [
+	
+	props: [
 		{id: 'start-banner', cls: 'StartBanner'}
+	],
+	
+	interactives: [
+		{id: 'jump-left', cls: 'JumpLeft'},
+		{id: 'jump-center', cls: 'JumpCenter'},
+		{id: 'jump-right', cls: 'JumpRight'},
 	],
 	
 	obstacles: [
@@ -74,6 +85,9 @@ var GAME = BASE.extend({
 	lastObstAt: 0,
 	obstEvery: 100,
 	
+	lastInterAt: 0,
+	interEvery: 500,
+	
 	
 	jumping: false,
 	
@@ -88,9 +102,6 @@ var GAME = BASE.extend({
 		
 		ctxt.hook();
 		
-		//ctxt.centerElem(ctxt.$spinner, true, true);
-		
-		//var d = ctxt.dimensions();
 		ctxt.$game = $('<canvas></canvas>');
 		ctxt.$game
 			.attr('width', ctxt.baseline.width)
@@ -211,7 +222,8 @@ var GAME = BASE.extend({
 		
 		var banner = ctxt.getAssetById('start-banner');
 		if (banner) {
-			ctxt.addEntity('start-banner', {
+			ctxt.addEntity({
+				id: 'start-banner',
 				x: (ctxt.baseline.width / 2) - (banner.tag.width / 2),
 				y: 800
 			});
@@ -417,44 +429,31 @@ var GAME = BASE.extend({
 		var ctxt = this;
 		var ret = false;
 		
-		for (var i = 0, l = ctxt.entities.length; i < l; i++) {
-			var ent = ctxt.entities[i];
-			if (ent.id == id) {
-				ret = ent;
-				break;
-			}
-		}
 		
-		for (var i = 0, l = ctxt.obstacles.length; i < l; i++) {
-			var ent = ctxt.obstacles[i];
+		var pool = [];
+		
+		pool = pool.concat(ctxt.obstacles, ctxt.interactives, ctxt.props);
+		
+		for (var i = 0, l = pool.length; i < l; i++) {
+			var ent = pool[i];
 			if (ent.id == id) {
 				ret = ent;
 				break;
 			}
 		}
+		//
+		//if (ret === false) {
+		//		
+		//	for (var i = 0, l = ctxt.obstacles.length; i < l; i++) {
+		//		var ent = ctxt.obstacles[i];
+		//		if (ent.id == id) {
+		//			ret = ent;
+		//			break;
+		//		}
+		//	}
+		//}
 		
 		return ret;
-	},
-	
-	addEntity: function(id, o) {
-		var ctxt = this;
-		
-		
-		id = typeof id === 'undefined' ? ctxt.obstacles[Math.floor(Math.random() * ctxt.obstacles.length)].id : id;
-		
-		var ent = ctxt.getEntityById(id);
-		if (ent == false) {
-			console.log("Missing entity: ", ent, id)
-			return false;
-		}
-		
-		o = typeof o === 'undefined' ? {} : o;
-		
-		o.game = ctxt;
-		
-		var entity = new window[ent.cls](o);
-		ctxt.movingElements.push(entity);
-		return entity;
 	},
 	
 	getSpeedVector: function() {
@@ -506,6 +505,39 @@ var GAME = BASE.extend({
 			});
 	},
 	
+	addEntity: function(o) {
+		var ctxt = this;
+		var defaults = {
+			obstacles: true,
+			interactives: false,
+			props: false
+		};
+		
+		o = $.extend({}, defaults, o);
+		
+		var pool = [];
+		
+		if (o.obstacles) { pool = pool.concat(ctxt.obstacles); }
+		if (o.interactives) { pool = pool.concat(ctxt.interactives); }
+		if (o.props) { pool = pool.concat(ctxt.props); }
+		
+		
+		//id = typeof id === 'undefined' ? ctxt.obstacles[Math.floor(Math.random() * ctxt.obstacles.length)].id : id;
+		o.id = typeof o.id === 'undefined' ? pool[Math.floor(Math.random() * pool.length)].id : o.id;
+		
+		var ent = ctxt.getEntityById(o.id);
+		if (ent == false) {
+			console.log("Missing entity: ", o.id)
+			return false;
+		}
+		
+		o.game = ctxt;
+		
+		var entity = new window[ent.cls](o);
+		ctxt.movingElements.push(entity);
+		return entity;
+	},
+	
 	tick: function(event) {
 		var ctxt = this;
 		
@@ -544,8 +576,14 @@ var GAME = BASE.extend({
 		
 		var obst_delta = t - ctxt.lastObstAt;
 		if (obst_delta >= ctxt.obstEvery) {
-			ctxt.addEntity();
+			ctxt.addEntity({interactives: false, obstacles: true});
 			ctxt.lastObstAt = t;
+		}
+		
+		var inter_delta = t - ctxt.lastInterAt;
+		if (inter_delta >= ctxt.interEvery) {
+			ctxt.addEntity({interactives: true, obstacles: false});
+			ctxt.lastInterAt = t;
 		}
 		
 		if (ctxt.distance > ctxt.nextLevelAt) {
