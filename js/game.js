@@ -60,7 +60,12 @@ var GAME = BASE.extend({
 		'right3': 	{d: 32.35,  sound: 'snow-1'}
 	},
 	
-	speed: 15,
+	speed: 10,
+	level: 1,
+	nextLevelAt: 150,
+	score: 0,
+	distance: 0,
+	
 	direction: 3,
 	stage: null,
 	width: 0,
@@ -69,8 +74,7 @@ var GAME = BASE.extend({
 	lastObstAt: 0,
 	obstEvery: 100,
 	
-	score: 0,
-	distance: 0,
+	
 	jumping: false,
 	
 	sounds: {},
@@ -204,10 +208,14 @@ var GAME = BASE.extend({
 	
 	setupStart: function() {
 		var ctxt = this;
-		ctxt.addEntity('start-banner', {
-			x: (ctxt.dimensions().width / 2) - (715 / 2),
-			y: 800
-		});
+		
+		var banner = ctxt.getAssetById('start-banner');
+		if (banner) {
+			ctxt.addEntity('start-banner', {
+				x: (ctxt.baseline.width / 2) - (banner.tag.width / 2),
+				y: 800
+			});
+		}
 	},
 	
 	initSound: function() {
@@ -264,7 +272,7 @@ var GAME = BASE.extend({
 	
 	reflowUI: function() {
 		var ctxt = this;
-		var dim = ctxt.dimensions();
+		var dim = ctxt.baseline; //ctxt.dimensions();
 		
 		var height_factor = ctxt.layout() == 'landscape' ? 12 : 6;
 		var radius_factor = ctxt.layout() == 'landscape' ? 12 : 10;
@@ -390,6 +398,21 @@ var GAME = BASE.extend({
 		ctxt.stage.addChild(ctxt.boarder);
 	},
 	
+	getAssetById: function(id) {
+		var ctxt = this;
+		var ret = false;
+		
+		for (var i = 0, l = ctxt.manifest.length; i < l; i++) {
+			var asset = ctxt.manifest[i];
+			if (asset.id == id) {
+				ret = asset;
+				break;
+			}
+		}
+		
+		return ret;
+	},
+	
 	getEntityById: function(id) {
 		var ctxt = this;
 		var ret = false;
@@ -450,6 +473,39 @@ var GAME = BASE.extend({
 		return ret;
 	},
 	
+	sweetMessage: function(o) {
+		var ctxt = this;
+		var opts = {
+			message: "No message",
+			x: ctxt.baseline.width / 2,
+			y: ctxt.boarder.y
+		};
+		
+		opts = $.extend({}, opts, o);
+		
+		var $message = $('<span></span>');
+		$message
+			.addClass('sweetMessage')
+			.hide()
+			.appendTo(ctxt.$body)
+			.html(opts.message);
+			
+			
+		console.log($message.width() + 'x' + $message.height());
+			
+		$message
+			.show()
+			.css({
+				left: opts.x - ($message.width() / 2),
+				top: opts.y - ($message.height() / 2)
+			})
+			.animate({
+				top: '-=25px'
+			}, 500, function() {
+				$message.remove();
+			});
+	},
+	
 	tick: function(event) {
 		var ctxt = this;
 		
@@ -468,7 +524,7 @@ var GAME = BASE.extend({
 		ctxt.ground.y = (ctxt.ground.y + speed.y) % ctxt.ground.tileH;
 		
 		var distThisTick = Math.abs(speed.y);
-		ctxt.distance += distThisTick;
+		ctxt.distance += distThisTick / 20;
 		ctxt.$distance.html(parseInt(ctxt.distance) + "'");
 		ctxt.score += distThisTick * 10;
 		ctxt.$score.html(parseInt(ctxt.score));
@@ -491,6 +547,13 @@ var GAME = BASE.extend({
 			ctxt.addEntity();
 			ctxt.lastObstAt = t;
 		}
+		
+		if (ctxt.distance > ctxt.nextLevelAt) {
+			//ctxt.nextLevelAt *= 2;
+			//ctxt.level++;
+			//ctxt.sweetMessage({message: "Level " + ctxt.level});
+		}
+		
 		
 		ctxt.stage.update(event);
 	},
