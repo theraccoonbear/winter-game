@@ -18,6 +18,8 @@ var GAME = BASE.extend({
 		
 		{src:"images/obstacles/tree-single.png", id:"tree-1"},
 		{src:"images/obstacles/tree-stump.jpg", id:"stump-1"},
+		
+		{src:"images/banners/start.png", id:"start-banner"},
 
 		{src:"images/snow-bg.jpg", id:"snow-surface"},
 		{src:"sounds/snow-1.ogg", id: "snow-1", type: createjs.LoadQueue.SOUND},
@@ -32,6 +34,10 @@ var GAME = BASE.extend({
 	
 	movingElements: [],
 	
+	entities: [
+		{id: 'start-banner', cls: 'StartBanner'}
+	],
+	
 	obstacles: [
 		{id: 'rock-1', cls: "Rock1"},
 		{id: 'rock-2', cls: "Rock2"},
@@ -45,13 +51,6 @@ var GAME = BASE.extend({
 	
 	steerDirections: ['left3', 'left2', 'left1', 'straight', 'right1', 'right2', 'right3'],
 	steerSpeeds: {
-		//'left3': 		{d: 159.51, sound: 'snow-1'},
-		//'left2': 		{d: 145.91, sound: 'snow-2'},
-		//'left1': 		{d: 124.76, sound: 'snow-3'},
-		//'straight': {d: 90,     sound: 'snow-4'},
-		//'right1': 	{d: 55.24,  sound: 'snow-3'},
-		//'right2': 	{d: 34.09,  sound: 'snow-2'},
-		//'right3': 	{d: 20.49,  sound: 'snow-1'}
 		'left3': 		{d: 147.65, sound: 'snow-1'},
 		'left2': 		{d: 131.59, sound: 'snow-2'},
 		'left1': 		{d: 111.59, sound: 'snow-3'},
@@ -76,6 +75,8 @@ var GAME = BASE.extend({
 	
 	sounds: {},
 	
+	state: 'loading',
+	
 	constructor: function(o) {
 		var ctxt = this;
 		
@@ -98,12 +99,12 @@ var GAME = BASE.extend({
 		ctxt.height = ctxt.stage.canvas.height;
 		
 		ctxt.$window.resize(function(e) {
-			console.log('resized');
+			//console.log('resized');
 			ctxt.reflowUI();
 		});
 		
 		ctxt.getManSize(function() {
-			
+			ctxt.state = 'loading';
 			ctxt.loader = new createjs.LoadQueue();
 			ctxt.loader.installPlugin(createjs.Sound);
 			//ctxt.loader.addEventListener("complete", function() { ctxt.init(); });
@@ -167,6 +168,8 @@ var GAME = BASE.extend({
 		var ctxt = this;
 		var d = ctxt.dimensions();
 		
+		ctxt.state = 'initializing';
+		
 		ctxt.$game.css({
 			left: ((d.width / 2) - (ctxt.width / 2)),
 			top: ((d.height / 2) - (ctxt.height / 2))
@@ -174,9 +177,13 @@ var GAME = BASE.extend({
 		
 		ctxt.centerElem(ctxt.$touchSteer, true, false);
 		
-		ctxt.initSnow();
+		
+		
+		ctxt.initHill();
 		
 		ctxt.initBoarder();
+		
+		ctxt.setupStart();
 		
 		ctxt.initControls();
 		
@@ -187,18 +194,29 @@ var GAME = BASE.extend({
 		ctxt.initSound();
 		
 		createjs.Ticker.timingMode = createjs.Ticker.RAF;
-		createjs.Ticker.addEventListener("tick", function(event) { ctxt.tick(event); });
+		//createjs.Ticker.setPaused(true)
+		createjs.Ticker.addEventListener("tick", function(event) {
+			ctxt.tick(event);
+		});
+		//ctxt.stage.update();
 		
-		
+	},
+	
+	setupStart: function() {
+		var ctxt = this;
+		ctxt.addEntity('start-banner', {
+			x: (ctxt.dimensions().width / 2) - (715 / 2),
+			y: 800
+		});
 	},
 	
 	initSound: function() {
 		var ctxt = this;
 		
-		ctxt.snowSound = createjs.Sound.play('snow-4');
+		//ctxt.snowSound = createjs.Sound.play('snow-4');
 	},
 	
-	initSnow: function() {
+	initHill: function() {
 		var ctxt = this;
 		
 		var dim = ctxt.dimensions();
@@ -209,7 +227,9 @@ var GAME = BASE.extend({
 		ctxt.ground.tileW = ctxt.groundImg.width;
 		ctxt.ground.tileH = ctxt.groundImg.height;
 		ctxt.ground.y = dim.height - ctxt.groundImg.height;
-		//ctxt.stage.addChild(ctxt.ground);
+		
+		ctxt.stage.addChild(ctxt.ground);
+		
 	},
 	
 	initControls: function() {
@@ -327,10 +347,10 @@ var GAME = BASE.extend({
 		var dirName = ctxt.steerDirections[where];
 		var speed = ctxt.steerSpeeds[dirName];
 		
-		console.log(dirName);
+		//console.log(dirName);
 		
-		ctxt.snowSound.stop();
-		ctxt.snowSound = createjs.Sound.play(speed.sound);
+		//ctxt.snowSound.stop();
+		//ctxt.snowSound = createjs.Sound.play(speed.sound);
 		ctxt.direction = where;
 		
 		ctxt.boarder.gotoAndPlay(dirName);
@@ -358,28 +378,14 @@ var GAME = BASE.extend({
 	initBoarder: function() {
 		var ctxt = this;
 		
-		//ctxt.sprites.boarder = new createjs.SpriteSheet({
-		//	"images": [ctxt.loader.getResult("boarder")],
-		//	"frames": {"height": 191, "width": 150},
-		//	"animations": {
-		//		"left3": [0],
-		//		"left2": [1],
-		//		"left1": [2],
-		//		"straight": [3],
-		//		"right1": [4],
-		//		"right2": [5],
-		//		"right3": [6],
-		//	}
-		//});
-		
 		var animations = {};
 		
 		$.each(ctxt.steerDirections, function(i, d) {
 			animations[d] = (i * 13);
-			animations[d + '-jump'] = [i * 13, (i * 13) + 12, d, .5];
+			animations[d + '-jump'] = [i * 13, (i * 13) + 12, d, 0.5];
 		});
 		
-		console.log(animations);
+		//console.log(animations);
 		
 		ctxt.sprites.boarder = new createjs.SpriteSheet({
 			"images": [ctxt.loader.getResult("boarder-small")],
@@ -400,6 +406,15 @@ var GAME = BASE.extend({
 	getEntityById: function(id) {
 		var ctxt = this;
 		var ret = false;
+		
+		for (var i = 0, l = ctxt.entities.length; i < l; i++) {
+			var ent = ctxt.entities[i];
+			if (ent.id == id) {
+				ret = ent;
+				break;
+			}
+		}
+		
 		for (var i = 0, l = ctxt.obstacles.length; i < l; i++) {
 			var ent = ctxt.obstacles[i];
 			if (ent.id == id) {
@@ -411,7 +426,7 @@ var GAME = BASE.extend({
 		return ret;
 	},
 	
-	addObst: function(id, o) {
+	addEntity: function(id, o) {
 		var ctxt = this;
 		
 		
@@ -420,34 +435,16 @@ var GAME = BASE.extend({
 		var ent = ctxt.getEntityById(id);
 		if (ent == false) {
 			console.log("Missing entity: ", ent, id)
-			return;
+			return false;
 		}
 		
-		var entity = new window[ent.cls]({game: ctxt});
+		o = typeof o === 'undefined' ? {} : o;
 		
-		//console.log(entity);
+		o.game = ctxt;
 		
-		//var dim = ctxt.dimensions();
-		//
-		//var image = ctxt.loader.getResult(id);
-		//var myBitmap = new createjs.Bitmap(image);
-		//
-		//var x = typeof o.x === 'undefined' ? (Math.random() * (dim.width * 1.5)) - (dim.width * 0.25) : o.x;
-		//var y = typeof o.y === 'undefined' ? myBitmap.y = dim.height + 50 : o.y;
-		//
-		//myBitmap.x = x;
-		//myBitmap.y = y;
-		//myBitmap.scaleX = ctxt.scaleFactor;
-		//myBitmap.scaleY = ctxt.scaleFactor;
-		//
-		//ctxt.stage.addChild(myBitmap);
-		
-		//ctxt.movingElements.push(myBitmap);
+		var entity = new window[ent.cls](o);
 		ctxt.movingElements.push(entity);
-		
-		// steerSpeeds
-		// movingElements
-		
+		return entity;
 	},
 	
 	getSpeedVector: function() {
@@ -469,7 +466,9 @@ var GAME = BASE.extend({
 	tick: function(event) {
 		var ctxt = this;
 		
-		//return;
+		if (event.paused) {
+			return;
+		}
 		
 		var t = (new Date()).getTime();
 		
@@ -507,7 +506,7 @@ var GAME = BASE.extend({
 		
 		var obst_delta = t - ctxt.lastObstAt;
 		if (obst_delta >= ctxt.obstEvery) {
-			ctxt.addObst();
+			ctxt.addEntity();
 			ctxt.lastObstAt = t;
 		}
 		
