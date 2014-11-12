@@ -599,6 +599,9 @@ var GAME = BASE.extend({
 		ctxt.score += distThisTick * 10;
 		ctxt.$score.html(parseInt(ctxt.score));
 		
+		var boarder_pt1 = new Point2D(ctxt.boarder.x - speed.x, ctxt.boarder.y - speed.y);
+		var boarder_pt2 = new Point2D(ctxt.boarder.x, ctxt.boarder.y);
+		
 		for (var i = ctxt.movingElements.length - 1; i >= 0; i--) {
 			var entity = ctxt.movingElements[i];
 			var e = entity.sprite;
@@ -610,6 +613,9 @@ var GAME = BASE.extend({
 				ctxt.stage.removeChild(e);
 				ctxt.movingElements.splice(i, 1);
 			}
+			
+			entity.checkCollisionAgainst({pt1: boarder_pt1, pt2: boarder_pt2});
+			
 		}
 		
 		var obst_delta = t - ctxt.lastObstAt;

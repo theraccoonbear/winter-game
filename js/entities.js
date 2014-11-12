@@ -18,16 +18,35 @@ var Entity = Class.extend({
 	width: false,
 	height: false,
 	
-	collisionProperties: {
-		x: 0,
-		y: 0,
-		w: 0,
-		h: 0
-	},
+	colliders: [],
 	
 	dimensions: function() {
 		var ctxt = this;
 		console.log(ctxt.spriteSheet);
+	},
+	
+	addCollider: function(options) {
+		var ctxt = this;
+		
+		var defaults = {
+			action: false,
+			points: []
+		};
+		
+		options = $.extend({}, defaults, options);
+		
+		if (typeof options.points === 'string') {
+			var pts = [];
+			var pt_sets = options.points.split('-');
+			for (var i = 0, l = pt_sets.length; i < l; i++) {
+				var coords = pt_sets[i].split(',');
+				var pt = new Point2D(coords[0], coords[1]);
+				pts.push(pt);
+			}
+			options.points = pts;
+		}
+		
+		ctxt.colliders.push(new CollisionTarget(options));
 	},
 	
 	constructor: function(options) {
@@ -54,9 +73,6 @@ var Entity = Class.extend({
 		
 		var bufferAmount = 1;
 		var buffer = bufferAmount + 1;
-		
-		//var x = typeof o.x === 'undefined' ? (Math.random() * (dim.width * buffer)) - (dim.width * (buffer / 2)) : o.x;
-		//var y = typeof o.y === 'undefined' ? dim.height + 50 : o.y;
 		var x = ctxt.x === false ? (Math.random() * dim.width * buffer) - (dim.width * (buffer / 2)) : ctxt.x;
 		var y = ctxt.y === false ? dim.height + 50 : ctxt.y;
 		
@@ -66,8 +82,20 @@ var Entity = Class.extend({
 		ctxt.game.stage.addChild(ctxt.sprite);
 	},
 	
-	checkCollisionAgainst: function(entity) {
+	checkCollisionAgainst: function(options) {
+		var ctxt = this;
 		
+		var pt1 = options.pt1;
+		var pt2 = options.pt2;
+		
+		for (var i = 0, l = ctxt.colliders.length; i < l; i++) {
+			if (ctxt.colliders[i].checkCollision(pt1, pt2)) {
+
+				if (typeof ctxt.colliders[i].action) {
+					ctxt.colliders[i].action({game: ctxt.game});
+				}
+			}
+		}
 	},
 	
 	_xyz: null
@@ -98,6 +126,14 @@ var Tree = Obstacle.extend({
 		options.height = 267;
 		
 		Tree.super.constructor.call(this, options);
+		
+		ctxt.addCollider({
+			points: "46,194-66,202-80,198-64,180",
+			action: function(o) {
+				console.log('Hit!', o);
+			}
+		});
+		
 	},
 	
 	initSprite: function() {
