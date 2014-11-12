@@ -1,6 +1,8 @@
 /* jshint quotmark:false, strict:false, eqeqeq:false */
 /* global createjs, Class */
 var Entity = Class.extend({
+	name: "Entity",
+	
 	collidable: false,   // true/false - can the player interact with this
 	jumpable: false,     // true/false - can the player jump this
 	fatal: false,        // true/false - is this item fatal on collision
@@ -108,6 +110,8 @@ var Entity = Class.extend({
 }); // class Entity
 
 var Obstacle = Entity.extend({
+	name: "Obstacle",
+	
 	constructor: function(options) {
 		var ctxt = this;
 		
@@ -227,6 +231,8 @@ var Rock = Obstacle.extend({
 }); // class Rock
 
 var Rock1 = Rock.extend({
+	name: "Rock1",
+	
 	constructor: function(options) {
 		var ctxt = this;
 		
@@ -242,6 +248,8 @@ var Rock1 = Rock.extend({
 }); // class Rock1
 
 var Rock2 = Rock.extend({
+	name: "Rock2",
+	
 	constructor: function(options) {
 		var ctxt = this;
 		
@@ -257,6 +265,8 @@ var Rock2 = Rock.extend({
 }); // class Rock2
 
 var Rock3 = Rock.extend({
+	name: "Rock3",
+	
 	constructor: function(options) {
 		var ctxt = this;
 		
@@ -272,6 +282,8 @@ var Rock3 = Rock.extend({
 }); // class Rock3
 
 var Rock4 = Rock.extend({
+	name: "Rock4",
+	
 	constructor: function(options) {
 		var ctxt = this;
 		
@@ -287,6 +299,8 @@ var Rock4 = Rock.extend({
 }); // class Rock4
 
 var StartBanner = Entity.extend({
+	name: "StartBanner",
+	
 	constructor: function(options) {
 		var ctxt = this;
 		
@@ -312,6 +326,8 @@ var StartBanner = Entity.extend({
 
 
 var Jump = Entity.extend({
+	name: "Jump",
+	
 	contstructor: function(options) {
 		var ctxt = this;
 		
@@ -337,6 +353,8 @@ var Jump = Entity.extend({
 
 
 var JumpLeft = Jump.extend({
+	name: "JumpLeft",
+	
 	constructor: function(options) {
 		var ctxt = this;
 		
@@ -352,6 +370,9 @@ var JumpLeft = Jump.extend({
 }); // class JumpLeft
 
 var JumpRight = Jump.extend({
+	name: "JumpRight",
+	
+	
 	constructor: function(options) {
 		var ctxt = this;
 		
@@ -368,6 +389,8 @@ var JumpRight = Jump.extend({
 
 
 var JumpCenter = Jump.extend({
+	name: "JumpCenter",
+	
 	constructor: function(options) {
 		var ctxt = this;
 		

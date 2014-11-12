@@ -85,7 +85,7 @@ var GAME = BASE.extend({
 		'right3': 	{d: 32.35,  sound: 'snow-1'}
 	},
 	
-	speed: 10,
+	speed: 1,
 	level: 1,
 	nextLevelAt: 150,
 	score: 0,
@@ -97,10 +97,10 @@ var GAME = BASE.extend({
 	height: 0,
 	
 	lastObstAt: 0,
-	obstEvery: 100,
+	obstEvery: 500,
 	
 	lastInterAt: 0,
-	interEvery: 500,
+	interEvery: 1000,
 	
 	under: null,
 	between: null,
@@ -320,6 +320,12 @@ var GAME = BASE.extend({
 					break;
 				case 32:
 					ctxt.jump();
+					break;
+				case 38:
+					ctxt.speed++;
+					break;
+				case 40:
+					ctxt.speed--;
 					break;
 				case 80:
 					ctxt.pause();

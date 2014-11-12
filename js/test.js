@@ -1,55 +1,22 @@
-var GAME = Class.extend({
-	constructor: function() {
-		var ctxt = this;
-		
-		ctxt.$body = $('body');
-		ctxt.$game = $('#game');
-		
-		ctxt.boarder = new BOARDER();
-		
-		ctxt.$game.append(ctxt.boarder.$elem);
-		
-		$(document).on('keydown', function(e) {
-			if (e.which == 37) {
-				ctxt.boarder.steerTo('left');
-			} else if (e.which == 39) {
-				ctxt.boarder.steerTo('right');
-			}
-		});
-		
-	},
-});
-
-
-var BOARDER = Class.extend({
-	steer: 0,
-	
-	constructor: function() {
-		var ctxt = this;
-		
-		ctxt.$elem = $('<div></div>');
-		
-		ctxt.$elem
-			.addClass('boarder')
-			.attr('data-steer', ctxt.steer);
-	},
-	
-	steerTo: function(dir) {
-		var ctxt = this;
-		dir = dir === 'left' ? 'left' : 'right';
-		
-		if (dir === 'left') {
-			if (ctxt.steer < 3) { ctxt.steer++; }
-		} else {
-			if (ctxt.steer > -3) { ctxt.steer--; }
-		}
-		
-		ctxt.$elem.attr('data-steer', ctxt.steer);
-		
-	},
-	
-	_xyz: null
-});
-
-
-var game = new GAME();
+//var Class1 = Class.extend({
+//	constructor: function() {
+//		console.log('Class 1 constructor');
+//		Class1.super.constructor.call(this);
+//	}
+//});
+//
+//var Class2 = Class1.extend({
+//	constructor: function() {
+//		console.log('Class 2 constructor');
+//		Class2.super.constructor.call(this);
+//	}
+//});
+//
+//var Class3 = Class2.extend({
+//	constructor: function() {
+//		console.log('Class 3 constructor');
+//		Class3.super.constructor.call(this);
+//	}
+//});
+//
+//var c = new Class3();
