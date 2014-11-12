@@ -17,6 +17,7 @@ var Entity = Class.extend({
 	y: false,
 	width: false,
 	height: false,
+	alwaysUnder: false,
 	
 	colliders: [],
 	
@@ -79,7 +80,12 @@ var Entity = Class.extend({
 		ctxt.sprite.x = x;
 		ctxt.sprite.y = y;
 		
-		ctxt.game.stage.addChild(ctxt.sprite);
+		//ctxt.game.stage.addChild(ctxt.sprite);
+		if (ctxt.alwaysUnder) {
+			ctxt.game.under.addChild(ctxt.sprite);
+		} else {
+			ctxt.game.over.addChild(ctxt.sprite);
+		}
 	},
 	
 	checkCollisionAgainst: function(options) {
@@ -309,7 +315,9 @@ var Jump = Entity.extend({
 	contstructor: function(options) {
 		var ctxt = this;
 		
+		options.alwaysUnder = true;
 		Jump.super.constructor.call(this, options);
+		
 	},
 	
 	initSprite: function() {

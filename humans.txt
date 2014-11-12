@@ -16,4 +16,4 @@
 
     HTML5, CSS3
     Normalize.css, jQuery, Modernizr
-		CreateJS, Class.js
+		CreateJS, Class.js, 2D.js, Intersection.js

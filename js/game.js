@@ -2,7 +2,21 @@
 /* global createjs, BASE */
 var GAME = BASE.extend({
 	toHook: [
-		'#gameArea', '#game', '#touchSteer', window, 'body', '#preloader', '#spinner', '#progBox', '#progBar', '#distance', '#score', '#dispPercent', '#scorePanel', '#pauseState'
+		'#gameArea',
+		'#game',
+		'#touchSteer',
+		window,
+		'body',
+		'#preloader',
+		'#spinner',
+		'#progBox',
+		'#progBar',
+		'#distance',
+		'#score',
+		'#dispPercent',
+		'#scorePanel',
+		'#pauseState',
+		'#menuButton'
 	],
 	
 	playerVertPositionFactor: 0.2,
@@ -88,6 +102,9 @@ var GAME = BASE.extend({
 	lastInterAt: 0,
 	interEvery: 500,
 	
+	under: null,
+	between: null,
+	over: null,
 	
 	jumping: false,
 	
@@ -110,12 +127,17 @@ var GAME = BASE.extend({
 			.prependTo('#gameArea');
 		
 		ctxt.stage = new createjs.Stage("game");
+		
 		ctxt.width = ctxt.stage.canvas.width;
 		ctxt.height = ctxt.stage.canvas.height;
 		
 		ctxt.$window.resize(function(e) {
 			//console.log('resized');
 			ctxt.reflowUI();
+		});
+		
+		ctxt.$menuButton.on('click', function(e) {
+			ctxt.pause();
 		});
 		
 		ctxt.getManSize(function() {
@@ -197,6 +219,8 @@ var GAME = BASE.extend({
 		
 		ctxt.initHill();
 		
+		ctxt.initLayers();
+		
 		ctxt.initBoarder();
 		
 		ctxt.setupStart();
@@ -216,6 +240,23 @@ var GAME = BASE.extend({
 		});
 		//ctxt.stage.update();
 		
+	},
+	
+	initLayers: function() {
+		var ctxt = this;
+		ctxt.under = new createjs.Container();
+		ctxt.between = new createjs.Container();
+		ctxt.over = new createjs.Container();
+		
+		
+		//ctxt.over.x = ctxt.stage.x;
+		//ctxt.over.y = ctxt.stage.y;
+		//ctxt.over.width = ctxt.stage.canvas.width;
+		//ctxt.over.height = ctxt.stage.canvas.height;
+		
+		ctxt.stage.addChild(ctxt.under);
+		ctxt.stage.addChild(ctxt.between);
+		ctxt.stage.addChild(ctxt.over);
 	},
 	
 	pause: function() {
@@ -284,13 +325,6 @@ var GAME = BASE.extend({
 					ctxt.pause();
 					break;
 			}
-			//if (e.which == 37) {
-			//	ctxt.steer('left');
-			//} else if (e.which == 39) {
-			//	ctxt.steer('right');
-			//} else if (e.which == 32) {
-			//	ctxt.jump();
-			//}
 		});
 		
 		ctxt.touchHandling();
@@ -445,7 +479,8 @@ var GAME = BASE.extend({
 		ctxt.boarder.x = (ctxt.$game.width() / 2) - (ctxt.boarder.spriteSheet._frameWidth / 2);
 		ctxt.boarder.y = (ctxt.$game.height() * ctxt.playerVertPositionFactor) - (ctxt.boarder.spriteSheet._frameHeight / 2);
 		ctxt.boarder.framerate = 30;
-		ctxt.stage.addChild(ctxt.boarder);
+		//ctxt.stage.addChild(ctxt.boarder);
+		ctxt.between.addChild(ctxt.boarder);
 	},
 	
 	getAssetById: function(id) {
@@ -610,8 +645,14 @@ var GAME = BASE.extend({
 			e.y += speed.y;
 			
 			if (e.y + entity.spriteSheet._frameHeight < -100) {
-				ctxt.stage.removeChild(e);
+				//ctxt.stage.removeChild(e);
+				ctxt.under.removeChild(e);
 				ctxt.movingElements.splice(i, 1);
+			} else if (e.y + entity.spriteSheet._frameHeight < ctxt.boarder.y + ctxt.boarder.spriteSheet._frameHeight) {
+				if (!entity.alwaysUnder) {
+					ctxt.over.removeChild(e);
+					ctxt.under.addChild(e);
+				}
 			}
 			
 			entity.checkCollisionAgainst({pt1: boarder_pt1, pt2: boarder_pt2});
