@@ -2,7 +2,7 @@
 /* global createjs, BASE */
 var GAME = BASE.extend({
 	toHook: [
-		'#gameArea', '#game', '#touchSteer', window, 'body', '#preloader', '#spinner', '#progBox', '#progBar', '#distance', '#score', '#dispPercent'
+		'#gameArea', '#game', '#touchSteer', window, 'body', '#preloader', '#spinner', '#progBox', '#progBar', '#distance', '#score', '#dispPercent', '#scorePanel', '#pauseState'
 	],
 	
 	playerVertPositionFactor: 0.2,
@@ -218,6 +218,19 @@ var GAME = BASE.extend({
 		
 	},
 	
+	pause: function() {
+		var ctxt = this;
+		var pause = createjs.Ticker.getPaused();
+		pause = !pause;
+		createjs.Ticker.setPaused(pause);
+		if (pause) {
+			ctxt.$pauseState.show();
+		} else {
+			ctxt.$pauseState.hide();
+		}
+		
+	},
+	
 	setupStart: function() {
 		var ctxt = this;
 		
@@ -256,13 +269,28 @@ var GAME = BASE.extend({
 	initControls: function() {
 		var ctxt = this;
 		$(document).on('keydown', function(e) {
-			if (e.which == 37) {
-				ctxt.steer('left');
-			} else if (e.which == 39) {
-				ctxt.steer('right');
-			} else if (e.which == 32) {
-				ctxt.jump();
+			console.log('key ' + e.which);
+			switch (e.which) {
+				case 37:
+					ctxt.steer('left');
+					break;
+				case 39:
+					ctxt.steer('right');
+					break;
+				case 32:
+					ctxt.jump();
+					break;
+				case 80:
+					ctxt.pause();
+					break;
 			}
+			//if (e.which == 37) {
+			//	ctxt.steer('left');
+			//} else if (e.which == 39) {
+			//	ctxt.steer('right');
+			//} else if (e.which == 32) {
+			//	ctxt.jump();
+			//}
 		});
 		
 		ctxt.touchHandling();
@@ -307,7 +335,14 @@ var GAME = BASE.extend({
 		ctxt.stage.canvas.height = ctxt.baseline.height * scale;
 		ctxt.stage.update();
 		
+		ctxt.centerElem(ctxt.$scorePanel, true, false);
+		
 		ctxt.centerElem(ctxt.$game, true, true);
+		
+		ctxt.$scorePanel.css({
+			width: ctxt.baseline.width * scale,
+			top: $(ctxt.stage.canvas).css('top')
+		});
 		
 		ctxt.$touchSteer
 			.css({
@@ -595,7 +630,7 @@ var GAME = BASE.extend({
 			//ctxt.sweetMessage({message: "Level " + ctxt.level});
 		}
 		
-		
+		//ctxt.reflowUI();
 		ctxt.stage.update(event);
 	},
 	
