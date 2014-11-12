@@ -103,29 +103,106 @@ body {
 /* =Scoreboard
 ------------------------------------------------ */
 .sPanel{
-  background: rgba(101,103,106,0.90);
+/*  background: rgba(101,103,106,0.90);*/
   width: 100%;
-  height: 95px;
+/*  height: 95px;*/
 }
 .logo-col{
-	padding: 35px 10px 35px 35px;
+	padding: 10px 10px 0px 35px;
 	width: 180px;
 	float: left;
 }
+.score-data-row{
+	background: rgba(101,103,106,0.90);
+	width: 100%;
+	padding: 0px 30px;
+	height: 35px;
+}
+.score-info{
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+	float: right;
+	height: 35px;
+	position: relative;
+}
+.score-info li{
+	display: inline-block;
+	border-left: 1px solid #868e98;
+	padding: 0 15px;
+	height: 35px;
+	float: left;
+	line-height: 35px;
+}
+.score-info li img{
+	position: relative;
+	top: 15%;
+	-webkit-transform: translateY(-50%);
+	-ms-transform: translateY(-50%);
+	transform: translateY(-50%);
+	margin-right: 5px;
+}
+.icon-help{
+	margin: 5px 0 0 0;	
+}
 .wgLogo{
-/*	margin: 35px;*/
-/*	width: 100%;*/
+	width: 152px;
 }
 .txt-sPanel{
 	font-family: 'Source Sans Pro', sans-serif;
 	color: #DBD99F;
-	font-size: 20px;
+	font-size: 18px;
 	font-weight: 700;;
 }
 .help{
-	width: 30px;
-	padding: 10px 60px 0 15px;
+	width: 10%;
+	padding: 10px 20px 0 20px;  
 }
+
+
+
+
+/* =Lightbox
+------------------------------------------------ */
+.mfp-with-anim {
+  opacity: 0;
+  transition: all 0.2s ease-in-out;
+  transform: scale(0.8);
+}
+.mfp-zoom-in .mfp-with-anim {
+  opacity: 0;
+  transition: all 0.2s ease-in-out;
+  transform: scale(0.8);
+	z-index: 9999;
+}
+.mfp-zoom-in.mfp-bg {
+  opacity: 0;
+  transition: all 0.3s ease-out;
+}
+.mfp-zoom-in.mfp-ready .mfp-with-anim {
+  opacity: 1;
+  transform: scale(1);
+}
+.mfp-zoom-in.mfp-ready.mfp-bg {
+  opacity: 0.8;
+}
+.mfp-zoom-in.mfp-removing .mfp-with-anim {
+  transform: scale(0.8);
+  opacity: 0;
+}
+.mfp-zoom-in.mfp-removing.mfp-bg {
+  opacity: 0;
+}
+
+.white-popup {
+  position: relative;
+  background: #FFF;
+  padding: 25px;
+  width:auto;
+  max-width: 400px;
+  margin: 0 auto; 
+}
+
 
 
 /* debug */

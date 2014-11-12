@@ -1,5 +1,5 @@
 /* jshint quotmark:false, strict:false, eqeqeq:false */
-/* global createjs, BASE */
+/* global createjs, BASE, Point2D */
 var GAME = BASE.extend({
 	toHook: [
 		'#gameArea',
@@ -85,7 +85,7 @@ var GAME = BASE.extend({
 		'right3': 	{d: 32.35,  sound: 'snow-1'}
 	},
 	
-	speed: 1,
+	speed: 10,
 	level: 1,
 	nextLevelAt: 150,
 	score: 0,
@@ -620,7 +620,7 @@ var GAME = BASE.extend({
 	tick: function(event) {
 		var ctxt = this;
 		
-		if (event.paused) {
+		if (createjs.Ticker.getPaused()) {
 			return;
 		}
 		
@@ -639,9 +639,11 @@ var GAME = BASE.extend({
 		ctxt.$distance.html(parseInt(ctxt.distance) + "'");
 		ctxt.score += distThisTick * 10;
 		ctxt.$score.html(parseInt(ctxt.score));
-		
-		var boarder_pt1 = new Point2D(ctxt.boarder.x - speed.x, ctxt.boarder.y - speed.y);
-		var boarder_pt2 = new Point2D(ctxt.boarder.x, ctxt.boarder.y);
+
+		var boarderBottomCenterX = ctxt.boarder.x + ctxt.boarder.spriteSheet._frameWidth / 2;
+		var boarderBottomCenterY = ctxt.boarder.y + ctxt.boarder.spriteSheet._frameHeight;
+		var boarder_pt1 = new Point2D(boarderBottomCenterX - speed.x, boarderBottomCenterY - speed.y);
+		var boarder_pt2 = new Point2D(boarderBottomCenterX, boarderBottomCenterY);
 		
 		for (var i = ctxt.movingElements.length - 1; i >= 0; i--) {
 			var entity = ctxt.movingElements[i];

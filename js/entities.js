@@ -43,7 +43,7 @@ var Entity = Class.extend({
 			var pt_sets = options.points.split('-');
 			for (var i = 0, l = pt_sets.length; i < l; i++) {
 				var coords = pt_sets[i].split(',');
-				var pt = new Point2D(coords[0], coords[1]);
+				var pt = new Point2D(parseFloat(coords[0]), parseFloat(coords[1]));
 				pts.push(pt);
 			}
 			options.points = pts;
@@ -97,7 +97,7 @@ var Entity = Class.extend({
 		var pt2 = options.pt2;
 		
 		for (var i = 0, l = ctxt.colliders.length; i < l; i++) {
-			if (ctxt.colliders[i].checkCollision(pt1, pt2)) {
+			if (ctxt.colliders[i].checkCollision({pt1: pt1, pt2: pt2, entity: ctxt})) {
 
 				if (typeof ctxt.colliders[i].action) {
 					ctxt.colliders[i].action({game: ctxt.game});
@@ -140,7 +140,10 @@ var Tree = Obstacle.extend({
 		ctxt.addCollider({
 			points: "46,194-66,202-80,198-64,180",
 			action: function(o) {
-				console.log('Hit!', o);
+				console.log('Tree Hit!', typeof o !== "undefined" ? o : "");
+				// console.log("tree ctxt: ", ctxt);
+				// debugger;
+				// ctxt.colliders = [];
 			}
 		});
 		

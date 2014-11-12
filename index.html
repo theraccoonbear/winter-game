@@ -21,6 +21,7 @@
 	<link rel="stylesheet" href="css/styles.css">
 	<link rel="stylesheet" href="css/new.css">
 	<link rel="stylesheet" href="css/grid.css">
+	<link rel="stylesheet" href="css/magnific-popup/magnific-popup.css">
 	<script src="js/vendor/modernizr-2.6.2.min.js"></script>
 </head>
 
@@ -43,25 +44,27 @@
 
 	<div id="gameArea">
 		<div id="scorePanel" class="sPanel cf">
+			<div class="score-data-row cf">
+				<ul class="score-info">
+					<li><img src="images/txt-distance.svg" alt=""> <span id="distance" class="txt-sPanel">0</span></li>
+					<li><img src="images/txt-score.svg" alt=""> <span id="score" class="txt-sPanel">0</span></li>
+					<li id="inline-popups"><a href="#test-popup" data-effect="mfp-zoom-in"><img src="images/icon-help-sm.svg" alt="Help" class="icon-help"></a></li>
+				</ul>
+				<div style="clear: both;"></div>
+			</div><!-- /.score-data-row -->
+			<div style="clear: both;"></div>
 			<div class="logo-col">
-				<img src="images/wg-logo-wide.svg" alt="Winter Games" class="wgLogo">
-			</div>
-			<div class="grid-70 right">
-				<div class="row cf">
-					<!--<div class="grid-25 left"></div>-->
-					<div class="help right">
-						<img src="images/icon-help.svg" alt="Help" id="menuButton">
-					</div>
-					<div class="grid-15 right"><img src="images/txt-score.svg" alt=""><br><span id="score" class="txt-sPanel">0</span></div>
-					<div class="grid-15 right"><img src="images/txt-distance.svg" alt=""><br><span id="distance" class="txt-sPanel">0</span></div>
-					<div style="clear: both;"></div>
-				</div>
+				<img src="images/wg-logo-wide@2x.png" alt="Winter Games" class="wgLogo">
 			</div>
 		</div><!-- /#scorePanel -->
 		<h4 id="pauseState" class="screenCentered blinkMe">PAUSED</h4>
 		<div id="touchSteer">Slide to Steer</div>
 	</div>
 	<!-- /#gameArea -->
+	
+	<!-- Lightbox -->
+	<!-- Popup itself -->
+	<div id="test-popup" class="white-popup mfp-with-anim mfp-hide">You may put any HTML here. This is dummy copy. It is not meant to be read. It has been placed here solely to demonstrate the look and feel of finished, typeset text. Only for show. He who searches for meaning here will be sorely disappointed.</div>
 
 	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
 	<script>
@@ -77,6 +80,21 @@
 	<script src="js/game.js"></script>
 	<script src="js/entities.js"></script>
 	<script src="js/test.js"></script>
+	<script src="js/vendor/jquery.magnific-popup.min.js"></script>
+	<script>
+		// Inline popups
+		$('#inline-popups').magnificPopup({
+		  delegate: 'a',
+		  removalDelay: 500, //delay removal by X to allow out-animation
+		  callbacks: {
+			beforeOpen: function() {
+			   this.st.mainClass = this.st.el.attr('data-effect');
+			}
+		  },
+		  midClick: true // allow opening popup on middle mouse click. Always set it to true if you don't provide alternative source.
+		});
+
+	</script>
 
 
 	<!-- Google Analytics: change UA-XXXXX-X to be your site's ID. -->
