@@ -17,6 +17,37 @@ var CollisionTarget = Class.extend({
 		ctxt.points.push(pt);
 	},
 	
+	drawCollider: function(o) {
+		var ctxt = this;
+		var entity = o.entity;
+		
+		var graphics = new createjs.Graphics();
+		graphics.setStrokeStyle(1);
+		graphics.beginStroke("red");
+		
+		
+		var orig = ctxt.points[0].add(new Point2D(parseFloat(entity.sprite.x), parseFloat(entity.sprite.y)))
+		var next;
+		graphics.moveTo(orig.x, orig.y);
+		for (var i = 1, l = ctxt.points.length; i < l; i++) {
+			next = ctxt.points[i].add(new Point2D(parseFloat(entity.sprite.x), parseFloat(entity.sprite.y)))
+			graphics.lineTo(next.x, next.y);
+		}
+		
+		return graphics;
+		
+		//graphics.moveTo(50,(dataList[this.index].magnitude)*100); 
+		//graphics.lineTo(50,(dataList[(this.index)++].magnitude)*100);
+		
+		//createjs.Shape.call(this, graphics);
+		
+		//this.tick = function() {
+		//graphics.moveTo(100,(dataList[this.index].magnitude)*100); 
+		//graphics.lineTo(100,(dataList[(this.index)++].magnitude)*100);
+		//stage.addChild(graphics);
+		//};
+	},
+	
 	checkCollision: function(params) {
 		var ctxt = this;
 		var pt1 = params.pt1;

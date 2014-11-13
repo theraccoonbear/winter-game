@@ -128,6 +128,10 @@ var GAME = BASE.extend({
 			.attr('id', 'game')
 			.prependTo('#gameArea');
 		
+		if (localStorage.initSpeed) {
+			ctxt.speed = localStorage.initSpeed;
+		}
+		
 		ctxt.stage = new createjs.Stage("game");
 		
 		ctxt.width = ctxt.stage.canvas.width;
@@ -318,7 +322,7 @@ var GAME = BASE.extend({
 		
 		ctxt.groundImg = ctxt.loader.getResult("snow-surface-2");
 		ctxt.ground = new createjs.Shape();
-		ctxt.ground.graphics.beginBitmapFill(ctxt.groundImg).drawRect(-ctxt.groundImg.width, 0, dim.width + (2 * ctxt.groundImg.width), dim.height + ctxt.groundImg.height);
+		ctxt.ground.graphics.beginBitmapFill(ctxt.groundImg).drawRect(-ctxt.groundImg.width, -dim.height, dim.width + (2 * ctxt.groundImg.width), dim.height + ctxt.groundImg.height);
 		ctxt.ground.tileW = ctxt.groundImg.width;
 		ctxt.ground.tileH = ctxt.groundImg.height;
 		ctxt.ground.y = dim.height - ctxt.groundImg.height;
@@ -668,7 +672,10 @@ var GAME = BASE.extend({
 		for (var i = ctxt.movingElements.length - 1; i >= 0; i--) {
 			var entity = ctxt.movingElements[i];
 			var e = entity.sprite;
+			//var e = entity.container;
 
+			entity.drawBounds();
+			
 			e.x += speed.x;
 			e.y += speed.y;
 			
@@ -677,9 +684,11 @@ var GAME = BASE.extend({
 				ctxt.under.removeChild(e);
 				ctxt.movingElements.splice(i, 1);
 			} else if (e.y + entity.spriteSheet._frameHeight < ctxt.boarder.y + ctxt.boarder.spriteSheet._frameHeight) {
-				if (!entity.alwaysUnder) {
+				if (!entity.alwaysUnder && !entity.isUnder) {
 					ctxt.over.removeChild(e);
 					ctxt.under.addChild(e);
+					entity.isUnder = true;
+					console.log('moved ' + entity.name + ' to under');
 				}
 			}
 			

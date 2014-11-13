@@ -14,12 +14,14 @@ var Entity = Class.extend({
 	spriteAction: 'default',
 	spriteSheet: false,
 	sprite: false,
+	container: false,
 	
 	x: false,
 	y: false,
 	width: false,
 	height: false,
 	alwaysUnder: false,
+	isUnder: false,
 	
 	colliders: [],
 	
@@ -66,6 +68,14 @@ var Entity = Class.extend({
 		
 	},
 	
+	drawBounds: function() {
+		var ctxt = this;
+		for (var i = 0, l = ctxt.colliders.length; i < l; i++) {
+			var g = ctxt.colliders[0].drawCollider({entity: ctxt});
+			ctxt.game.stage.addChild(new createjs.Shape(g));
+		}
+	},
+	
 	placeSprite: function(o)  {
 		var ctxt = this;
 		var dim = ctxt.game.baseline;
@@ -73,21 +83,26 @@ var Entity = Class.extend({
 		o = typeof o === 'undefined' ? {} : o;
 		
 		ctxt.sprite = new createjs.Sprite(ctxt.spriteSheet, "default");
+		ctxt.container = new createjs.Container();
+		ctxt.container.addChild(ctxt.sprite);
+		
 		
 		var bufferAmount = 1;
 		var buffer = bufferAmount + 1;
 		var x = ctxt.x === false ? (Math.random() * dim.width * buffer) - (dim.width * (buffer / 2)) : ctxt.x;
-		var y = ctxt.y === false ? dim.height + 50 : ctxt.y;
+		var y = ctxt.y === false ? (dim.height + 50) * .8 : ctxt.y;
 		
 		ctxt.sprite.x = x;
-		ctxt.sprite.y = y;
-		
-		//ctxt.game.stage.addChild(ctxt.sprite);
+		ctxt.sprite.y = y;	
+	
 		if (ctxt.alwaysUnder) {
-			ctxt.game.under.addChild(ctxt.sprite);
+			ctxt.game.under.addChild(ctxt.container);
+			ctxt.isUnder = true;
 		} else {
-			ctxt.game.over.addChild(ctxt.sprite);
+			ctxt.game.over.addChild(ctxt.container);
 		}
+		
+		ctxt.drawBounds();
 	},
 	
 	checkCollisionAgainst: function(options) {
@@ -210,6 +225,8 @@ var Rock = Obstacle.extend({
 	
 	constructor: function(options) {
 		var ctxt = this;
+		
+		options.alwaysUnder = true;
 		
 		Rock.super.constructor.call(this, options);
 	},
@@ -359,11 +376,9 @@ var JumpLeft = Jump.extend({
 	name: "JumpLeft",
 	
 	constructor: function(options) {
-		var ctxt = this;
-		
-		ctxt.imageID = 'jump-left';
-		ctxt.width = 208;
-		ctxt.height = 150;
+		options.imageID = 'jump-left';
+		options.width = 208;
+		options.height = 150;
 		
 		JumpLeft.super.constructor.call(this, options);
 		
@@ -377,11 +392,9 @@ var JumpRight = Jump.extend({
 	
 	
 	constructor: function(options) {
-		var ctxt = this;
-		
-		ctxt.imageID = 'jump-right';
-		ctxt.width = 220;
-		ctxt.height = 145;
+		options.imageID = 'jump-right';
+		options.width = 220;
+		options.height = 145;
 		
 		JumpRight.super.constructor.call(this, options);
 		
@@ -395,11 +408,9 @@ var JumpCenter = Jump.extend({
 	name: "JumpCenter",
 	
 	constructor: function(options) {
-		var ctxt = this;
-		
-		ctxt.imageID = 'jump-center';
-		ctxt.width = 220;
-		ctxt.height = 156;
+		options.imageID = 'jump-center';
+		options.width = 220;
+		options.height = 156;
 		
 		JumpCenter.super.constructor.call(this, options);
 		
