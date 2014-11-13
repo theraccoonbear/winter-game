@@ -24,7 +24,7 @@ var GAME = BASE.extend({
 	touchTargets: ['#touchSteer'],
 	
 	manifest: [
-		{src:"images/boarder-small-2.png", id:"boarder-small"},
+		{src:"images/boarder-small-3.png", id:"boarder-small"},
 		{src:"images/obstacles/rock-1.png", id:"rock-1"},
 		{src:"images/obstacles/rock-2.png", id:"rock-2"},
 		{src:"images/obstacles/rock-3.png", id:"rock-3"},
@@ -113,6 +113,8 @@ var GAME = BASE.extend({
 	over: null,
 	
 	jumping: false,
+	crashing: false,
+	stopping: false,
 	
 	sounds: {},
 	
@@ -338,7 +340,7 @@ var GAME = BASE.extend({
 	initControls: function() {
 		var ctxt = this;
 		$(document).on('keydown', function(e) {
-			//console.log('key ' + e.which);
+			console.log('key ' + e.which);
 			switch (e.which) {
 				case 37:
 					ctxt.steer('left');
@@ -348,6 +350,9 @@ var GAME = BASE.extend({
 					break;
 				case 32:
 					ctxt.jump();
+					break;
+				case 67:
+					ctxt.crash();
 					break;
 				case 38:
 					ctxt.speed++;
@@ -371,7 +376,7 @@ var GAME = BASE.extend({
 	
 	jump: function() {
 		var ctxt = this;
-		if (ctxt.jumping) {
+		if (ctxt.jumping || ctxt.crashing || ctxt.stopping) {
 			return;
 		}
 		ctxt.jumping = true;
@@ -380,7 +385,10 @@ var GAME = BASE.extend({
 	},
 
 	crash: function () {
-		console.log("Player crash!");
+		var ctxt = this;
+		ctxt.crashing = true;
+		var dirName = ctxt.steerDirections[ctxt.direction];
+		ctxt.boarder.gotoAndPlay(dirName + "-crash");
 	},
 	
 	reflowUI: function() {
@@ -497,9 +505,12 @@ var GAME = BASE.extend({
 		
 		var animations = {};
 		
+		var framesPerDir = 26;
+		
 		$.each(ctxt.steerDirections, function(i, d) {
-			animations[d] = [(i * 13), (i*13)+1, d, .01];
-			animations[d + '-jump'] = [i * 13, (i * 13) + 12, d, 0.5];
+			animations[d] = [(i * framesPerDir), (i * framesPerDir) + 1, d, .01];
+			animations[d + '-jump'] = [i * framesPerDir, (i * framesPerDir) + 12, d, 0.5];
+			animations[d + '-crash'] = [(i * framesPerDir) + 13, (i * framesPerDir) + 25, false, 0.5];
 		});
 		
 		//console.log(animations);
@@ -512,7 +523,11 @@ var GAME = BASE.extend({
 		
 		ctxt.boarder = new createjs.Sprite(ctxt.sprites.boarder, "straight");
 		ctxt.boarder.on('animationend', function() {
+			if (ctxt.crashing) {
+				ctxt.stopping = true;
+			}
 			ctxt.jumping = false;
+			ctxt.crashing = false;
 		});
 		ctxt.boarder.x = (ctxt.$game.width() / 2) - (ctxt.boarder.spriteSheet._frameWidth / 2);
 		ctxt.boarder.y = (ctxt.$game.height() * ctxt.playerVertPositionFactor) - (ctxt.boarder.spriteSheet._frameHeight / 2);
@@ -739,22 +754,32 @@ var GAME = BASE.extend({
 		
 		
 		t = ctxt.distance;
-		var obst_delta = t - ctxt.lastObstAt;
-		if (obst_delta >= ctxt.obstEvery) {
-			ctxt.addEntity({interactives: false, obstacles: true});
-			ctxt.lastObstAt = t;
+		
+		if (ctxt.stopping) {
+			ctxt.speed -= .1;
+			if (ctxt.speed <= 0) {
+				createjs.Ticker.setPaused(true);
+			}
 		}
 		
-		var inter_delta = t - ctxt.lastInterAt;
-		if (inter_delta >= ctxt.interEvery) {
-			ctxt.addEntity({interactives: true, obstacles: false});
-			ctxt.lastInterAt = t;
-		}
-		
-		if (ctxt.distance > ctxt.nextLevelAt) {
-			//ctxt.nextLevelAt *= 2;
-			//ctxt.level++;
-			//ctxt.sweetMessage({message: "Level " + ctxt.level});
+		if (t > 20) {
+			var obst_delta = t - ctxt.lastObstAt;
+			if (obst_delta >= ctxt.obstEvery) {
+				ctxt.addEntity({interactives: false, obstacles: true});
+				ctxt.lastObstAt = t;
+			}
+			
+			var inter_delta = t - ctxt.lastInterAt;
+			if (inter_delta >= ctxt.interEvery) {
+				ctxt.addEntity({interactives: true, obstacles: false});
+				ctxt.lastInterAt = t;
+			}
+			
+			if (ctxt.distance > ctxt.nextLevelAt) {
+				//ctxt.nextLevelAt *= 2;
+				//ctxt.level++;
+				//ctxt.sweetMessage({message: "Level " + ctxt.level});
+			}
 		}
 		
 		//ctxt.reflowUI();
