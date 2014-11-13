@@ -414,9 +414,16 @@ var JumpLeft = Jump.extend({
 	
 	constructor: function(options) {
 		var ctxt = this;
+<<<<<<< Updated upstream
 		options.imageID = 'jump-left';
 		options.width = 208;
 		options.height = 150;
+=======
+		
+		ctxt.imageID = 'jump-left';
+		ctxt.width = 264;
+		ctxt.height = 190;
+>>>>>>> Stashed changes
 		
 		JumpLeft.super.constructor.call(this, options);
 		
@@ -449,9 +456,17 @@ var JumpRight = Jump.extend({
 	
 	
 	constructor: function(options) {
+<<<<<<< Updated upstream
 		options.imageID = 'jump-right';
 		options.width = 220;
 		options.height = 145;
+=======
+		var ctxt = this;
+		
+		ctxt.imageID = 'jump-right';
+		ctxt.width = 264;
+		ctxt.height = 190;
+>>>>>>> Stashed changes
 		
 		JumpRight.super.constructor.call(this, options);
 		
@@ -465,9 +480,17 @@ var JumpCenter = Jump.extend({
 	name: "JumpCenter",
 	
 	constructor: function(options) {
+<<<<<<< Updated upstream
 		options.imageID = 'jump-center';
 		options.width = 220;
 		options.height = 156;
+=======
+		var ctxt = this;
+		
+		ctxt.imageID = 'jump-center';
+		ctxt.width = 280;
+		ctxt.height = 198;
+>>>>>>> Stashed changes
 		
 		JumpCenter.super.constructor.call(this, options);
 		
