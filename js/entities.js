@@ -21,7 +21,7 @@ var Entity = Class.extend({
 	width: false,
 	height: false,
 	alwaysUnder: false,
-	playerPassed: false,
+	isUnder: false,
 	
 	colliders: [],
 	
@@ -113,16 +113,14 @@ var Entity = Class.extend({
 		var y = ctxt.y === false ? (dim.height + 50) * 1 : ctxt.y;
 		
 		ctxt.sprite.x = x;
-		ctxt.sprite.y = y;
-		ctxt.sprite.entity = ctxt;
+		ctxt.sprite.y = y;	
 	
-		ctxt.game.stage.addChild(ctxt.container);
-		//if (ctxt.alwaysUnder) {
-		//	ctxt.game.under.addChild(ctxt.container);
-		//	ctxt.isUnder = true;
-		//} else {
-		//	ctxt.game.over.addChild(ctxt.container);
-		//}
+		if (ctxt.alwaysUnder) {
+			ctxt.game.under.addChild(ctxt.container);
+			ctxt.isUnder = true;
+		} else {
+			ctxt.game.over.addChild(ctxt.container);
+		}
 		
 		ctxt.drawBounds();
 	},
@@ -417,8 +415,8 @@ var JumpLeft = Jump.extend({
 	constructor: function(options) {
 		var ctxt = this;
 		options.imageID = 'jump-left';
-		options.width = 264;
-		options.height = 190;
+		options.width = 208;
+		options.height = 150;
 		
 		JumpLeft.super.constructor.call(this, options);
 		
@@ -452,8 +450,8 @@ var JumpRight = Jump.extend({
 	
 	constructor: function(options) {
 		options.imageID = 'jump-right';
-		options.width = 264;
-		options.height = 190;
+		options.width = 220;
+		options.height = 145;
 		
 		JumpRight.super.constructor.call(this, options);
 		
@@ -468,8 +466,8 @@ var JumpCenter = Jump.extend({
 	
 	constructor: function(options) {
 		options.imageID = 'jump-center';
-		options.width = 280;
-		options.height = 198;
+		options.width = 220;
+		options.height = 156;
 		
 		JumpCenter.super.constructor.call(this, options);
 		
