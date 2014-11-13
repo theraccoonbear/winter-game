@@ -40,6 +40,8 @@ var GAME = BASE.extend({
 		{src:"images/interaction/jump-right.jpg", id:"jump-right"},
 
 		{src:"images/snow-bg.jpg", id:"snow-surface"},
+		{src:"images/snow-bg-2.jpg", id:"snow-surface-2"},
+		
 		{src:"sounds/snow-1.xogg", id: "snow-1", type: createjs.LoadQueue.BINARY},
 		{src:"sounds/snow-2.xogg", id: "snow-2", type: createjs.LoadQueue.BINARY},
 		{src:"sounds/snow-3.xogg", id: "snow-3", type: createjs.LoadQueue.BINARY},
@@ -314,7 +316,7 @@ var GAME = BASE.extend({
 		
 		var dim = ctxt.dimensions();
 		
-		ctxt.groundImg = ctxt.loader.getResult("snow-surface");
+		ctxt.groundImg = ctxt.loader.getResult("snow-surface-2");
 		ctxt.ground = new createjs.Shape();
 		ctxt.ground.graphics.beginBitmapFill(ctxt.groundImg).drawRect(-ctxt.groundImg.width, 0, dim.width + (2 * ctxt.groundImg.width), dim.height + ctxt.groundImg.height);
 		ctxt.ground.tileW = ctxt.groundImg.width;
