@@ -40,10 +40,10 @@ var GAME = BASE.extend({
 		{src:"images/interaction/jump-right.jpg", id:"jump-right"},
 
 		{src:"images/snow-bg.jpg", id:"snow-surface"},
-		{src:"sounds/snow-1.ogg", id: "snow-1", type: createjs.LoadQueue.SOUND},
-		{src:"sounds/snow-2.ogg", id: "snow-2", type: createjs.LoadQueue.SOUND},
-		{src:"sounds/snow-3.ogg", id: "snow-3", type: createjs.LoadQueue.SOUND},
-		{src:"sounds/snow-4.ogg", id: "snow-4", type: createjs.LoadQueue.SOUND}
+		{src:"sounds/snow-1.xogg", id: "snow-1", type: createjs.LoadQueue.BINARY},
+		{src:"sounds/snow-2.xogg", id: "snow-2", type: createjs.LoadQueue.BINARY},
+		{src:"sounds/snow-3.xogg", id: "snow-3", type: createjs.LoadQueue.BINARY},
+		{src:"sounds/snow-4.xogg", id: "snow-4", type: createjs.LoadQueue.BINARY}
 	],
 	
 	totalBytesLoaded: 0,
@@ -190,7 +190,7 @@ var GAME = BASE.extend({
 		var total_percent = ((ctxt.totalBytesLoaded / ctxt.manifestSizes.total) * 100).toFixed(2) + '%';
 		ctxt.updateProgress();
 		
-		//console.log('PROGRESS', ev.item.id, ev.item.src, file_percent, total_percent);
+		console.log('PROGRESS', ev.item.id, ev.item.src, file_percent, total_percent);
 	},
 	
 	fileComplete: function(ev) {
@@ -298,7 +298,15 @@ var GAME = BASE.extend({
 	initSound: function() {
 		var ctxt = this;
 		
-		//ctxt.snowSound = createjs.Sound.play('snow-4');
+		//console.log(ctxt.base64ArrayBuffer(ctxt.loader.getResult('snow-4')));
+		$.each(ctxt.manifest, function(i, o) {
+			if (/\.xogg/.test(o.src) ) {
+				console.log(o);
+				//createjs.Sound.registerSound('data:audio/ogg;charset=utf-8;base64,' + ctxt.base64ArrayBuffer(ctxt.loader.getResult(o.id)), o.id);
+			}
+		});
+		
+		ctxt.snowSound = createjs.Sound.play('snow-4');
 	},
 	
 	initHill: function() {
