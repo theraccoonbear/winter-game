@@ -103,10 +103,10 @@ var GAME = BASE.extend({
 	height: 0,
 	
 	lastObstAt: 0,
-	obstEvery: 100,
+	obstEvery: 2,
 	
 	lastInterAt: 0,
-	interEvery: 500,
+	interEvery: 30,
 	
 	under: null,
 	between: null,
@@ -200,7 +200,7 @@ var GAME = BASE.extend({
 		var total_percent = ((ctxt.totalBytesLoaded / ctxt.manifestSizes.total) * 100).toFixed(2) + '%';
 		ctxt.updateProgress();
 		
-		console.log('PROGRESS', ev.item.id, ev.item.src, file_percent, total_percent);
+		//console.log('PROGRESS', ev.item.id, ev.item.src, file_percent, total_percent);
 	},
 	
 	fileComplete: function(ev) {
@@ -264,9 +264,9 @@ var GAME = BASE.extend({
 	
 	initLayers: function() {
 		var ctxt = this;
-		ctxt.under = new createjs.Container();
-		ctxt.between = new createjs.Container();
-		ctxt.over = new createjs.Container();
+		//ctxt.under = new createjs.Container();
+		//ctxt.between = new createjs.Container();
+		//ctxt.over = new createjs.Container();
 		
 		
 		//ctxt.over.x = ctxt.stage.x;
@@ -274,9 +274,9 @@ var GAME = BASE.extend({
 		//ctxt.over.width = ctxt.stage.canvas.width;
 		//ctxt.over.height = ctxt.stage.canvas.height;
 		
-		ctxt.stage.addChild(ctxt.under);
-		ctxt.stage.addChild(ctxt.between);
-		ctxt.stage.addChild(ctxt.over);
+		//ctxt.stage.addChild(ctxt.under);
+		//ctxt.stage.addChild(ctxt.between);
+		//ctxt.stage.addChild(ctxt.over);
 	},
 	
 	pause: function() {
@@ -311,7 +311,7 @@ var GAME = BASE.extend({
 		//console.log(ctxt.base64ArrayBuffer(ctxt.loader.getResult('snow-4')));
 		$.each(ctxt.manifest, function(i, o) {
 			if (/\.xogg/.test(o.src) ) {
-				console.log(o);
+				//console.log(o);
 				//createjs.Sound.registerSound('data:audio/ogg;charset=utf-8;base64,' + ctxt.base64ArrayBuffer(ctxt.loader.getResult(o.id)), o.id);
 			}
 		});
@@ -514,8 +514,8 @@ var GAME = BASE.extend({
 		ctxt.boarder.y = (ctxt.$game.height() * ctxt.playerVertPositionFactor) - (ctxt.boarder.spriteSheet._frameHeight / 2);
         
 		ctxt.boarder.framerate = 30;
-		//ctxt.stage.addChild(ctxt.boarder);
-		ctxt.between.addChild(ctxt.boarder);
+		ctxt.stage.addChild(ctxt.boarder);
+		//ctxt.between.addChild(ctxt.boarder);
 	},
 	
 	getAssetById: function(id) {
@@ -646,6 +646,30 @@ var GAME = BASE.extend({
 		return entity;
 	},
 	
+	spriteSorter: function(obj1, obj2, ctxt) {
+		
+		if (obj1 == ctxt.ground) {
+			return -1
+		} else if (obj2 == ctxt.ground) {
+			return 1;
+		}
+		
+		if (obj1.entity && obj1.entity.alwaysUnder) {
+			return -1;
+		} else if (obj2.entity && obj2.entity.alwaysUnder) {
+			return 1;
+		}
+		
+		if (obj1.y + obj1.tileH > ctxt.boarder.y + ctxt.boarder.spriteSheet._frameHeight) { return 1; }
+		if (obj1.y + obj2.tileH  < ctxt.boarder.y + ctxt.boarder.spriteSheet._frameHeight) { return -1; }
+		return 0;
+	},
+	
+	doSorting: function() {
+		var ctxt = this;
+		ctxt.stage.sortChildren(function(a, b, o) { return ctxt.spriteSorter(a, b, ctxt); });
+	},
+	
 	tick: function(event) {
 		var ctxt = this;
 		
@@ -674,6 +698,8 @@ var GAME = BASE.extend({
 		var boarder_pt1 = new Point2D(boarderBottomCenterX - speed.x, boarderBottomCenterY - speed.y);
 		var boarder_pt2 = new Point2D(boarderBottomCenterX, boarderBottomCenterY);
 		
+		var performSorting = false;
+		
 		for (var i = ctxt.movingElements.length - 1; i >= 0; i--) {
 			var entity = ctxt.movingElements[i];
 			var e = entity.sprite;
@@ -685,22 +711,30 @@ var GAME = BASE.extend({
 			e.y += speed.y;
 			
 			if (e.y + entity.spriteSheet._frameHeight < -100) {
-				//ctxt.stage.removeChild(e);
-				ctxt.under.removeChild(e);
+				ctxt.stage.removeChild(e);
+				//ctxt.under.removeChild(e);
 				ctxt.movingElements.splice(i, 1);
-			} else if (e.y + entity.spriteSheet._frameHeight < ctxt.boarder.y + ctxt.boarder.spriteSheet._frameHeight) {
-				if (!entity.alwaysUnder && !entity.isUnder) {
-					ctxt.over.removeChild(e);
-					ctxt.under.addChild(e);
-					entity.isUnder = true;
-					//console.log('moved ' + entity.name + ' to under');
-				}
+			} else if (e.y + entity.spriteSheet._frameHeight < ctxt.boarder.y + ctxt.boarder.spriteSheet._frameHeight && !entity.playerPassed) {
+				ctxt.movingElements[i].playerPassed = true;
+				performSorting = true;
+				//if (!entity.alwaysUnder && !entity.isUnder) {
+				//	//ctxt.over.removeChild(e);
+				//	//ctxt.under.addChild(e);
+				//	//entity.isUnder = true;
+				//	//console.log('moved ' + entity.name + ' to under');
+				//}
 			}
 			
 			entity.checkCollisionAgainst({pt1: boarder_pt1, pt2: boarder_pt2});
 			
 		}
 		
+		if (performSorting) {
+			ctxt.doSorting();
+		}
+		
+		
+		t = ctxt.distance;
 		var obst_delta = t - ctxt.lastObstAt;
 		if (obst_delta >= ctxt.obstEvery) {
 			ctxt.addEntity({interactives: false, obstacles: true});

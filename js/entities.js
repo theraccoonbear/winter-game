@@ -21,7 +21,7 @@ var Entity = Class.extend({
 	width: false,
 	height: false,
 	alwaysUnder: false,
-	isUnder: false,
+	playerPassed: false,
 	
 	colliders: [],
 	
@@ -113,14 +113,16 @@ var Entity = Class.extend({
 		var y = ctxt.y === false ? (dim.height + 50) * 1 : ctxt.y;
 		
 		ctxt.sprite.x = x;
-		ctxt.sprite.y = y;	
+		ctxt.sprite.y = y;
+		ctxt.sprite.entity = ctxt;
 	
-		if (ctxt.alwaysUnder) {
-			ctxt.game.under.addChild(ctxt.container);
-			ctxt.isUnder = true;
-		} else {
-			ctxt.game.over.addChild(ctxt.container);
-		}
+		ctxt.game.stage.addChild(ctxt.container);
+		//if (ctxt.alwaysUnder) {
+		//	ctxt.game.under.addChild(ctxt.container);
+		//	ctxt.isUnder = true;
+		//} else {
+		//	ctxt.game.over.addChild(ctxt.container);
+		//}
 		
 		ctxt.drawBounds();
 	},
