@@ -54,26 +54,46 @@ var Entity = Class.extend({
 		ctxt.colliders.push(new CollisionTarget(options));
 	},
 	
+	getColliderByName: function(o) {
+		var ctxt = this;
+		var name = o.name;
+		
+		var ret = false;
+		
+		for (var i = 0, l = ctxt.colliders.length; i < l; i++) {
+			if (ctxt.colliders[i].name == name) {
+				ret = ctxt.colliders[i];
+				break;
+			}
+		}
+		
+		return ret;
+	},
+	
 	constructor: function(options) {
 		var ctxt = this;
 		for (var p in options) {
 			this[p] = options[p];
 		}
 		
-		if (typeof ctxt.initSprite === 'function') {
-			ctxt.initSprite();
-			ctxt.spriteSheet.framerate = 30;
-			ctxt.placeSprite();
+		this.colliders = [];
+		
+		if (typeof this.initSprite === 'function') {
+			this.initSprite();
+			this.spriteSheet.framerate = 30;
+			this.placeSprite();
 		}
 		
 	},
 	
 	drawBounds: function() {
-		var ctxt = this;
-		for (var i = 0, l = ctxt.colliders.length; i < l; i++) {
-			var g = ctxt.colliders[0].drawCollider({entity: ctxt});
-			ctxt.game.stage.addChild(new createjs.Shape(g));
-		}
+		//var ctxt = this;
+		//if (ctxt.colliders.length > 0) {
+		//	for (var i = 0, l = ctxt.colliders.length; i < l; i++) {
+		//		var g = ctxt.colliders[0].drawCollider({entity: ctxt});
+		//		ctxt.container.addChild(new createjs.Shape(g));
+		//	}
+		//}
 	},
 	
 	placeSprite: function(o)  {
@@ -90,7 +110,7 @@ var Entity = Class.extend({
 		var bufferAmount = 1;
 		var buffer = bufferAmount + 1;
 		var x = ctxt.x === false ? (Math.random() * dim.width * buffer) - (dim.width * (buffer / 2)) : ctxt.x;
-		var y = ctxt.y === false ? (dim.height + 50) * .8 : ctxt.y;
+		var y = ctxt.y === false ? (dim.height + 50) * 1 : ctxt.y;
 		
 		ctxt.sprite.x = x;
 		ctxt.sprite.y = y;	
@@ -147,18 +167,17 @@ var Tree = Obstacle.extend({
 	
 	constructor: function(options) {
 		var ctxt = this;
+		
 		options.width = 170;
 		options.height = 267;
 		
 		Tree.super.constructor.call(this, options);
 		
-		ctxt.addCollider({
-			points: "46,194-66,202-80,198-64,180",
+		this.addCollider({
+			points: "46,194-66,202-80,198-64,180-46,194",
 			action: function(o) {
 				console.log('Tree Hit!', typeof o !== "undefined" ? o : "");
-				// console.log("tree ctxt: ", ctxt);
-				// debugger;
-				// ctxt.colliders = [];
+				ctxt.game.jump();
 			}
 		});
 		
@@ -194,6 +213,15 @@ var Stump = Obstacle.extend({
 		options.width = 100;
 		options.height = 84;
 		Tree.super.constructor.call(this, options);
+		
+		this.addCollider({
+			points: "4,45-12,50-13,64-22,66-35,60-45,56-56,55-47,41-28,37-14,36-4,45",
+			action: function(o) {
+				console.log('Stump Hit!', typeof o !== "undefined" ? o : "");
+				ctxt.game.jump();
+			}
+		});
+		
 	},
 	
 	initSprite: function() {
@@ -256,11 +284,19 @@ var Rock1 = Rock.extend({
 	constructor: function(options) {
 		var ctxt = this;
 		
-		ctxt.width = 111;
-		ctxt.height = 94;
-		ctxt.imageID = 'rock-1';
+		options.width = 111;
+		options.height = 94;
+		options.imageID = 'rock-1';
 		
 		Rock1.super.constructor.call(this, options);
+		
+		this.addCollider({
+			points: "20,7-12,15-8,24-4,30-6,48-23,64-34,70-59,75-72,67-78,54-74,39-70,29-76,20-70,16-64,17-59,6-45,2-34,6-20,7",
+			action: function(o) {
+				console.log('Rock 1 Hit!', typeof o !== "undefined" ? o : "");
+				ctxt.game.jump();
+			}
+		});
 		
 	},
 	
@@ -273,9 +309,9 @@ var Rock2 = Rock.extend({
 	constructor: function(options) {
 		var ctxt = this;
 		
-		ctxt.width = 109;
-		ctxt.height = 88;
-		ctxt.imageID = 'rock-2';
+		options.width = 109;
+		options.height = 88;
+		options.imageID = 'rock-2';
 		
 		Rock2.super.constructor.call(this, options);
 		
@@ -290,9 +326,9 @@ var Rock3 = Rock.extend({
 	constructor: function(options) {
 		var ctxt = this;
 		
-		ctxt.width = 105;
-		ctxt.height = 76;
-		ctxt.imageID = 'rock-3';
+		options.width = 105;
+		options.height = 76;
+		options.imageID = 'rock-3';
 		
 		Rock3.super.constructor.call(this, options);
 		
@@ -307,9 +343,9 @@ var Rock4 = Rock.extend({
 	constructor: function(options) {
 		var ctxt = this;
 		
-		ctxt.width = 98;
-		ctxt.height = 89;
-		ctxt.imageID = 'rock-4';
+		options.width = 98;
+		options.height = 89;
+		options.imageID = 'rock-4';
 		
 		Rock4.super.constructor.call(this, options);
 		
@@ -324,9 +360,10 @@ var StartBanner = Entity.extend({
 	constructor: function(options) {
 		var ctxt = this;
 		
+		options.collidable = false;
 		StartBanner.super.constructor.call(this, options);
 		
-		ctxt.collidable = false;
+		
 	},
 	
 	initSprite: function() {
@@ -376,11 +413,31 @@ var JumpLeft = Jump.extend({
 	name: "JumpLeft",
 	
 	constructor: function(options) {
+		var ctxt = this;
 		options.imageID = 'jump-left';
 		options.width = 208;
 		options.height = 150;
 		
 		JumpLeft.super.constructor.call(this, options);
+		
+		this.addCollider({
+			points: "85,23-198,52",
+			name: 'jump-edge',
+			disables: ['crash-edges'],
+			action: function(o) {
+				console.log('Launch!');
+				ctxt.game.jump();
+			}
+		});
+		
+		this.addCollider({
+			points: "85,23-15,86-154,122-198,52",
+			name: 'crash-edges',
+			action: function(o) {
+				console.log('Crash');
+				//ctxt.game.jump();
+			}
+		});
 		
 	},
 	
@@ -419,3 +476,23 @@ var JumpCenter = Jump.extend({
 	_xyz: null
 }); // class JumpCenter
 
+
+var Sinistar = Obstacle.extend({
+	constructor: function(options) {
+		Sinistar.super.constructor.call(this, options);
+	},
+	
+	initSprite: function() {
+		var ctxt = this;
+		
+		ctxt.spriteSheet = new createjs.SpriteSheet({
+			"images": [ctxt.game.loader.getResult('sinistar')],
+			"frames": {"width": 480, "height": 360},
+			"animations": {
+				"default": [0,17,'default',1]
+			}
+		});
+	},
+	
+	_xyz: null
+});

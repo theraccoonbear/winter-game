@@ -39,6 +39,8 @@ var GAME = BASE.extend({
 		{src:"images/interaction/jump-left.jpg", id:"jump-left"},
 		{src:"images/interaction/jump-right.jpg", id:"jump-right"},
 
+		{src:"images/misc/sinistar-sprite.gif", id:"sinistar"},
+		
 		{src:"images/snow-bg.jpg", id:"snow-surface"},
 		{src:"images/snow-bg-2.jpg", id:"snow-surface-2"},
 		
@@ -72,6 +74,8 @@ var GAME = BASE.extend({
 		{id: 'rock-4', cls: "Rock4"},
 		{id: 'tree', cls: "Tree"},
 		{id: 'stump', cls: "Stump"}
+		//,
+		//{id: 'sinistar', cls: "Sinistar"}
 	],
 	
 	bonuses: ['gate', 'coin'],
@@ -99,10 +103,10 @@ var GAME = BASE.extend({
 	height: 0,
 	
 	lastObstAt: 0,
-	obstEvery: 500,
+	obstEvery: 100,
 	
 	lastInterAt: 0,
-	interEvery: 1000,
+	interEvery: 500,
 	
 	under: null,
 	between: null,
@@ -334,7 +338,7 @@ var GAME = BASE.extend({
 	initControls: function() {
 		var ctxt = this;
 		$(document).on('keydown', function(e) {
-			console.log('key ' + e.which);
+			//console.log('key ' + e.which);
 			switch (e.which) {
 				case 37:
 					ctxt.steer('left');
@@ -674,7 +678,7 @@ var GAME = BASE.extend({
 			var e = entity.sprite;
 			//var e = entity.container;
 
-			entity.drawBounds();
+			//entity.drawBounds();
 			
 			e.x += speed.x;
 			e.y += speed.y;
@@ -688,7 +692,7 @@ var GAME = BASE.extend({
 					ctxt.over.removeChild(e);
 					ctxt.under.addChild(e);
 					entity.isUnder = true;
-					console.log('moved ' + entity.name + ' to under');
+					//console.log('moved ' + entity.name + ' to under');
 				}
 			}
 			

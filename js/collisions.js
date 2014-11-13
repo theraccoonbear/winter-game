@@ -3,6 +3,9 @@
 var CollisionTarget = Class.extend({
 	points: [],
 	action: null,
+	enabled: true,
+	disables: [],
+	name: 'unnamed',
 	
 	constructor: function(options) {
 		var ctxt = this;
@@ -58,16 +61,24 @@ var CollisionTarget = Class.extend({
 		var transformedPoints = [];
 		var i;
 
+		if (!ctxt.enabled) {
+			return;
+		}
+		
 		for (i = 0; i < numPoints; i++) {
 			transformedPoints.push(ctxt.points[i].add(new Point2D(parseFloat(entity.sprite.x), parseFloat(entity.sprite.y))));
 		}
 
 		result = Intersection.intersectLinePolygon(pt1, pt2, transformedPoints);
 		if (result.status !== 'No Intersection') {
-			// console.log("CollisionTarget result: ", result);
-			// console.log("CollisionTarget ctxt.points: ", ctxt.points);
-			// console.log("CollisionTarget transformedPoints: ", transformedPoints);
-			// console.log("CollisionTarget boarder line coords: ", pt1, pt2);
+			for (var i = 0, l = ctxt.disables.length; i < l; i++) {
+				var name = ctxt.disables[i];
+				var col = entity.getColliderByName({name: name});
+				if (col !== false) {
+					console.log('disabled collider: ' + name);
+					col.enabled = false;
+				}
+			}
 
 			if (typeof ctxt.action === "function") {
 				ctxt.action();
