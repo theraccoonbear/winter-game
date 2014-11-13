@@ -177,7 +177,7 @@ var Tree = Obstacle.extend({
 			points: "46,194-66,202-80,198-64,180-46,194",
 			action: function(o) {
 				console.log('Tree Hit!', typeof o !== "undefined" ? o : "");
-				ctxt.game.jump();
+				ctxt.game.crash();
 			}
 		});
 		
@@ -218,7 +218,7 @@ var Stump = Obstacle.extend({
 			points: "4,45-12,50-13,64-22,66-35,60-45,56-56,55-47,41-28,37-14,36-4,45",
 			action: function(o) {
 				console.log('Stump Hit!', typeof o !== "undefined" ? o : "");
-				ctxt.game.jump();
+				ctxt.game.crash();
 			}
 		});
 		
@@ -294,7 +294,7 @@ var Rock1 = Rock.extend({
 			points: "20,7-12,15-8,24-4,30-6,48-23,64-34,70-59,75-72,67-78,54-74,39-70,29-76,20-70,16-64,17-59,6-45,2-34,6-20,7",
 			action: function(o) {
 				console.log('Rock 1 Hit!', typeof o !== "undefined" ? o : "");
-				ctxt.game.jump();
+				ctxt.game.crash();
 			}
 		});
 		
@@ -314,6 +314,14 @@ var Rock2 = Rock.extend({
 		options.imageID = 'rock-2';
 		
 		Rock2.super.constructor.call(this, options);
+
+		this.addCollider({
+			points: "2,23-28,4-37,7-38,22-88,17-92,21-88,26-86,38-95,52-78,71-17,75-10,68-20,60-14,40-20,35-18,29-2,23",
+			action: function(o) {
+				console.log('Rock 2 Hit!', typeof o !== "undefined" ? o : "");
+				ctxt.game.crash();
+			}
+		});
 		
 	},
 	
@@ -331,6 +339,14 @@ var Rock3 = Rock.extend({
 		options.imageID = 'rock-3';
 		
 		Rock3.super.constructor.call(this, options);
+
+		this.addCollider({
+			points: "2,18-12,9-27,4-47,12-58,2-83,11-84,18-91,22-91,29-86,36-93,48-90,52-78,51-72,57-57,56-53,51-9,48-4,43-1,33-2,18",
+			action: function(o) {
+				console.log('Rock 3 Hit!', typeof o !== "undefined" ? o : "");
+				ctxt.game.crash();
+			}
+		});
 		
 	},
 	
@@ -348,6 +364,14 @@ var Rock4 = Rock.extend({
 		options.imageID = 'rock-4';
 		
 		Rock4.super.constructor.call(this, options);
+
+		this.addCollider({
+			points: "13,19-37,2-63,18-73,39-68,56-39,77-9,60-1,40-13,19",
+			action: function(o) {
+				console.log('Rock 4 Hit!', typeof o !== "undefined" ? o : "");
+				ctxt.game.crash();
+			}
+		});
 		
 	},
 	
@@ -419,23 +443,49 @@ var JumpLeft = Jump.extend({
 		options.height = 190;
 		
 		JumpLeft.super.constructor.call(this, options);
-		
+
+		//collide with sides
 		this.addCollider({
-			points: "85,23-198,52",
+			points: "105,22-14,92-128,166-210,85",
+			name: 'crash-edges',
+			action: function(o) {
+				console.log('JumpLeft side collision!');
+				ctxt.game.crash();
+			}
+		});
+
+		//enter ramp
+		this.addCollider({
+			points: "118,12-208,52",
+			name: 'enter-ramp',
+			disables: ['crash-edges', 'enter-ramp'],
+			enables: ['jump-edge', 'exit-ramp'],
+			action: function(o) {
+				console.log('Enter Ramp!');
+			}
+		});
+		
+		//trigger jump
+		this.addCollider({
+			enabled: false, //disabled by default
+			points: "70,38-32,57-132,112-170,91",
 			name: 'jump-edge',
-			disables: ['crash-edges'],
+			disables: ['jump-edge'],
 			action: function(o) {
 				console.log('Launch!');
 				ctxt.game.jump();
 			}
 		});
-		
+
+		//clear ramp
 		this.addCollider({
-			points: "85,23-15,86-154,122-198,52",
-			name: 'crash-edges',
+			enabled: false, //disabled by default
+			points: "129,5-6,97-129,178-251,50-129,5",
+			name: 'exit-ramp',
+			disables: ['jump-edge', 'exit-ramp'],
+			enables: ['crash-edges', 'enter-ramp'],
 			action: function(o) {
-				console.log('Crash');
-				//ctxt.game.jump();
+				console.log('Exit ramp!');
 			}
 		});
 		
@@ -449,11 +499,57 @@ var JumpRight = Jump.extend({
 	
 	
 	constructor: function(options) {
+		var ctxt = this;
 		options.imageID = 'jump-right';
 		options.width = 264;
 		options.height = 190;
 		
 		JumpRight.super.constructor.call(this, options);
+
+		//collide with sides
+		this.addCollider({
+			points: "37,84-120,170-240,91-149,22",
+			name: 'crash-edges',
+			action: function(o) {
+				console.log('Jump side collision!');
+				ctxt.game.crash();
+			}
+		});
+
+		//enter ramp
+		this.addCollider({
+			points: "44,55-138,12",
+			name: 'enter-ramp',
+			disables: ['crash-edges', 'enter-ramp'],
+			enables: ['jump-edge', 'exit-ramp'],
+			action: function(o) {
+				console.log('Enter Ramp!');
+			}
+		});
+		
+		//trigger jump
+		this.addCollider({
+			enabled: false, //disabled by default
+			points: "84,89-118,117-227,57-179,35",
+			name: 'jump-edge',
+			disables: ['jump-edge'],
+			action: function(o) {
+				console.log('Launch!');
+				ctxt.game.jump();
+			}
+		});
+
+		//clear ramp
+		this.addCollider({
+			enabled: false, //disabled by default
+			points: "0,48-126,0-253,96-116,185-0,48",
+			name: 'exit-ramp',
+			disables: ['jump-edge', 'exit-ramp'],
+			enables: ['crash-edges', 'enter-ramp'],
+			action: function(o) {
+				console.log('Exit ramp!');
+			}
+		});
 		
 	},
 	
@@ -465,11 +561,57 @@ var JumpCenter = Jump.extend({
 	name: "JumpCenter",
 	
 	constructor: function(options) {
+		var ctxt = this;
 		options.imageID = 'jump-center';
 		options.width = 280;
 		options.height = 198;
 		
 		JumpCenter.super.constructor.call(this, options);
+
+		//collide with sides
+		this.addCollider({
+			points: "50,44-23,166-256,170-224,45",
+			name: 'crash-edges',
+			action: function(o) {
+				console.log('Jump side collision!');
+				ctxt.game.crash();
+			}
+		});
+
+		//enter ramp
+		this.addCollider({
+			points: "66,26-211,26",
+			name: 'enter-ramp',
+			disables: ['crash-edges', 'enter-ramp'],
+			enables: ['jump-edge', 'exit-ramp'],
+			action: function(o) {
+				console.log('Enter Ramp!');
+			}
+		});
+		
+		//trigger jump
+		this.addCollider({
+			enabled: false, //disabled by default
+			points: "47,78-37,122-238,124-227,77",
+			name: 'jump-edge',
+			disables: ['jump-edge'],
+			action: function(o) {
+				console.log('Launch!');
+				ctxt.game.jump();
+			}
+		});
+
+		//clear ramp
+		this.addCollider({
+			enabled: false, //disabled by default
+			points: "26,8-0,196-280,194-234,12-26,8",
+			name: 'exit-ramp',
+			disables: ['jump-edge', 'exit-ramp'],
+			enables: ['crash-edges', 'enter-ramp'],
+			action: function(o) {
+				console.log('Exit ramp!');
+			}
+		});
 		
 	},
 	

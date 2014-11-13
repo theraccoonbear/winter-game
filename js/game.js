@@ -378,6 +378,10 @@ var GAME = BASE.extend({
 		var dirName = ctxt.steerDirections[ctxt.direction];
 		ctxt.boarder.gotoAndPlay(dirName + "-jump");
 	},
+
+	crash: function () {
+		console.log("Player crash!");
+	},
 	
 	reflowUI: function() {
 		var ctxt = this;
@@ -640,7 +644,7 @@ var GAME = BASE.extend({
 		}
 		
 		o.game = ctxt;
-		
+
 		var entity = new window[ent.cls](o);
 		ctxt.movingElements.push(entity);
 		return entity;

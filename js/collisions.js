@@ -1,9 +1,10 @@
 /* jshint quotmark:false, strict:false, eqeqeq:false */
-/* global Class, Intersection */
+/* global createjs, Class, Intersection, Point2D */
 var CollisionTarget = Class.extend({
 	points: [],
 	action: null,
 	enabled: true,
+	enables: [],
 	disables: [],
 	name: 'unnamed',
 	
@@ -29,11 +30,11 @@ var CollisionTarget = Class.extend({
 		graphics.beginStroke("red");
 		
 		
-		var orig = ctxt.points[0].add(new Point2D(parseFloat(entity.sprite.x), parseFloat(entity.sprite.y)))
+		var orig = ctxt.points[0].add(new Point2D(parseFloat(entity.sprite.x), parseFloat(entity.sprite.y)));
 		var next;
 		graphics.moveTo(orig.x, orig.y);
 		for (var i = 1, l = ctxt.points.length; i < l; i++) {
-			next = ctxt.points[i].add(new Point2D(parseFloat(entity.sprite.x), parseFloat(entity.sprite.y)))
+			next = ctxt.points[i].add(new Point2D(parseFloat(entity.sprite.x), parseFloat(entity.sprite.y)));
 			graphics.lineTo(next.x, next.y);
 		}
 		
@@ -59,9 +60,12 @@ var CollisionTarget = Class.extend({
 		var result;
 		var numPoints = ctxt.points.length;
 		var transformedPoints = [];
-		var i;
+		var i, l;
+		var name;
+		var col;
 
-		if (!ctxt.enabled) {
+		//switch to check for exactly false so true/undefined will be equivalent to enabled
+		if (ctxt.enabled === false) {
 			return;
 		}
 		
@@ -71,14 +75,26 @@ var CollisionTarget = Class.extend({
 
 		result = Intersection.intersectLinePolygon(pt1, pt2, transformedPoints);
 		if (result.status !== 'No Intersection') {
-			for (var i = 0, l = ctxt.disables.length; i < l; i++) {
-				var name = ctxt.disables[i];
-				var col = entity.getColliderByName({name: name});
+			for (i = 0, l = ctxt.disables.length; i < l; i++) {
+				name = ctxt.disables[i];
+				col = entity.getColliderByName({name: name});
 				if (col !== false) {
 					console.log('disabled collider: ' + name);
 					col.enabled = false;
 				}
 			}
+
+			for (i = 0, l = ctxt.enables.length; i < l; i++) {
+				name = ctxt.enables[i];
+				col = entity.getColliderByName({name: name});
+				if (col !== false) {
+					console.log('enabled collider: ' + name);
+					col.enabled = true;
+				}
+			}
+
+			//disable collider so it doesn't trigger again
+			ctxt.enabled = false;
 
 			if (typeof ctxt.action === "function") {
 				ctxt.action();
