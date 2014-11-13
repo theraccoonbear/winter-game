@@ -24,7 +24,7 @@ var GAME = BASE.extend({
 	touchTargets: ['#touchSteer'],
 	
 	manifest: [
-		{src:"images/boarder-small.png", id:"boarder-small"},
+		{src:"images/boarder-small-2.png", id:"boarder-small"},
 		{src:"images/obstacles/rock-1.png", id:"rock-1"},
 		{src:"images/obstacles/rock-2.png", id:"rock-2"},
 		{src:"images/obstacles/rock-3.png", id:"rock-3"},
@@ -35,9 +35,9 @@ var GAME = BASE.extend({
 		
 		{src:"images/banners/start.png", id:"start-banner"},
 		
-		{src:"images/interaction/jump-center.jpg", id:"jump-center"},
-		{src:"images/interaction/jump-left.jpg", id:"jump-left"},
-		{src:"images/interaction/jump-right.jpg", id:"jump-right"},
+		{src:"images/interaction/jump-center.png ", id:"jump-center"},
+		{src:"images/interaction/jump-left.png", id:"jump-left"},
+		{src:"images/interaction/jump-right.png", id:"jump-right"},
 
 		{src:"images/misc/sinistar-sprite.gif", id:"sinistar"},
 		
@@ -494,7 +494,7 @@ var GAME = BASE.extend({
 		var animations = {};
 		
 		$.each(ctxt.steerDirections, function(i, d) {
-			animations[d] = (i * 13);
+			animations[d] = [(i * 13), (i*13)+1, d, .01];
 			animations[d + '-jump'] = [i * 13, (i * 13) + 12, d, 0.5];
 		});
 		
@@ -502,7 +502,7 @@ var GAME = BASE.extend({
 		
 		ctxt.sprites.boarder = new createjs.SpriteSheet({
 			"images": [ctxt.loader.getResult("boarder-small")],
-			"frames": {"width": 100, "height": 125},
+			"frames": {"width": 128, "height": 256},
 			"animations": animations
 		});
 		
@@ -512,6 +512,7 @@ var GAME = BASE.extend({
 		});
 		ctxt.boarder.x = (ctxt.$game.width() / 2) - (ctxt.boarder.spriteSheet._frameWidth / 2);
 		ctxt.boarder.y = (ctxt.$game.height() * ctxt.playerVertPositionFactor) - (ctxt.boarder.spriteSheet._frameHeight / 2);
+        
 		ctxt.boarder.framerate = 30;
 		//ctxt.stage.addChild(ctxt.boarder);
 		ctxt.between.addChild(ctxt.boarder);
