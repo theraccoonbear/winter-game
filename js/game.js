@@ -35,13 +35,13 @@ var GAME = BASE.extend({
 		
 		{src:"images/banners/start.png", id:"start-banner"},
 		
-		{src:"images/interaction/jump-center.png ", id:"jump-center"},
-		{src:"images/interaction/jump-left.png", id:"jump-left"},
-		{src:"images/interaction/jump-right.png", id:"jump-right"},
+		{src:"images/interaction/jump-center.png ", id:"jump-center", type: createjs.LoadQueue.IMAGE},
+		{src:"images/interaction/jump-left.png", id:"jump-left", type: createjs.LoadQueue.IMAGE},
+		{src:"images/interaction/jump-right.png", id:"jump-right", type: createjs.LoadQueue.IMAGE},
 
-		{src:"images/misc/sinistar-sprite.gif", id:"sinistar"},
+		//{src:"images/misc/sinistar-sprite.gif", id:"sinistar"},
 		
-		{src:"images/snow-bg.jpg", id:"snow-surface"},
+		//{src:"images/snow-bg.jpg", id:"snow-surface"},
 		{src:"images/snow-bg-2.jpg", id:"snow-surface-2"},
 		
 		{src:"sounds/snow-1.xogg", id: "snow-1", type: createjs.LoadQueue.BINARY},
