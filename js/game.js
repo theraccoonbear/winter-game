@@ -24,7 +24,7 @@ var GAME = BASE.extend({
 	touchTargets: ['#touchSteer'],
 	
 	manifest: [
-		{src:"images/boarder-small-2.png", id:"boarder-small"},
+		{src:"images/boarder-small-3.png", id:"boarder-small"},
 		{src:"images/obstacles/rock-1.png", id:"rock-1"},
 		{src:"images/obstacles/rock-2.png", id:"rock-2"},
 		{src:"images/obstacles/rock-3.png", id:"rock-3"},
@@ -103,16 +103,18 @@ var GAME = BASE.extend({
 	height: 0,
 	
 	lastObstAt: 0,
-	obstEvery: 100,
+	obstEvery: 2,
 	
 	lastInterAt: 0,
-	interEvery: 500,
+	interEvery: 20,
 	
 	under: null,
 	between: null,
 	over: null,
 	
 	jumping: false,
+	crashing: false,
+	stopping: false,
 	
 	sounds: {},
 	
@@ -200,7 +202,7 @@ var GAME = BASE.extend({
 		var total_percent = ((ctxt.totalBytesLoaded / ctxt.manifestSizes.total) * 100).toFixed(2) + '%';
 		ctxt.updateProgress();
 		
-		console.log('PROGRESS', ev.item.id, ev.item.src, file_percent, total_percent);
+		//console.log('PROGRESS', ev.item.id, ev.item.src, file_percent, total_percent);
 	},
 	
 	fileComplete: function(ev) {
@@ -311,7 +313,7 @@ var GAME = BASE.extend({
 		//console.log(ctxt.base64ArrayBuffer(ctxt.loader.getResult('snow-4')));
 		$.each(ctxt.manifest, function(i, o) {
 			if (/\.xogg/.test(o.src) ) {
-				console.log(o);
+				//console.log(o);
 				//createjs.Sound.registerSound('data:audio/ogg;charset=utf-8;base64,' + ctxt.base64ArrayBuffer(ctxt.loader.getResult(o.id)), o.id);
 			}
 		});
@@ -349,6 +351,9 @@ var GAME = BASE.extend({
 				case 32:
 					ctxt.jump();
 					break;
+				case 67:
+					ctxt.crash();
+					break;
 				case 38:
 					ctxt.speed++;
 					break;
@@ -371,12 +376,19 @@ var GAME = BASE.extend({
 	
 	jump: function() {
 		var ctxt = this;
-		if (ctxt.jumping) {
+		if (ctxt.jumping || ctxt.crashing || ctxt.stopping) {
 			return;
 		}
 		ctxt.jumping = true;
 		var dirName = ctxt.steerDirections[ctxt.direction];
 		ctxt.boarder.gotoAndPlay(dirName + "-jump");
+	},
+	
+	crash: function() {
+		var ctxt = this;
+		ctxt.crashing = true;
+		var dirName = ctxt.steerDirections[ctxt.direction];
+		ctxt.boarder.gotoAndPlay(dirName + "-crash");
 	},
 	
 	reflowUI: function() {
@@ -493,9 +505,12 @@ var GAME = BASE.extend({
 		
 		var animations = {};
 		
+		var framesPerDir = 26;
+		
 		$.each(ctxt.steerDirections, function(i, d) {
-			animations[d] = [(i * 13), (i*13)+1, d, .01];
-			animations[d + '-jump'] = [i * 13, (i * 13) + 12, d, 0.5];
+			animations[d] = [(i * framesPerDir), (i * framesPerDir) + 1, d, .01];
+			animations[d + '-jump'] = [i * framesPerDir, (i * framesPerDir) + 12, d, 0.5];
+			animations[d + '-crash'] = [(i * framesPerDir) + 13, (i * framesPerDir) + 25, false, 0.5];
 		});
 		
 		//console.log(animations);
@@ -506,9 +521,16 @@ var GAME = BASE.extend({
 			"animations": animations
 		});
 		
+		console.log(animations);
+		
 		ctxt.boarder = new createjs.Sprite(ctxt.sprites.boarder, "straight");
 		ctxt.boarder.on('animationend', function() {
+			if (ctxt.crashing) {
+				ctxt.stopping = true;
+			}
 			ctxt.jumping = false;
+			ctxt.crashing = false;
+			
 		});
 		ctxt.boarder.x = (ctxt.$game.width() / 2) - (ctxt.boarder.spriteSheet._frameWidth / 2);
 		ctxt.boarder.y = (ctxt.$game.height() * ctxt.playerVertPositionFactor) - (ctxt.boarder.spriteSheet._frameHeight / 2);
@@ -701,22 +723,33 @@ var GAME = BASE.extend({
 			
 		}
 		
-		var obst_delta = t - ctxt.lastObstAt;
-		if (obst_delta >= ctxt.obstEvery) {
-			ctxt.addEntity({interactives: false, obstacles: true});
-			ctxt.lastObstAt = t;
+		t = ctxt.distance;
+		
+		if (ctxt.stopping) {
+			ctxt.speed -= .1;
+			if (ctxt.speed <= 0) {
+				createjs.Ticker.setPaused(true);
+			}
 		}
 		
-		var inter_delta = t - ctxt.lastInterAt;
-		if (inter_delta >= ctxt.interEvery) {
-			ctxt.addEntity({interactives: true, obstacles: false});
-			ctxt.lastInterAt = t;
-		}
-		
-		if (ctxt.distance > ctxt.nextLevelAt) {
-			//ctxt.nextLevelAt *= 2;
-			//ctxt.level++;
-			//ctxt.sweetMessage({message: "Level " + ctxt.level});
+		if (t > 20) {
+			var obst_delta = t - ctxt.lastObstAt;
+			if (obst_delta >= ctxt.obstEvery) {
+				ctxt.addEntity({interactives: false, obstacles: true});
+				ctxt.lastObstAt = t;
+			}
+			
+			var inter_delta = t - ctxt.lastInterAt;
+			if (inter_delta >= ctxt.interEvery) {
+				ctxt.addEntity({interactives: true, obstacles: false});
+				ctxt.lastInterAt = t;
+			}
+			
+			if (ctxt.distance > ctxt.nextLevelAt) {
+				//ctxt.nextLevelAt *= 2;
+				//ctxt.level++;
+				//ctxt.sweetMessage({message: "Level " + ctxt.level});
+			}
 		}
 		
 		//ctxt.reflowUI();
