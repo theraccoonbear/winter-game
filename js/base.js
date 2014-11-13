@@ -6,12 +6,25 @@ var BASE = Class.extend({
 	
 	constructor: function(o) {
 		var ctxt = this;
+		ctxt.helpers();
 		//ctxt.touchHandling();
 		//ctxt.tiltHandling();
 	},
 	
 	isTouchDevice: function() {
 		return 'ontouchstart' in document.documentElement;
+	},
+	
+	helpers: function() {
+		String.prototype.commafy = function () {
+			return this.replace(/(^|[^\w.])(\d{4,})/g, function($0, $1, $2) {
+				return $1 + $2.replace(/\d(?=(?:\d\d\d)+(?!\d))/g, "$&,");
+			});
+		}
+		
+		Number.prototype.commafy = function () {
+			return String(this).commafy();
+		}
 	},
 	
 	touchHandling: function() {

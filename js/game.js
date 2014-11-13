@@ -233,13 +233,23 @@ var GAME = BASE.extend({
 		
 		ctxt.initSound();
 		
+		ctxt.start();
+		
+		
+		
+	},
+	
+	start: function() {
+		var ctxt = this;
+		
 		createjs.Ticker.timingMode = createjs.Ticker.RAF;
 		//createjs.Ticker.setPaused(true)
 		createjs.Ticker.addEventListener("tick", function(event) {
 			ctxt.tick(event);
 		});
-		//ctxt.stage.update();
 		
+		ctxt.reflowUI();
+		ctxt.stage.update();
 	},
 	
 	initLayers: function() {
@@ -636,9 +646,9 @@ var GAME = BASE.extend({
 		
 		var distThisTick = Math.abs(speed.y);
 		ctxt.distance += distThisTick / 20;
-		ctxt.$distance.html(parseInt(ctxt.distance) + "'");
+		ctxt.$distance.html(parseInt(ctxt.distance).commafy() + "'");
 		ctxt.score += distThisTick * 10;
-		ctxt.$score.html(parseInt(ctxt.score));
+		ctxt.$score.html(parseInt(ctxt.score).commafy());
 
 		var boarderBottomCenterX = ctxt.boarder.x + ctxt.boarder.spriteSheet._frameWidth / 2;
 		var boarderBottomCenterY = ctxt.boarder.y + ctxt.boarder.spriteSheet._frameHeight;
