@@ -642,7 +642,7 @@ var JumpLeft = Jump.extend({
 				console.log('Exit ramp!');
 				ctxt.game.score += 1000;
 				ctxt.game.jump();
-				ctxt.game.sweetMessge({message:'Sick Air Bro!'});
+				ctxt.game.sweetMessage({message:'Sick Air Bro!'});
 			}
 		});
 		
@@ -706,7 +706,7 @@ var JumpRight = Jump.extend({
 			action: function(o) {
 				console.log('Exit ramp!');
 				ctxt.game.jump();
-				ctxt.game.sweetMessge({message:'Sick Air Bro!'});
+				ctxt.game.sweetMessage({message:'Sick Air Bro!'});
 			}
 		});
 		
@@ -756,7 +756,7 @@ var JumpCenter = Jump.extend({
 			disables: ['jump-edge'],
 			action: function(o) {
 				console.log('Launch!');
-				ctxt.game.sweetMessge({message:'Sick Air Bro!'});
+				ctxt.game.sweetMessage({message:'Sick Air Bro!'});
 				ctxt.game.jump();
 			}
 		});
