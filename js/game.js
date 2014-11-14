@@ -144,8 +144,12 @@ var GAME = BASE.extend({
 		ctxt.height = ctxt.stage.canvas.height;
 		
 		ctxt.$window.resize(function(e) {
-			//console.log('resized');
-			ctxt.reflowUI();
+			var t = new Date();
+			console.log('resize');
+			setTimeout(function() {
+				ctxt.reflowUI();
+				console.log('resize done ' + ((new Date()).getTime() - t.getTime()));
+			}, 100);
 		});
 		
 		ctxt.$menuButton.on('click', function(e) {
