@@ -389,6 +389,7 @@ var GAME = BASE.extend({
 		ctxt.crashing = true;
 		var dirName = ctxt.steerDirections[ctxt.direction];
 		ctxt.boarder.gotoAndPlay(dirName + "-crash");
+		ctxt.sweetMessage({message: 'Ouch! You Bit It!'});
 	},
 	
 	reflowUI: function() {
@@ -465,7 +466,7 @@ var GAME = BASE.extend({
 	steerAbs: function(where) {
 		var ctxt = this;
 		
-		if (where == ctxt.direction || ctxt.jumping) {
+		if (where == ctxt.direction || ctxt.jumping || ctxt.crashing || ctxt.stopping) {
 			return;
 		}
 		
@@ -511,6 +512,7 @@ var GAME = BASE.extend({
 			animations[d] = [(i * framesPerDir), (i * framesPerDir) + 1, d, .01];
 			animations[d + '-jump'] = [i * framesPerDir, (i * framesPerDir) + 12, d, 0.5];
 			animations[d + '-crash'] = [(i * framesPerDir) + 13, (i * framesPerDir) + 25, false, 0.5];
+			animations[d + '-twitch'] = [(i * framesPerDir) + 21, (i * framesPerDir) + 22, d + '-twitch', 0.5];
 		});
 		
 		//console.log(animations);
@@ -524,6 +526,8 @@ var GAME = BASE.extend({
 		ctxt.boarder = new createjs.Sprite(ctxt.sprites.boarder, "straight");
 		ctxt.boarder.on('animationend', function() {
 			if (ctxt.crashing) {
+				var dirName = ctxt.steerDirections[ctxt.direction];
+				ctxt.boarder.gotoAndPlay(dirName + "-twitch");
 				ctxt.stopping = true;
 			}
 			ctxt.jumping = false;
@@ -603,8 +607,9 @@ var GAME = BASE.extend({
 		var ctxt = this;
 		var opts = {
 			message: "No message",
-			x: ctxt.baseline.width / 2,
-			y: ctxt.boarder.y
+			x: ctxt.dimensions().width / 2,
+			y: ctxt.boarder.y + 100,
+			ms: 1000
 		};
 		
 		opts = $.extend({}, opts, o);
@@ -626,8 +631,8 @@ var GAME = BASE.extend({
 				top: opts.y - ($message.height() / 2)
 			})
 			.animate({
-				top: '-=25px'
-			}, 500, function() {
+				top: '-=50px'
+			}, opts.ms, function() {
 				$message.remove();
 			});
 	},
