@@ -139,7 +139,7 @@ var Entity = Class.extend({
 		var checkCollisionOptions = {};
 
 		checkCollisionOptions.entity = ctxt;
-		checkCollisionOptions.stage = ctxt.game.stage;
+		checkCollisionOptions.game = ctxt.game;
 
 		if (options.points !== undefined) {
 			checkCollisionOptions.points = options.points;

@@ -118,6 +118,7 @@ var GAME = BASE.extend({
 	stopping: false,
 
 	_drawnBoarderCollider: null,
+	debug: true,
 	
 	sounds: {},
 	
@@ -397,7 +398,6 @@ var GAME = BASE.extend({
 		var dirName = ctxt.steerDirections[ctxt.direction];
 		ctxt.boarder.gotoAndPlay(dirName + "-crash");
 		ctxt.sweetMessage({message: 'Ouch! You Bit It!'});
-		//ctxt.pause();
 	},
 	
 	reflowUI: function() {
@@ -777,23 +777,25 @@ var GAME = BASE.extend({
 		boarderPoints.push(new Point2D(boarderCollisionBox.lowerLeft.x, boarderCollisionBox.lowerLeft.y));
 		boarderPoints.push(new Point2D(boarderCollisionBox.upperLeft.x, boarderCollisionBox.upperLeft.y)); //close the polygon
 
-		// if (ctxt._drawnBoarderCollider !== undefined) {
-		// 	ctxt.stage.removeChild(ctxt._drawnBoarderCollider);
-		// }
+		if (ctxt.debug) {
+			if (ctxt._drawnBoarderCollider !== undefined) {
+				ctxt.stage.removeChild(ctxt._drawnBoarderCollider);
+			}
 
-		// var graphics = new createjs.Graphics();
-		// graphics.setStrokeStyle(1);
-		// graphics.beginStroke("red");
-		
-		// var orig = boarderPoints[0];
-		// var next;
-		// graphics.moveTo(orig.x, orig.y);
-		// for (var i = 1, l = boarderPoints.length; i < l; i++) {
-		// 	next = boarderPoints[i];
-		// 	graphics.lineTo(next.x, next.y);
-		// }
+			var graphics = new createjs.Graphics();
+			graphics.setStrokeStyle(1);
+			graphics.beginStroke("red");
+			
+			var orig = boarderPoints[0];
+			var next;
+			graphics.moveTo(orig.x, orig.y);
+			for (var i = 1, l = boarderPoints.length; i < l; i++) {
+				next = boarderPoints[i];
+				graphics.lineTo(next.x, next.y);
+			}
 
-		// ctxt._drawnBoarderCollider = ctxt.stage.addChild(new createjs.Shape(graphics));
+			ctxt._drawnBoarderCollider = ctxt.stage.addChild(new createjs.Shape(graphics));
+		}
 
 		// var boarder_pt1 = new Point2D(boarderBottomCenterX - speed.x, boarderBottomCenterY - speed.y);
 		// var boarder_pt2 = new Point2D(boarderBottomCenterX, boarderBottomCenterY);
@@ -808,7 +810,9 @@ var GAME = BASE.extend({
 			e.x += speed.x;
 			e.y += speed.y;
 			
-			//entity.drawBounds();
+			if (ctxt.debug) {
+				entity.drawBounds();
+			}
 
 			if (e.y + entity.spriteSheet._frameHeight < -100) {
 				ctxt.stage.removeChild(e);
