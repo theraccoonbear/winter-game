@@ -82,13 +82,13 @@ var GAME = BASE.extend({
 	
 	steerDirections: ['left3', 'left2', 'left1', 'straight', 'right1', 'right2', 'right3'],
 	steerSpeeds: {
-		'left3': 		{d: 147.65, sound: 'snow-1'},
-		'left2': 		{d: 131.59, sound: 'snow-2'},
-		'left1': 		{d: 111.59, sound: 'snow-3'},
-		'straight': {d: 90.00,  sound: 'snow-4'},
-		'right1': 	{d: 68.41,  sound: 'snow-3'},
-		'right2': 	{d: 48.81,  sound: 'snow-2'},
-		'right3': 	{d: 32.35,  sound: 'snow-1'}
+		'left3': 		{d: 147.65, sound: 'snow-1', boardTip: {x: 710, y: 230}},
+		'left2': 		{d: 131.59, sound: 'snow-2', boardTip: {x: 693, y: 230}},
+		'left1': 		{d: 111.59, sound: 'snow-3', boardTip: {x: 683, y: 235}},
+		'straight': {d: 90.00,  sound: 'snow-4', boardTip: {x: 682, y: 250}},
+		'right1': 	{d: 68.41,  sound: 'snow-3', boardTip: {x: 667, y: 235}},
+		'right2': 	{d: 48.81,  sound: 'snow-2', boardTip: {x: 660, y: 235}},
+		'right3': 	{d: 32.35,  sound: 'snow-1', boardTip: {x: 650, y: 230}}
 	},
 	
 	speed: 10,
@@ -115,6 +115,8 @@ var GAME = BASE.extend({
 	jumping: false,
 	crashing: false,
 	stopping: false,
+
+	_drawnBoarderCollider: null,
 	
 	sounds: {},
 	
@@ -394,6 +396,7 @@ var GAME = BASE.extend({
 		var dirName = ctxt.steerDirections[ctxt.direction];
 		ctxt.boarder.gotoAndPlay(dirName + "-crash");
 		ctxt.sweetMessage({message: 'Ouch! You Bit It!'});
+		//ctxt.pause();
 	},
 	
 	reflowUI: function() {
@@ -591,17 +594,19 @@ var GAME = BASE.extend({
 		return ret;
 	},
 	
-	getSpeedVector: function() {
+	getSpeedVector: function(options) {
 		var ctxt = this;
 		var dirName = ctxt.steerDirections[ctxt.direction];
 		var dir = ctxt.steerSpeeds[dirName];
+		var speed = (options !== undefined && typeof options.speed === "number" ? options.speed : ctxt.speed);
+		var angle = (options !== undefined && typeof options.angle === "number" ? options.angle : dir.d);
 		
-		var rads = (((dir.d + 90)/360)*(2*Math.PI));
+		var rads = (((angle + 90)/360)*(2*Math.PI));
 		var ret = {
 			d: dir.d,
 			r: rads,
-			x: Math.sin(rads) * ctxt.speed,
-			y: Math.cos(rads) * ctxt.speed,
+			x: Math.sin(rads) * speed,
+			y: Math.cos(rads) * speed,
 		};
 		
 		return ret;
@@ -656,6 +661,10 @@ var GAME = BASE.extend({
 		if (o.obstacles) { pool = pool.concat(ctxt.obstacles); }
 		if (o.interactives) { pool = pool.concat(ctxt.interactives); }
 		if (o.props) { pool = pool.concat(ctxt.props); }
+
+		if (pool.length < 1) {
+			return;
+		}
 		
 		
 		//id = typeof id === 'undefined' ? ctxt.obstacles[Math.floor(Math.random() * ctxt.obstacles.length)].id : id;
@@ -721,10 +730,65 @@ var GAME = BASE.extend({
 		ctxt.score += distThisTick * 10;
 		ctxt.$score.html(parseInt(ctxt.score).commafy());
 
-		var boarderBottomCenterX = ctxt.boarder.x + ctxt.boarder.spriteSheet._frameWidth / 2;
-		var boarderBottomCenterY = ctxt.boarder.y + ctxt.boarder.spriteSheet._frameHeight;
-		var boarder_pt1 = new Point2D(boarderBottomCenterX - speed.x, boarderBottomCenterY - speed.y);
-		var boarder_pt2 = new Point2D(boarderBottomCenterX, boarderBottomCenterY);
+		var boarderBottomCenterX = ctxt.steerSpeeds[ctxt.steerDirections[ctxt.direction]].boardTip.x;
+		var boarderBottomCenterY = ctxt.steerSpeeds[ctxt.steerDirections[ctxt.direction]].boardTip.y;
+		var boarderPerpendicularLeft = ctxt.getSpeedVector({angle: ctxt.steerSpeeds[ctxt.steerDirections[ctxt.direction]].d + 90, speed: 10});
+		var boarderPerpendicularRight = ctxt.getSpeedVector({angle: ctxt.steerSpeeds[ctxt.steerDirections[ctxt.direction]].d - 90, speed: 10});
+		var boarderParallel = ctxt.getSpeedVector({speed: 4});
+		var boarderFrontLeft = {
+			x: boarderBottomCenterX + boarderPerpendicularLeft.x,
+			y: boarderBottomCenterY + boarderPerpendicularLeft.y
+		};
+		var boarderFrontRight = {
+			x: boarderBottomCenterX + boarderPerpendicularRight.x,
+			y: boarderBottomCenterY + boarderPerpendicularRight.y
+		};
+		var boarderCollisionBox = {
+			upperLeft: {
+				x: boarderFrontLeft.x - boarderParallel.x,
+				y: boarderFrontLeft.y - boarderParallel.y
+			},
+			upperRight: {
+				x: boarderFrontRight.x + boarderParallel.x,
+				y: boarderFrontRight.y - boarderParallel.y
+			},
+			lowerLeft: {
+				x: boarderFrontLeft.x - boarderParallel.x,
+				y: boarderFrontLeft.y + boarderParallel.y
+			},
+			lowerRight: {
+				x: boarderFrontRight.x + boarderParallel.x,
+				y: boarderFrontRight.y + boarderParallel.y
+			}
+		};
+
+		var boarderPoints = [];
+		boarderPoints.push(new Point2D(boarderCollisionBox.upperLeft.x, boarderCollisionBox.upperLeft.y));
+		boarderPoints.push(new Point2D(boarderCollisionBox.upperRight.x, boarderCollisionBox.upperRight.y));
+		boarderPoints.push(new Point2D(boarderCollisionBox.lowerRight.x, boarderCollisionBox.lowerRight.y));
+		boarderPoints.push(new Point2D(boarderCollisionBox.lowerLeft.x, boarderCollisionBox.lowerLeft.y));
+		boarderPoints.push(new Point2D(boarderCollisionBox.upperLeft.x, boarderCollisionBox.upperLeft.y)); //close the polygon
+
+		// if (ctxt._drawnBoarderCollider !== undefined) {
+		// 	ctxt.stage.removeChild(ctxt._drawnBoarderCollider);
+		// }
+
+		// var graphics = new createjs.Graphics();
+		// graphics.setStrokeStyle(1);
+		// graphics.beginStroke("red");
+		
+		// var orig = boarderPoints[0];
+		// var next;
+		// graphics.moveTo(orig.x, orig.y);
+		// for (var i = 1, l = boarderPoints.length; i < l; i++) {
+		// 	next = boarderPoints[i];
+		// 	graphics.lineTo(next.x, next.y);
+		// }
+
+		// ctxt._drawnBoarderCollider = ctxt.stage.addChild(new createjs.Shape(graphics));
+
+		// var boarder_pt1 = new Point2D(boarderBottomCenterX - speed.x, boarderBottomCenterY - speed.y);
+		// var boarder_pt2 = new Point2D(boarderBottomCenterX, boarderBottomCenterY);
 		
 		var performSorting = false;
 		
@@ -733,11 +797,11 @@ var GAME = BASE.extend({
 			var e = entity.sprite;
 			//var e = entity.container;
 
-			//entity.drawBounds();
-			
 			e.x += speed.x;
 			e.y += speed.y;
 			
+			//entity.drawBounds();
+
 			if (e.y + entity.spriteSheet._frameHeight < -100) {
 				ctxt.stage.removeChild(e);
 				//ctxt.under.removeChild(e);
@@ -753,7 +817,7 @@ var GAME = BASE.extend({
 				//}
 			}
 			
-			entity.checkCollisionAgainst({pt1: boarder_pt1, pt2: boarder_pt2});
+			entity.checkCollisionAgainst({points: boarderPoints});
 			
 		}
 		

@@ -56,6 +56,7 @@ var CollisionTarget = Class.extend({
 		var ctxt = this;
 		var pt1 = params.pt1;
 		var pt2 = params.pt2;
+		var points = params.points;
 		var entity = params.entity;
 		var result;
 		var numPoints = ctxt.points.length;
@@ -73,7 +74,12 @@ var CollisionTarget = Class.extend({
 			transformedPoints.push(ctxt.points[i].add(new Point2D(parseFloat(entity.sprite.x), parseFloat(entity.sprite.y))));
 		}
 
-		result = Intersection.intersectLinePolygon(pt1, pt2, transformedPoints);
+		if (points !== undefined) {
+			result = Intersection.intersectPolygonPolygon(points, transformedPoints);
+		} else {
+			result = Intersection.intersectLinePolygon(pt1, pt2, transformedPoints);
+		}
+
 		if (result.status !== 'No Intersection') {
 			for (i = 0, l = ctxt.disables.length; i < l; i++) {
 				name = ctxt.disables[i];
@@ -96,9 +102,55 @@ var CollisionTarget = Class.extend({
 			//disable collider so it doesn't trigger again
 			ctxt.enabled = false;
 
+			//draw hit boxes
+			// var graphics = new createjs.Graphics();
+			// graphics.setStrokeStyle(1);
+			// graphics.beginStroke("green");
+
+			// if (points === undefined) {
+			// 	points = [];
+			// 	points.push(pt1);
+			// 	points.push(pt2);
+			// }
+
+			// console.log(points);
+			// console.log(transformedPoints);
+			// console.log(params.stage);
+			
+			// var orig = points[0];
+			// var next;
+			// graphics.moveTo(orig.x, orig.y);
+			// for (i = 1, l = points.length; i < l; i++) {
+			// 	next = points[i];
+			// 	graphics.lineTo(next.x, next.y);
+			// }
+
+			// var drawnCollider = [params.stage.addChild(new createjs.Shape(graphics))];
+
+			// graphics = new createjs.Graphics();
+			// graphics.setStrokeStyle(1);
+			// graphics.beginStroke("blue");
+			
+			// orig = transformedPoints[0];
+			// graphics.moveTo(orig.x, orig.y);
+			// for (i = 1, l = transformedPoints.length; i < l; i++) {
+			// 	next = transformedPoints[i];
+			// 	graphics.lineTo(next.x, next.y);
+			// }
+
+			// drawnCollider.push(params.stage.addChild(new createjs.Shape(graphics)));
+
+			// params.stage.update();
+
+			// console.log(params.stage);
+
 			if (typeof ctxt.action === "function") {
 				ctxt.action();
 			}
+
+			// for (i = 0, l = drawnCollider.length; i < l; i++) {
+			// 	params.stage.removeChild(drawnCollider[i]);
+			// }
 		}
 	},
 	

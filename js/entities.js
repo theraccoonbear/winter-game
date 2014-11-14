@@ -24,6 +24,7 @@ var Entity = Class.extend({
 	playerPassed: false,
 	
 	colliders: [],
+	_drawnColliders: [],
 	
 	dimensions: function() {
 		var ctxt = this;
@@ -87,13 +88,18 @@ var Entity = Class.extend({
 	},
 	
 	drawBounds: function() {
-		//var ctxt = this;
-		//if (ctxt.colliders.length > 0) {
-		//	for (var i = 0, l = ctxt.colliders.length; i < l; i++) {
-		//		var g = ctxt.colliders[0].drawCollider({entity: ctxt});
-		//		ctxt.container.addChild(new createjs.Shape(g));
-		//	}
-		//}
+		var ctxt = this;
+
+		for (var j = 0, length = this._drawnColliders.length; j < length; j++) {
+			ctxt.container.removeChild(this._drawnColliders[j]);
+		}
+
+		if (ctxt.colliders.length > 0) {
+			for (var i = 0, l = ctxt.colliders.length; i < l; i++) {
+				var g = ctxt.colliders[0].drawCollider({entity: ctxt});
+				this._drawnColliders.push(ctxt.container.addChild(new createjs.Shape(g)));
+			}
+		}
 	},
 	
 	placeSprite: function(o)  {
@@ -129,12 +135,21 @@ var Entity = Class.extend({
 	
 	checkCollisionAgainst: function(options) {
 		var ctxt = this;
-		
-		var pt1 = options.pt1;
-		var pt2 = options.pt2;
+
+		var checkCollisionOptions = {};
+
+		checkCollisionOptions.entity = ctxt;
+		checkCollisionOptions.stage = ctxt.game.stage;
+
+		if (options.points !== undefined) {
+			checkCollisionOptions.points = options.points;
+		} else {
+			checkCollisionOptions.pt1 = options.pt1;
+			checkCollisionOptions.pt2 = options.pt2;
+		}
 		
 		for (var i = 0, l = ctxt.colliders.length; i < l; i++) {
-			if (ctxt.colliders[i].checkCollision({pt1: pt1, pt2: pt2, entity: ctxt})) {
+			if (ctxt.colliders[i].checkCollision(checkCollisionOptions)) {
 
 				if (typeof ctxt.colliders[i].action) {
 					ctxt.colliders[i].action({game: ctxt.game});
