@@ -44,11 +44,11 @@ var GAME = BASE.extend({
 		
 		//{src:"images/snow-bg.jpg", id:"snow-surface"},
 		{src:"images/snow-bg-2.jpg", id:"snow-surface-2"},
-		
-		{src:"sounds/snow-1.xogg", id: "snow-1", type: createjs.LoadQueue.BINARY},
-		{src:"sounds/snow-2.xogg", id: "snow-2", type: createjs.LoadQueue.BINARY},
-		{src:"sounds/snow-3.xogg", id: "snow-3", type: createjs.LoadQueue.BINARY},
-		{src:"sounds/snow-4.xogg", id: "snow-4", type: createjs.LoadQueue.BINARY}
+		//
+		//{src:"sounds/snow-1.xogg", id: "snow-1", type: createjs.LoadQueue.BINARY},
+		//{src:"sounds/snow-2.xogg", id: "snow-2", type: createjs.LoadQueue.BINARY},
+		//{src:"sounds/snow-3.xogg", id: "snow-3", type: createjs.LoadQueue.BINARY},
+		//{src:"sounds/snow-4.xogg", id: "snow-4", type: createjs.LoadQueue.BINARY}
 	],
 	
 	totalBytesLoaded: 0,
@@ -408,7 +408,7 @@ var GAME = BASE.extend({
 		var radius_factor = ctxt.layout() == 'landscape' ? 12 : 10;
 		
 		var touch_width = Math.min(dim.width - 30, 600);
-		var touch_height = Math.round(dim.width / height_factor);
+		var touch_height = Math.round(dim.height / height_factor);
 		var radius = Math.round(touch_height / 2); //Math.round(touch_width / radius_factor);
 		var font_size = Math.round(touch_height * .7);
 		
