@@ -102,6 +102,39 @@ var Entity = Class.extend({
 		}
 	},
 	
+	findOpenGround: function(o) {
+		var ctxt = this;
+		var w = o.width;
+		var h = o.height;
+		var dim = ctxt.game.baseline;
+		var x;
+		var y;
+		var inter = {status: 'No Intersection'};
+		var attempts = 0;
+		
+		do {
+			attempts++;
+			x = Math.random() * dim.width;
+			y = (dim.height + 50);
+			var proposed_pt_1 = new Point2D(x, y);
+			var proposed_pt_2 = new Point2D(x + w, y + h);
+			
+			for (var i = 0, l = ctxt.game.movingElements.length; i < l; i++) {
+				var ent = ctxt.game.movingElements[i];
+				var existing_pt_1 = new Point2D(ent.sprite.x, ent.sprite.y);
+				var existing_pt_2 = new Point2D(ent.sprite.x + ent.spriteSheet._frameWidth, ent.sprite.y + ent.spriteSheet._frameHeight);
+				inter = Intersection.intersectRectangleRectangle(proposed_pt_1, proposed_pt_2, existing_pt_1, existing_pt_2);
+				if (inter.status !== 'No Intersection') {
+					//console.log(i, 'try again');
+					break;
+				}
+			}
+		} while (inter.status !== 'No Intersection' && attempts < 20);
+		
+		return {x: x, y: y};
+	},
+	
+	
 	placeSprite: function(o)  {
 		var ctxt = this;
 		var dim = ctxt.game.baseline;
@@ -115,8 +148,18 @@ var Entity = Class.extend({
 		
 		var bufferAmount = 1;
 		var buffer = bufferAmount + 1;
-		var x = ctxt.x === false ? (Math.random() * dim.width * buffer) - (dim.width * (buffer / 2)) : ctxt.x;
-		var y = ctxt.y === false ? (dim.height + 50) * 1 : ctxt.y;
+		
+		//console.log(ctxt.findOpenGround({width: ctxt.spriteSheet._frameWidth, height: ctxt.spriteSheet._frameHeight}));
+		
+		//var x = ctxt.x === false ? (Math.random() * dim.width * buffer) - (dim.width * (buffer / 2)) : ctxt.x;
+		//var y = ctxt.y === false ? (dim.height + 50) * 1 : ctxt.y;
+		var x = ctxt.x;
+		var y = ctxt.y;
+		if (x === false || y === false) {
+			var newXY = ctxt.findOpenGround({width: ctxt.spriteSheet._frameWidth, height: ctxt.spriteSheet._frameHeight});
+			x = newXY.x;
+			y = newXY.y;
+		}
 		
 		ctxt.sprite.x = x;
 		ctxt.sprite.y = y;
@@ -189,7 +232,8 @@ var Tree = Obstacle.extend({
 		Tree.super.constructor.call(this, options);
 		
 		this.addCollider({
-			points: "46,194-66,202-80,198-64,180-46,194",
+			//points: "46,194-66,202-80,198-64,180-46,194",
+			points: "38,192-55,203-81,203-94,192-81,181-55,181-38,192",
 			action: function(o) {
 				console.log('Tree Hit!', typeof o !== "undefined" ? o : "");
 				ctxt.game.crash();

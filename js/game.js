@@ -671,7 +671,7 @@ var GAME = BASE.extend({
 		if (o.props) { pool = pool.concat(ctxt.props); }
 
 		if (pool.length < 1) {
-			return;
+			return false;
 		}
 		
 		
