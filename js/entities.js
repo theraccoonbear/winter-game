@@ -102,6 +102,15 @@ var Entity = Class.extend({
 		}
 	},
 	
+	rectContainsRect: function(rect_1_pt1, rect_1_pt2, rect_2_pt1, rect_2_pt2) {
+		var left_in = rect_1_pt1.x > rect_2_pt1.x && rect_1_pt1.x < rect_2_pt2.x;
+		var top_in = rect_1_pt1.y > rect_2_pt1.y && rect_1_pt1.y < rect_2_pt2.y;
+		var right_in = rect_1_pt2.x > rect_2_pt1.x && rect_1_pt2.x < rect_2_pt2.x;
+		var bottom_in = rect_1_pt2.y > rect_2_pt1.y && rect_1_pt2.y < rect_2_pt2.y;
+		
+		return left_in && top_in && right_in && bottom_in;
+	},
+	
 	findOpenGround: function(o) {
 		var ctxt = this;
 		var w = o.width;
@@ -123,10 +132,14 @@ var Entity = Class.extend({
 				var ent = ctxt.game.movingElements[i];
 				var existing_pt_1 = new Point2D(ent.sprite.x, ent.sprite.y);
 				var existing_pt_2 = new Point2D(ent.sprite.x + ent.spriteSheet._frameWidth, ent.sprite.y + ent.spriteSheet._frameHeight);
-				inter = Intersection.intersectRectangleRectangle(proposed_pt_1, proposed_pt_2, existing_pt_1, existing_pt_2);
-				if (inter.status !== 'No Intersection') {
-					//console.log(i, 'try again');
-					break;
+				if (ctxt.rectContainsRect(proposed_pt_1, proposed_pt_2, existing_pt_1, existing_pt_2)) {
+					inter.status = 'Intersection';
+				} else {
+					inter = Intersection.intersectRectangleRectangle(proposed_pt_1, proposed_pt_2, existing_pt_1, existing_pt_2);
+					if (inter.status !== 'No Intersection') {
+						//console.log(i, 'try again');
+						break;
+					}
 				}
 			}
 		} while (inter.status !== 'No Intersection' && attempts < 20);
