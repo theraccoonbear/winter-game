@@ -24,7 +24,8 @@ var GAME = BASE.extend({
 	touchTargets: ['#touchSteer'],
 	
 	manifest: [
-		{src:"images/boarder-small-3.png", id:"boarder-small"},
+		//{src:"images/boarder-small-3.png", id:"boarder-small"},
+		{src:"images/sprite-boarder.png", id:"boarder-small"},
 		{src:"images/obstacles/rock-1.png", id:"rock-1"},
 		{src:"images/obstacles/rock-2.png", id:"rock-2"},
 		{src:"images/obstacles/rock-3.png", id:"rock-3"},
@@ -344,7 +345,7 @@ var GAME = BASE.extend({
 	initControls: function() {
 		var ctxt = this;
 		$(document).on('keydown', function(e) {
-			console.log('key ' + e.which);
+			//console.log('key ' + e.which);
 			switch (e.which) {
 				case 37:
 					ctxt.steer('left');
@@ -510,16 +511,23 @@ var GAME = BASE.extend({
 		
 		var animations = {};
 		
-		var framesPerDir = 26;
+		var framesPerDir = 31; //26;
 		
 		$.each(ctxt.steerDirections, function(i, d) {
-			animations[d] = [(i * framesPerDir), (i * framesPerDir) + 1, d, .01];
-			animations[d + '-jump'] = [i * framesPerDir, (i * framesPerDir) + 12, d, 0.5];
-			animations[d + '-crash'] = [(i * framesPerDir) + 13, (i * framesPerDir) + 25, false, 0.5];
-			animations[d + '-twitch'] = [(i * framesPerDir) + 21, (i * framesPerDir) + 22, d + '-twitch', 0.5];
+			animations[d] = [(i * framesPerDir), (i * framesPerDir) + 7, d, 0.5];
+			animations[d + '-jump'] = [(i * framesPerDir) + 8, (i * framesPerDir) + 18, d, 0.5];
+			animations[d + '-crash'] = [(i * framesPerDir) + 19, (i * framesPerDir) + 30, false, 0.5];
+			animations[d + '-twitch'] = [(i * framesPerDir) + 27, (i * framesPerDir) + 30, d + '-twitch', 0.7];
 		});
 		
-		//console.log(animations);
+		//$.each(ctxt.steerDirections, function(i, d) {
+		//	animations[d] = [(i * framesPerDir), (i * framesPerDir) + 1, d, .01];
+		//	animations[d + '-jump'] = [i * framesPerDir, (i * framesPerDir) + 12, d, 0.5];
+		//	animations[d + '-crash'] = [(i * framesPerDir) + 13, (i * framesPerDir) + 25, false, 0.5];
+		//	animations[d + '-twitch'] = [(i * framesPerDir) + 21, (i * framesPerDir) + 22, d + '-twitch', 0.5];
+		//});
+		
+		console.log(animations);
 		
 		ctxt.sprites.boarder = new createjs.SpriteSheet({
 			"images": [ctxt.loader.getResult("boarder-small")],
