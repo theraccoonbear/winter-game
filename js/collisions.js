@@ -64,6 +64,7 @@ var CollisionTarget = Class.extend({
 		var i, l;
 		var name;
 		var col;
+		var drawnCollider;
 
 		//switch to check for exactly false so true/undefined will be equivalent to enabled
 		if (ctxt.enabled === false) {
@@ -103,54 +104,52 @@ var CollisionTarget = Class.extend({
 			ctxt.enabled = false;
 
 			//draw hit boxes
-			// var graphics = new createjs.Graphics();
-			// graphics.setStrokeStyle(1);
-			// graphics.beginStroke("green");
+			if (params.game.debug) {
+				var graphics = new createjs.Graphics();
+				graphics.setStrokeStyle(1);
+				graphics.beginStroke("green");
 
-			// if (points === undefined) {
-			// 	points = [];
-			// 	points.push(pt1);
-			// 	points.push(pt2);
-			// }
+				if (points === undefined) {
+					points = [];
+					points.push(pt1);
+					points.push(pt2);
+				}
+				
+				var orig = points[0];
+				var next;
+				graphics.moveTo(orig.x, orig.y);
+				for (i = 1, l = points.length; i < l; i++) {
+					next = points[i];
+					graphics.lineTo(next.x, next.y);
+				}
 
-			// console.log(points);
-			// console.log(transformedPoints);
-			// console.log(params.stage);
-			
-			// var orig = points[0];
-			// var next;
-			// graphics.moveTo(orig.x, orig.y);
-			// for (i = 1, l = points.length; i < l; i++) {
-			// 	next = points[i];
-			// 	graphics.lineTo(next.x, next.y);
-			// }
+				drawnCollider = [params.game.stage.addChild(new createjs.Shape(graphics))];
 
-			// var drawnCollider = [params.stage.addChild(new createjs.Shape(graphics))];
+				graphics = new createjs.Graphics();
+				graphics.setStrokeStyle(1);
+				graphics.beginStroke("blue");
+				
+				orig = transformedPoints[0];
+				graphics.moveTo(orig.x, orig.y);
+				for (i = 1, l = transformedPoints.length; i < l; i++) {
+					next = transformedPoints[i];
+					graphics.lineTo(next.x, next.y);
+				}
 
-			// graphics = new createjs.Graphics();
-			// graphics.setStrokeStyle(1);
-			// graphics.beginStroke("blue");
-			
-			// orig = transformedPoints[0];
-			// graphics.moveTo(orig.x, orig.y);
-			// for (i = 1, l = transformedPoints.length; i < l; i++) {
-			// 	next = transformedPoints[i];
-			// 	graphics.lineTo(next.x, next.y);
-			// }
+				drawnCollider.push(params.game.stage.addChild(new createjs.Shape(graphics)));
 
-			// drawnCollider.push(params.stage.addChild(new createjs.Shape(graphics)));
-
-			// params.stage.update();
-
-			// console.log(params.stage);
+				params.game.stage.update();
+			}
 
 			if (typeof ctxt.action === "function") {
 				ctxt.action();
 			}
 
-			// for (i = 0, l = drawnCollider.length; i < l; i++) {
-			// 	params.stage.removeChild(drawnCollider[i]);
-			// }
+			if (params.game.debug) {
+				for (i = 0, l = drawnCollider.length; i < l; i++) {
+					params.game.stage.removeChild(drawnCollider[i]);
+				}
+			}
 		}
 	},
 	
