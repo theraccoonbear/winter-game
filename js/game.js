@@ -83,13 +83,13 @@ var GAME = BASE.extend({
 	
 	steerDirections: ['left3', 'left2', 'left1', 'straight', 'right1', 'right2', 'right3'],
 	steerSpeeds: {
-		'left3': 		{d: 147.65, sound: 'snow-1', boardTip: {x: 710, y: 230}},
-		'left2': 		{d: 131.59, sound: 'snow-2', boardTip: {x: 693, y: 230}},
-		'left1': 		{d: 111.59, sound: 'snow-3', boardTip: {x: 683, y: 235}},
-		'straight': {d: 90.00,  sound: 'snow-4', boardTip: {x: 682, y: 250}},
-		'right1': 	{d: 68.41,  sound: 'snow-3', boardTip: {x: 667, y: 235}},
-		'right2': 	{d: 48.81,  sound: 'snow-2', boardTip: {x: 660, y: 235}},
-		'right3': 	{d: 32.35,  sound: 'snow-1', boardTip: {x: 650, y: 230}}
+		'left3': 		{d: 147.65, sound: 'snow-1', boardTip: {x: 713, y: 237}},
+		'left2': 		{d: 131.59, sound: 'snow-2', boardTip: {x: 713, y: 223}},
+		'left1': 		{d: 111.59, sound: 'snow-3', boardTip: {x: 690, y: 230}},
+		'straight': {d: 90.00,  sound: 'snow-4', boardTip: {x: 679, y: 235}},
+		'right1': 	{d: 68.41,  sound: 'snow-3', boardTip: {x: 670, y: 230}},
+		'right2': 	{d: 48.81,  sound: 'snow-2', boardTip: {x: 655, y: 235}},
+		'right3': 	{d: 32.35,  sound: 'snow-1', boardTip: {x: 648, y: 225}}
 	},
 	
 	speed: 10,
@@ -118,7 +118,7 @@ var GAME = BASE.extend({
 	stopping: false,
 
 	_drawnBoarderCollider: null,
-	debug: true,
+	debug: false,
 	
 	sounds: {},
 	
