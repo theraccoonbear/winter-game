@@ -123,12 +123,6 @@ var Entity = Class.extend({
 		ctxt.sprite.entity = ctxt;
 	
 		ctxt.game.stage.addChild(ctxt.container);
-		//if (ctxt.alwaysUnder) {
-		//	ctxt.game.under.addChild(ctxt.container);
-		//	ctxt.isUnder = true;
-		//} else {
-		//	ctxt.game.over.addChild(ctxt.container);
-		//}
 		
 		ctxt.drawBounds();
 	},
@@ -136,6 +130,10 @@ var Entity = Class.extend({
 	checkCollisionAgainst: function(options) {
 		var ctxt = this;
 
+		if (ctxt.jumpable && ctxt.game.jumping) {
+			return;
+		}
+		
 		var checkCollisionOptions = {};
 
 		checkCollisionOptions.entity = ctxt;
@@ -229,6 +227,8 @@ var Stump = Obstacle.extend({
 		var ctxt = this;
 		options.width = 100;
 		options.height = 84;
+		options.jumpable = true;
+		
 		Tree.super.constructor.call(this, options);
 		
 		this.addCollider({
@@ -272,6 +272,7 @@ var Rock = Obstacle.extend({
 		var ctxt = this;
 		
 		options.alwaysUnder = true;
+		options.jumpable = true;
 		
 		Rock.super.constructor.call(this, options);
 	},
