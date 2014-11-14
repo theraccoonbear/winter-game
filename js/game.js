@@ -36,6 +36,9 @@ var GAME = BASE.extend({
 		
 		{src:"images/banners/start.png", id:"start-banner"},
 		
+		{src:"images/bonuses/beer.png", id:"beer"},
+		{src:"images/bonuses/coin.png", id:"coin"},
+		
 		{src:"images/interaction/jump-center.png ", id:"jump-center", type: createjs.LoadQueue.IMAGE},
 		{src:"images/interaction/jump-left.png", id:"jump-left", type: createjs.LoadQueue.IMAGE},
 		{src:"images/interaction/jump-right.png", id:"jump-right", type: createjs.LoadQueue.IMAGE},
@@ -57,6 +60,10 @@ var GAME = BASE.extend({
 	
 	movingElements: [],
 	
+	bonuses: [
+		{id: 'coin', cls: 'Coin'},
+		{id: 'beer', cls: 'Beer'},
+	],
 	
 	props: [
 		{id: 'start-banner', cls: 'StartBanner'}
@@ -79,7 +86,7 @@ var GAME = BASE.extend({
 		//{id: 'sinistar', cls: "Sinistar"}
 	],
 	
-	bonuses: ['gate', 'coin'],
+	//bonuses: ['beer', 'coin'],
 	
 	steerDirections: ['left3', 'left2', 'left1', 'straight', 'right1', 'right2', 'right3'],
 	steerSpeeds: {
@@ -104,7 +111,10 @@ var GAME = BASE.extend({
 	height: 0,
 	
 	lastObstAt: 0,
-	obstEvery: 2,
+	obstEvery: 5,
+	
+	lastBonusAt: 0,
+	bonusEvery: 25,
 	
 	lastInterAt: 0,
 	interEvery: 30,
@@ -578,7 +588,7 @@ var GAME = BASE.extend({
 		
 		var pool = [];
 		
-		pool = pool.concat(ctxt.obstacles, ctxt.interactives, ctxt.props);
+		pool = pool.concat(ctxt.obstacles, ctxt.interactives, ctxt.props, ctxt.bonuses);
 		
 		for (var i = 0, l = pool.length; i < l; i++) {
 			var ent = pool[i];
@@ -659,7 +669,8 @@ var GAME = BASE.extend({
 		var defaults = {
 			obstacles: true,
 			interactives: false,
-			props: false
+			props: false,
+			bonus: false
 		};
 		
 		o = $.extend({}, defaults, o);
@@ -669,6 +680,7 @@ var GAME = BASE.extend({
 		if (o.obstacles) { pool = pool.concat(ctxt.obstacles); }
 		if (o.interactives) { pool = pool.concat(ctxt.interactives); }
 		if (o.props) { pool = pool.concat(ctxt.props); }
+		if (o.bonus) { pool = pool.concat(ctxt.bonuses); }
 
 		if (pool.length < 1) {
 			return false;
@@ -850,13 +862,19 @@ var GAME = BASE.extend({
 		if (t > 20) {
 			var obst_delta = t - ctxt.lastObstAt;
 			if (obst_delta >= ctxt.obstEvery) {
-				ctxt.addEntity({interactives: false, obstacles: true});
+				ctxt.addEntity({interactives: false, obstacles: true, bonus: false});
 				ctxt.lastObstAt = t;
+			}
+			
+			var bonus_delta = t - ctxt.lastBonusAt;
+			if (bonus_delta >= ctxt.bonusEvery) {
+				ctxt.addEntity({interactives: false, obstacles: false, bonus: true});
+				ctxt.lastBonusAt = t;
 			}
 			
 			var inter_delta = t - ctxt.lastInterAt;
 			if (inter_delta >= ctxt.interEvery) {
-				ctxt.addEntity({interactives: true, obstacles: false});
+				ctxt.addEntity({interactives: true, obstacles: false, bonus: false});
 				ctxt.lastInterAt = t;
 			}
 			

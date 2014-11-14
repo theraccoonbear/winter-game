@@ -233,6 +233,85 @@ var Obstacle = Entity.extend({
 	_xyz: null
 }); // class Obstacle
 
+var Bonus = Entity.extend({
+	name: "Bonus",
+	
+	constructor: function(options) {
+		var ctxt = this;
+		
+		options = $.extend({}, options, {
+			collidable: true,
+			fatal: false
+		});
+		
+		Obstacle.super.constructor.call(this, options);
+	},
+	
+	_xyz: null
+}); // class Bonus
+
+var Coin = Bonus.extend({
+	
+	constructor: function(options) {
+		var ctxt = this;
+		Coin.super.constructor.call(this, options);
+		this.addCollider({
+			points: "8,30-8,42-42,42-42,30-8,30",
+			action: function(o) {
+				//console.log('Tree Hit!', typeof o !== "undefined" ? o : "");
+				ctxt.game.score += 3000;
+				ctxt.game.sweetMessage({message:'Spare Change!'});
+			}
+		});
+	},
+	
+	initSprite: function() {
+		var ctxt = this;
+		
+		ctxt.spriteSheet = new createjs.SpriteSheet({
+			"images": [ctxt.game.loader.getResult("coin")],
+			"frames": {"width": 50, "height": 50},
+			"animations": {
+				"default": [0,14,'default',0.5]
+			}
+		});
+		
+	},
+	_xyz: null
+}); // class Coin
+
+var Beer = Bonus.extend({
+	
+	constructor: function(options) {
+		var ctxt = this;
+		Beer.super.constructor.call(this, options);
+		
+		this.addCollider({
+			points: "8,30-8,42-42,42-42,30-8,30",
+			action: function(o) {
+				//console.log('Tree Hit!', typeof o !== "undefined" ? o : "");
+				ctxt.game.score += 1000;
+				ctxt.game.sweetMessage({message:'Beer Bonus!'});
+			}
+		});
+		
+	},
+	
+	initSprite: function() {
+		var ctxt = this;
+		
+		ctxt.spriteSheet = new createjs.SpriteSheet({
+			"images": [ctxt.game.loader.getResult("beer")],
+			"frames": {"width": 50, "height": 50},
+			"animations": {
+				"default": [0,22,'default',0.5]
+			}
+		});
+		
+	},
+	_xyz: null
+}); // class Beer
+
 var Tree = Obstacle.extend({
 	name: "Tree",
 	
