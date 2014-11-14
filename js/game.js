@@ -407,10 +407,11 @@ var GAME = BASE.extend({
 		var height_factor = ctxt.layout() == 'landscape' ? 12 : 6;
 		var radius_factor = ctxt.layout() == 'landscape' ? 12 : 10;
 		
-		var touch_width = Math.min(dim.width - 30, 600);
+		var touch_width = Math.min(dim.width - 30, 400);
 		var touch_height = Math.round(dim.height / height_factor);
 		var radius = Math.round(touch_height / 2); //Math.round(touch_width / radius_factor);
 		var font_size = Math.round(touch_height * .7);
+		
 		
 		ctxt.width = dim.width;
 		ctxt.height = dim.height;
@@ -435,10 +436,10 @@ var GAME = BASE.extend({
 		
 		ctxt.$touchSteer
 			.css({
-				'-webkit-border-radius': radius + 'px',
-				'-moz-border-radius': radius + 'px',
-				'border-radius': radius + 'px',
-				'font-size': font_size,
+//				'-webkit-border-radius': radius + 'px',
+//				'-moz-border-radius': radius + 'px',
+//				'border-radius': radius + 'px',
+				//'font-size': font_size,
 				'width': touch_width,
 				'height': touch_height
 			});
