@@ -28,7 +28,7 @@ var Entity = Class.extend({
 	
 	dimensions: function() {
 		var ctxt = this;
-		console.log(ctxt.spriteSheet);
+		//console.log(ctxt.spriteSheet);
 	},
 	
 	addCollider: function(options) {
@@ -102,6 +102,22 @@ var Entity = Class.extend({
 		}
 	},
 	
+	remove: function() {
+		var ctxt = this;
+		
+		//console.log('Found at: ', ctxt.game.stage.getChildIndex(ctxt.container));
+		
+		for (var i = 0, l = ctxt.game.movingElements.length; i < l; i++) {
+			var ent = ctxt.game.movingElements[i];
+			if (ent == ctxt) {
+				//console.log(ent.sprite, i);
+				ctxt.game.movingElements.splice(i, 1);
+				ctxt.game.stage.removeChild(ctxt.container);
+				break;
+			}
+		}
+	},
+	
 	rectContainsRect: function(rect_1_pt1, rect_1_pt2, rect_2_pt1, rect_2_pt2) {
 		var left_in = rect_1_pt1.x > rect_2_pt1.x && rect_1_pt1.x < rect_2_pt2.x;
 		var top_in = rect_1_pt1.y > rect_2_pt1.y && rect_1_pt1.y < rect_2_pt2.y;
@@ -132,17 +148,17 @@ var Entity = Class.extend({
 				var ent = ctxt.game.movingElements[i];
 				var existing_pt_1 = new Point2D(ent.sprite.x, ent.sprite.y);
 				var existing_pt_2 = new Point2D(ent.sprite.x + ent.spriteSheet._frameWidth, ent.sprite.y + ent.spriteSheet._frameHeight);
-				if (ctxt.rectContainsRect(proposed_pt_1, proposed_pt_2, existing_pt_1, existing_pt_2)) {
+				if (ctxt.rectContainsRect(proposed_pt_1, proposed_pt_2, existing_pt_1, existing_pt_2) || ctxt.rectContainsRect(existing_pt_1, existing_pt_2, proposed_pt_1, proposed_pt_2)) {
 					inter.status = 'Intersection';
+					break;
 				} else {
 					inter = Intersection.intersectRectangleRectangle(proposed_pt_1, proposed_pt_2, existing_pt_1, existing_pt_2);
-					if (inter.status !== 'No Intersection') {
-						//console.log(i, 'try again');
+					if (inter.status === 'Intersection') {
 						break;
 					}
 				}
 			}
-		} while (inter.status !== 'No Intersection' && attempts < 20);
+		} while (inter.status === 'Intersection' && attempts < 20);
 		
 		return {x: x, y: y};
 	},
@@ -178,7 +194,13 @@ var Entity = Class.extend({
 		ctxt.sprite.y = y;
 		ctxt.sprite.entity = ctxt;
 	
-		ctxt.game.stage.addChild(ctxt.container);
+		if (ctxt.alwaysUnder) {
+			//console.log('Placing new ' + ctxt.name + ' on bottom');
+			//console.log('Boarder at: ', ctxt.game.stage.getChildIndex(ctxt.game.boarder), ', ' + ctxt.name + ' at: ', ctxt.game.stage.getChildIndex(ctxt.container));
+			ctxt.game.stage.addChildAt(ctxt.container, 1);
+		} else {
+			ctxt.game.stage.addChild(ctxt.container);
+		}
 		
 		ctxt.drawBounds();
 	},
@@ -261,6 +283,7 @@ var Coin = Bonus.extend({
 				//console.log('Tree Hit!', typeof o !== "undefined" ? o : "");
 				ctxt.game.score += 3000;
 				ctxt.game.sweetMessage({message:'Spare Change!'});
+				ctxt.remove();
 			}
 		});
 	},
@@ -292,6 +315,7 @@ var Beer = Bonus.extend({
 				//console.log('Tree Hit!', typeof o !== "undefined" ? o : "");
 				ctxt.game.score += 1000;
 				ctxt.game.sweetMessage({message:'Beer Bonus!'});
+				ctxt.remove();
 			}
 		});
 		
@@ -327,7 +351,7 @@ var Tree = Obstacle.extend({
 			//points: "46,194-66,202-80,198-64,180-46,194",
 			points: "38,192-55,203-81,203-94,192-81,181-55,181-38,192",
 			action: function(o) {
-				console.log('Tree Hit!', typeof o !== "undefined" ? o : "");
+				//('Tree Hit!', typeof o !== "undefined" ? o : "");
 				ctxt.game.crash();
 			}
 		});
@@ -370,7 +394,7 @@ var Stump = Obstacle.extend({
 		this.addCollider({
 			points: "4,45-12,50-13,64-22,66-35,60-45,56-56,55-47,41-28,37-14,36-4,45",
 			action: function(o) {
-				console.log('Stump Hit!', typeof o !== "undefined" ? o : "");
+				//console.log('Stump Hit!', typeof o !== "undefined" ? o : "");
 				ctxt.game.crash();
 			}
 		});
@@ -401,15 +425,16 @@ var Stump = Obstacle.extend({
 
 var Rock = Obstacle.extend({
 	name: "Rock",
-	
+	jumpable: true,
+	alwaysUnder: true,
 	imageID: false,
 	
 	constructor: function(options) {
 		var ctxt = this;
 		
-		options.alwaysUnder = true;
-		options.jumpable = true;
-		
+		//options.alwaysUnder = true;
+		//options.jumpable = true;
+		//
 		Rock.super.constructor.call(this, options);
 	},
 	
@@ -447,7 +472,7 @@ var Rock1 = Rock.extend({
 		this.addCollider({
 			points: "20,7-12,15-8,24-4,30-6,48-23,64-34,70-59,75-72,67-78,54-74,39-70,29-76,20-70,16-64,17-59,6-45,2-34,6-20,7",
 			action: function(o) {
-				console.log('Rock 1 Hit!', typeof o !== "undefined" ? o : "");
+				//('Rock 1 Hit!', typeof o !== "undefined" ? o : "");
 				ctxt.game.crash();
 			}
 		});
@@ -472,7 +497,7 @@ var Rock2 = Rock.extend({
 		this.addCollider({
 			points: "2,23-28,4-37,7-38,22-88,17-92,21-88,26-86,38-95,52-78,71-17,75-10,68-20,60-14,40-20,35-18,29-2,23",
 			action: function(o) {
-				console.log('Rock 2 Hit!', typeof o !== "undefined" ? o : "");
+				//('Rock 2 Hit!', typeof o !== "undefined" ? o : "");
 				ctxt.game.crash();
 			}
 		});
@@ -497,7 +522,7 @@ var Rock3 = Rock.extend({
 		this.addCollider({
 			points: "2,18-12,9-27,4-47,12-58,2-83,11-84,18-91,22-91,29-86,36-93,48-90,52-78,51-72,57-57,56-53,51-9,48-4,43-1,33-2,18",
 			action: function(o) {
-				console.log('Rock 3 Hit!', typeof o !== "undefined" ? o : "");
+				//console.log('Rock 3 Hit!', typeof o !== "undefined" ? o : "");
 				ctxt.game.crash();
 			}
 		});
@@ -522,7 +547,7 @@ var Rock4 = Rock.extend({
 		this.addCollider({
 			points: "13,19-37,2-63,18-73,39-68,56-39,77-9,60-1,40-13,19",
 			action: function(o) {
-				console.log('Rock 4 Hit!', typeof o !== "undefined" ? o : "");
+				//('Rock 4 Hit!', typeof o !== "undefined" ? o : "");
 				ctxt.game.crash();
 			}
 		});
@@ -559,9 +584,9 @@ var StartBanner = Entity.extend({
 	_xyz: null
 }); // class StartBanner
 
-
 var Jump = Entity.extend({
 	name: "Jump",
+	alwaysUnder: true,
 	
 	contstructor: function(options) {
 		var ctxt = this;
@@ -592,6 +617,7 @@ var JumpLeft = Jump.extend({
 	
 	constructor: function(options) {
 		var ctxt = this;
+		
 		options.imageID = 'jump-left';
 		options.width = 264;
 		options.height = 190;
@@ -603,7 +629,7 @@ var JumpLeft = Jump.extend({
 			points: "105,22-14,92-128,166-210,85",
 			name: 'crash-edges',
 			action: function(o) {
-				console.log('JumpLeft side collision!');
+				//('JumpLeft side collision!');
 				ctxt.game.crash();
 			}
 		});
@@ -615,7 +641,7 @@ var JumpLeft = Jump.extend({
 			disables: ['crash-edges', 'enter-ramp'],
 			enables: ['jump-edge', 'exit-ramp'],
 			action: function(o) {
-				console.log('Enter Ramp!');
+				//('Enter Ramp!');
 			}
 		});
 		
@@ -626,8 +652,11 @@ var JumpLeft = Jump.extend({
 			name: 'jump-edge',
 			disables: ['jump-edge'],
 			action: function(o) {
-				console.log('Launch!');
+				//('Launch!');
+				ctxt.game.boost();
 				ctxt.game.jump();
+				ctxt.game.score += 1000;
+				ctxt.game.sweetMessage({message:'Sick Air Bro!'});
 			}
 		});
 
@@ -639,10 +668,7 @@ var JumpLeft = Jump.extend({
 			disables: ['jump-edge', 'exit-ramp'],
 			enables: ['crash-edges', 'enter-ramp'],
 			action: function(o) {
-				console.log('Exit ramp!');
-				ctxt.game.score += 1000;
-				ctxt.game.jump();
-				ctxt.game.sweetMessage({message:'Sick Air Bro!'});
+				//('Exit ramp!')
 			}
 		});
 		
@@ -668,7 +694,7 @@ var JumpRight = Jump.extend({
 			points: "37,84-120,170-240,91-149,22",
 			name: 'crash-edges',
 			action: function(o) {
-				console.log('Jump side collision!');
+				//('Jump side collision!');
 				ctxt.game.crash();
 			}
 		});
@@ -680,7 +706,7 @@ var JumpRight = Jump.extend({
 			disables: ['crash-edges', 'enter-ramp'],
 			enables: ['jump-edge', 'exit-ramp'],
 			action: function(o) {
-				console.log('Enter Ramp!');
+				//('Enter Ramp!');
 			}
 		});
 		
@@ -691,8 +717,11 @@ var JumpRight = Jump.extend({
 			name: 'jump-edge',
 			disables: ['jump-edge'],
 			action: function(o) {
-				console.log('Launch!');
+				//('Launch!');
+				ctxt.game.boost();
 				ctxt.game.jump();
+				ctxt.game.score += 1000;
+				ctxt.game.sweetMessage({message:'Sick Air Bro!'});
 			}
 		});
 
@@ -704,9 +733,7 @@ var JumpRight = Jump.extend({
 			disables: ['jump-edge', 'exit-ramp'],
 			enables: ['crash-edges', 'enter-ramp'],
 			action: function(o) {
-				console.log('Exit ramp!');
-				ctxt.game.jump();
-				ctxt.game.sweetMessage({message:'Sick Air Bro!'});
+				//('Exit ramp!');
 			}
 		});
 		
@@ -732,7 +759,7 @@ var JumpCenter = Jump.extend({
 			points: "50,44-23,166-256,170-224,45",
 			name: 'crash-edges',
 			action: function(o) {
-				console.log('Jump side collision!');
+				//('Jump side collision!');
 				ctxt.game.crash();
 			}
 		});
@@ -744,7 +771,7 @@ var JumpCenter = Jump.extend({
 			disables: ['crash-edges', 'enter-ramp'],
 			enables: ['jump-edge', 'exit-ramp'],
 			action: function(o) {
-				console.log('Enter Ramp!');
+				//('Enter Ramp!');
 			}
 		});
 		
@@ -755,9 +782,11 @@ var JumpCenter = Jump.extend({
 			name: 'jump-edge',
 			disables: ['jump-edge'],
 			action: function(o) {
-				console.log('Launch!');
-				ctxt.game.sweetMessage({message:'Sick Air Bro!'});
+				//('Launch!');
+				ctxt.game.boost();
 				ctxt.game.jump();
+				ctxt.game.score += 1000;
+				ctxt.game.sweetMessage({message:'Sick Air Bro!'});
 			}
 		});
 
@@ -769,7 +798,7 @@ var JumpCenter = Jump.extend({
 			disables: ['jump-edge', 'exit-ramp'],
 			enables: ['crash-edges', 'enter-ramp'],
 			action: function(o) {
-				console.log('Exit ramp!');
+				//('Exit ramp!');
 			}
 		});
 		

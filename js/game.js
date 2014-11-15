@@ -99,7 +99,8 @@ var GAME = BASE.extend({
 		'right3': 	{d: 32.35,  sound: 'snow-1', boardTip: {x: 648, y: 225}}
 	},
 	
-	speed: 10,
+	initSpeed: 15,
+	speed: 15,
 	level: 1,
 	nextLevelAt: 150,
 	score: 0,
@@ -253,7 +254,6 @@ var GAME = BASE.extend({
 		
 		ctxt.initBoarder();
 		
-		ctxt.setupStart();
 		
 		ctxt.initControls();
 		
@@ -262,6 +262,11 @@ var GAME = BASE.extend({
 		ctxt.$preloader.fadeOut(250);
 		
 		ctxt.initSound();
+		
+		createjs.Ticker.timingMode = createjs.Ticker.RAF;
+		createjs.Ticker.addEventListener("tick", function(event) {
+			ctxt.tick(event);
+		});
 		
 		ctxt.start();
 		
@@ -272,13 +277,32 @@ var GAME = BASE.extend({
 	start: function() {
 		var ctxt = this;
 		
-		createjs.Ticker.timingMode = createjs.Ticker.RAF;
-		//createjs.Ticker.setPaused(true)
-		createjs.Ticker.addEventListener("tick", function(event) {
-			ctxt.tick(event);
-		});
+		for (var i = ctxt.movingElements.length - 1; i >= 0; i--) {
+			var ent = ctxt.movingElements[i];
+			ent.remove();
+		}
+		
+		ctxt.distance = 0;
+		ctxt.score = 0;
+		ctxt.direction = 3;
+		ctxt.jumping = false;
+		ctxt.crashing = false;
+		ctxt.stopping = false;
+		
+		ctxt.lastObstAt = 0;
+		ctxt.lastBonusAt = 0;
+		ctxt.lastInterAt = 0;
+		ctxt.speed = ctxt.initSpeed;
+		
+		ctxt.setupStart();
+		
+		var dirName = ctxt.steerDirections[ctxt.direction];
+		ctxt.boarder.gotoAndPlay(dirName);
 		
 		ctxt.reflowUI();
+		
+		createjs.Ticker.setPaused(false);
+		
 		ctxt.stage.update();
 	},
 	
@@ -336,7 +360,7 @@ var GAME = BASE.extend({
 			}
 		});
 		
-		ctxt.snowSound = createjs.Sound.play('snow-4');
+		//ctxt.snowSound = createjs.Sound.play('snow-4');
 	},
 	
 	initHill: function() {
@@ -358,8 +382,10 @@ var GAME = BASE.extend({
 	initControls: function() {
 		var ctxt = this;
 		$(document).on('keydown', function(e) {
-			//console.log('key ' + e.which);
-			switch (e.which) {
+			
+			var which = String.fromCharCode(e.which).toUpperCase().charCodeAt(0);
+			console.log('key ' + e.which, which);
+			switch (which) {
 				case 37:
 					ctxt.steer('left');
 					break;
@@ -371,6 +397,12 @@ var GAME = BASE.extend({
 					break;
 				case 67:
 					ctxt.crash();
+					break;
+				case 68:
+					ctxt.debug = !ctxt.debug;
+					break;
+				case 82:
+					ctxt.start();
 					break;
 				case 38:
 					ctxt.speed++;
@@ -400,6 +432,30 @@ var GAME = BASE.extend({
 		ctxt.jumping = true;
 		var dirName = ctxt.steerDirections[ctxt.direction];
 		ctxt.boarder.gotoAndPlay(dirName + "-jump");
+	},
+	
+	boost: function(o) {
+		var ctxt = this;
+		var def = {
+			percentage: 50,
+			duration: 5000,
+			interval: 100
+		};
+		
+		o = $.extend({}, def, o);;
+		var origSpeed = ctxt.speed;
+		ctxt.speed *= (1 + (o.percentage / 100))//1.5;
+		
+		var per = (ctxt.speed - origSpeed) / (o.duration / o.interval)//20;
+		
+		var boostInt = setInterval(function() {
+			ctxt.speed -= per;
+			if (ctxt.speed <= origSpeed) {
+				ctxt.speed = origSpeed;
+				clearInterval(boostInt);
+			}
+		}, o.interval);
+		
 	},
 
 	crash: function () {
@@ -540,7 +596,7 @@ var GAME = BASE.extend({
 		//	animations[d + '-twitch'] = [(i * framesPerDir) + 21, (i * framesPerDir) + 22, d + '-twitch', 0.5];
 		//});
 		
-		console.log(animations);
+		//console.log(animations);
 		
 		ctxt.sprites.boarder = new createjs.SpriteSheet({
 			"images": [ctxt.loader.getResult("boarder-small")],
@@ -647,10 +703,7 @@ var GAME = BASE.extend({
 			.hide()
 			.appendTo(ctxt.$body)
 			.html(opts.message);
-			
-			
-		console.log($message.width() + 'x' + $message.height());
-			
+						
 		$message
 			.show()
 			.css({
@@ -827,9 +880,10 @@ var GAME = BASE.extend({
 			}
 
 			if (e.y + entity.spriteSheet._frameHeight < -100) {
-				ctxt.stage.removeChild(e);
+				//ctxt.stage.removeChild(e);
 				//ctxt.under.removeChild(e);
-				ctxt.movingElements.splice(i, 1);
+				//ctxt.movingElements.splice(i, 1);
+				entity.remove();
 			} else if (e.y + entity.spriteSheet._frameHeight < ctxt.boarder.y + ctxt.boarder.spriteSheet._frameHeight && !entity.playerPassed) {
 				ctxt.movingElements[i].playerPassed = true;
 				performSorting = true;
