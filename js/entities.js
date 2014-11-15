@@ -202,7 +202,7 @@ var Entity = Class.extend({
 			ctxt.game.stage.addChild(ctxt.container);
 		}
 		
-		ctxt.drawBounds();
+		//ctxt.drawBounds();
 	},
 	
 	checkCollisionAgainst: function(options) {

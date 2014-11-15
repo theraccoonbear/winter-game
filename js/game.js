@@ -48,7 +48,8 @@ var GAME = BASE.extend({
 		//{src:"images/snow-bg.jpg", id:"snow-surface"},
 		{src:"images/snow-bg-2.jpg", id:"snow-surface-2"},
 		//
-		//{src:"sounds/snow-1.xogg", id: "snow-1", type: createjs.LoadQueue.BINARY},
+		{src:"sounds/snow-1.xogg", id: "snow-1", type: createjs.LoadQueue.BINARY}
+		//,
 		//{src:"sounds/snow-2.xogg", id: "snow-2", type: createjs.LoadQueue.BINARY},
 		//{src:"sounds/snow-3.xogg", id: "snow-3", type: createjs.LoadQueue.BINARY},
 		//{src:"sounds/snow-4.xogg", id: "snow-4", type: createjs.LoadQueue.BINARY}
@@ -90,13 +91,13 @@ var GAME = BASE.extend({
 	
 	steerDirections: ['left3', 'left2', 'left1', 'straight', 'right1', 'right2', 'right3'],
 	steerSpeeds: {
-		'left3': 		{d: 147.65, sound: 'snow-1', boardTip: {x: 713, y: 237}},
-		'left2': 		{d: 131.59, sound: 'snow-2', boardTip: {x: 713, y: 223}},
-		'left1': 		{d: 111.59, sound: 'snow-3', boardTip: {x: 690, y: 230}},
-		'straight': {d: 90.00,  sound: 'snow-4', boardTip: {x: 679, y: 235}},
-		'right1': 	{d: 68.41,  sound: 'snow-3', boardTip: {x: 670, y: 230}},
-		'right2': 	{d: 48.81,  sound: 'snow-2', boardTip: {x: 655, y: 235}},
-		'right3': 	{d: 32.35,  sound: 'snow-1', boardTip: {x: 648, y: 225}}
+		'left3': 		{d: 147.65, sound: {id: 'snow-1', rate: 0.25}, boardTip: {x: 713, y: 237}},
+		'left2': 		{d: 131.59, sound: {id: 'snow-1', rate: 0.5}, boardTip: {x: 713, y: 223}},
+		'left1': 		{d: 111.59, sound: {id: 'snow-1', rate: 0.75}, boardTip: {x: 690, y: 230}},
+		'straight': {d: 90.00,  sound: {id: 'snow-1', rate: 1}, boardTip: {x: 679, y: 235}},
+		'right1': 	{d: 68.41,  sound: {id: 'snow-1', rate: 0.75}, boardTip: {x: 670, y: 230}},
+		'right2': 	{d: 48.81,  sound: {id: 'snow-1', rate: 0.5}, boardTip: {x: 655, y: 235}},
+		'right3': 	{d: 32.35,  sound: {id: 'snow-1', rate: 0.25}, boardTip: {x: 648, y: 225}}
 	},
 	
 	initSpeed: 15,
@@ -349,16 +350,62 @@ var GAME = BASE.extend({
 		}
 	},
 	
+	stopSound: function() {
+		var ctxt = this;
+		
+		if (!ctxt.audio.paused) {
+			ctxt.audio.pause();
+		}
+	},
+	
+	playSound: function(o) {
+		var ctxt = this;
+		
+		return;
+		
+		var def = {
+			id: 'snow-1',
+			rate: 1
+		};
+		
+		o = $.extend({}, def, o);
+		
+		var data_uri = 'data:audio/ogg;charset=utf-8;base64,' + ctxt.base64ArrayBuffer(ctxt.loader.getResult(o.id));
+		if (!ctxt.audio.paused) {
+			ctxt.stopSound();
+		}
+		
+		ctxt.audio.playbackRate = o.rate;
+		ctxt.$audio.attr('src', data_uri);
+		//ctxt.audio.currentTime = 0;
+		ctxt.$audio[0].play();
+	},
+	
 	initSound: function() {
 		var ctxt = this;
 		
+		ctxt.$audio = $('<audio></audio>');
+		ctxt.$audio.appendTo('body');
+		ctxt.audio = ctxt.$audio[0];
+		//ctxt.audio.currentTime = 0;
+		ctxt.playSound({id: 'snow-1', rate: 1});
+		ctxt.audio.addEventListener('ended', function() {
+			this.currentTime = 0;
+			this.play();
+		}, false);
+		
 		//console.log(ctxt.base64ArrayBuffer(ctxt.loader.getResult('snow-4')));
-		$.each(ctxt.manifest, function(i, o) {
-			if (/\.xogg/.test(o.src) ) {
-				//console.log(o);
-				//createjs.Sound.registerSound('data:audio/ogg;charset=utf-8;base64,' + ctxt.base64ArrayBuffer(ctxt.loader.getResult(o.id)), o.id);
-			}
-		});
+		//$.each(ctxt.manifest, function(i, o) {
+		//	if (/\.xogg/.test(o.src) ) {
+		//		//console.log(o);
+		//		var data_uri = 'data:audio/ogg;charset=utf-8;base64,' + ctxt.base64ArrayBuffer(ctxt.loader.getResult(o.id));
+		//		//createjs.Sound.registerSound(data_uri, o.id);
+		//		var $audio = $('<audio></audio>');
+		//		$audio.appendTo('body');
+		//		$audio.attr('autoplay', true);
+		//		$audio.attr('src', data_uri);
+		//	}
+		//});
 		
 		//ctxt.snowSound = createjs.Sound.play('snow-4');
 	},
@@ -460,10 +507,15 @@ var GAME = BASE.extend({
 
 	crash: function () {
 		var ctxt = this;
-		ctxt.crashing = true;
-		var dirName = ctxt.steerDirections[ctxt.direction];
-		ctxt.boarder.gotoAndPlay(dirName + "-crash");
-		ctxt.sweetMessage({message: 'Ouch! You Bit It!'});
+		if (ctxt.crashing || ctxt.stopping) {
+			ctxt.sweetMessage({message: '-1000 points'});
+			ctxt.score -= 1000;
+		} else {
+			ctxt.crashing = true;
+			var dirName = ctxt.steerDirections[ctxt.direction];
+			ctxt.boarder.gotoAndPlay(dirName + "-crash");
+			ctxt.sweetMessage({message: 'Ouch! You Bit It!'});
+		}
 	},
 	
 	reflowUI: function() {
@@ -551,6 +603,8 @@ var GAME = BASE.extend({
 		
 		//ctxt.snowSound.stop();
 		//ctxt.snowSound = createjs.Sound.play(speed.sound);
+		ctxt.playSound(speed.sound);
+		
 		ctxt.direction = where;
 		
 		ctxt.boarder.gotoAndPlay(dirName);
@@ -692,7 +746,7 @@ var GAME = BASE.extend({
 			message: "No message",
 			x: ctxt.dimensions().width / 2,
 			y: ctxt.boarder.y + 100,
-			ms: 1000
+			ms: 1500
 		};
 		
 		opts = $.extend({}, opts, o);
@@ -711,7 +765,10 @@ var GAME = BASE.extend({
 				top: opts.y - ($message.height() / 2)
 			})
 			.animate({
-				top: '-=50px'
+				top: '-=50px',
+				left: '+=50px',
+				fontSize: '+=20px',
+				opacity: 0
 			}, opts.ms, function() {
 				$message.remove();
 			});
@@ -800,7 +857,7 @@ var GAME = BASE.extend({
 		var distThisTick = Math.abs(speed.y);
 		ctxt.distance += distThisTick / 20;
 		ctxt.$distance.html(parseInt(ctxt.distance).commafy() + "'");
-		ctxt.score += distThisTick * 10;
+		ctxt.score += ctxt.crashing || ctxt.stopping ? 0 : distThisTick;
 		ctxt.$score.html(parseInt(ctxt.score).commafy());
 
 		var boarderBottomCenterX = ctxt.steerSpeeds[ctxt.steerDirections[ctxt.direction]].boardTip.x;
@@ -915,6 +972,8 @@ var GAME = BASE.extend({
 		if (ctxt.stopping) {
 			ctxt.speed -= .1;
 			if (ctxt.speed <= 0) {
+				ctxt.speed = 0;
+				ctxt.stopSound();
 				createjs.Ticker.setPaused(true);
 			}
 		}
