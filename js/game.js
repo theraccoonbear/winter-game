@@ -384,7 +384,7 @@ var GAME = BASE.extend({
 		$(document).on('keydown', function(e) {
 			
 			var which = String.fromCharCode(e.which).toUpperCase().charCodeAt(0);
-			console.log('key ' + e.which, which);
+			//console.log('key ' + e.which, which);
 			switch (which) {
 				case 37:
 					ctxt.steer('left');
@@ -848,8 +848,8 @@ var GAME = BASE.extend({
 			}
 
 			var graphics = new createjs.Graphics();
-			graphics.setStrokeStyle(1);
-			graphics.beginStroke("red");
+			graphics.setStrokeStyle(2);
+			graphics.beginStroke("yellow");
 			
 			var orig = boarderPoints[0];
 			var next;
@@ -867,6 +867,8 @@ var GAME = BASE.extend({
 		
 		var performSorting = false;
 		
+		ctxt.stage.setChildIndex(ctxt.ground, 0);
+		
 		for (var i = ctxt.movingElements.length - 1; i >= 0; i--) {
 			var entity = ctxt.movingElements[i];
 			var e = entity.sprite;
@@ -877,6 +879,10 @@ var GAME = BASE.extend({
 			
 			if (ctxt.debug) {
 				entity.drawBounds();
+			}
+			
+			if (entity.alwaysUnder) {
+				ctxt.stage.setChildIndex(entity.container, 1);
 			}
 
 			if (e.y + entity.spriteSheet._frameHeight < -100) {

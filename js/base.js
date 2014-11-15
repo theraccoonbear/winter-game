@@ -4,11 +4,16 @@ var BASE = Class.extend({
 		height: 768
 	},
 	
-	constructor: function(o) {
+	constructor: function(options) {
+		
+		
+		for (var p in options) {
+			this[p] = options[p];
+		}
+		
 		var ctxt = this;
+		
 		ctxt.helpers();
-		//ctxt.touchHandling();
-		//ctxt.tiltHandling();
 	},
 	
 	isTouchDevice: function() {

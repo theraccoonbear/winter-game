@@ -26,7 +26,7 @@ var CollisionTarget = Class.extend({
 		var entity = o.entity;
 		
 		var graphics = new createjs.Graphics();
-		graphics.setStrokeStyle(1);
+		graphics.setStrokeStyle(2);
 		graphics.beginStroke("red");
 		
 		

@@ -621,6 +621,7 @@ var JumpLeft = Jump.extend({
 		options.imageID = 'jump-left';
 		options.width = 264;
 		options.height = 190;
+		options.alwaysUnder = true;
 		
 		JumpLeft.super.constructor.call(this, options);
 
@@ -683,6 +684,7 @@ var JumpRight = Jump.extend({
 	
 	constructor: function(options) {
 		var ctxt = this;
+		options.alwaysUnder = true;
 		options.imageID = 'jump-right';
 		options.width = 264;
 		options.height = 190;
@@ -751,6 +753,7 @@ var JumpCenter = Jump.extend({
 		options.imageID = 'jump-center';
 		options.width = 280;
 		options.height = 198;
+		options.alwaysUnder = true;
 		
 		JumpCenter.super.constructor.call(this, options);
 
