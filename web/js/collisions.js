@@ -82,11 +82,12 @@ var CollisionTarget = Class.extend({
 		}
 
 		if (result.status !== 'No Intersection') {
+			console.log("Hit collider called \"" + ctxt.name + '" on "' + entity.name + '" entity');
 			for (i = 0, l = ctxt.disables.length; i < l; i++) {
 				name = ctxt.disables[i];
 				col = entity.getColliderByName({name: name});
 				if (col !== false) {
-					//console.log('disabled collider: ' + name);
+					console.log('    disabled collider: ' + name);
 					col.enabled = false;
 				}
 			}
@@ -95,10 +96,11 @@ var CollisionTarget = Class.extend({
 				name = ctxt.enables[i];
 				col = entity.getColliderByName({name: name});
 				if (col !== false) {
-					//console.log('enabled collider: ' + name);
+					console.log('    enabled collider: ' + name);
 					col.enabled = true;
 				}
 			}
+			console.log('==========================================');
 
 			//disable collider so it doesn't trigger again
 			ctxt.enabled = false;

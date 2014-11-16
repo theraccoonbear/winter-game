@@ -1,0 +1,9 @@
+.DS_Store
+.Trashes
+composer.lock
+composer.phar
+app/config.php
+vendor
+web/.htaccess
+bak/
+*.log
