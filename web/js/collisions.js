@@ -23,11 +23,22 @@ var CollisionTarget = Class.extend({
 	
 	drawCollider: function(o) {
 		var ctxt = this;
+		
+		var def = {
+			graphics: new createjs.Graphics(),
+			color: 'red',
+		};
+		
+		//console.log('drawing ' + ctxt.name);
+		
+		o = $.extend({}, def, o);
 		var entity = o.entity;
 		
-		var graphics = new createjs.Graphics();
+		var graphics = o.graphics;
 		graphics.setStrokeStyle(2);
-		graphics.beginStroke("red");
+		graphics.beginStroke(o.color);
+		
+		var container = new createjs.Container();
 		
 		
 		var orig = ctxt.points[0].add(new Point2D(parseFloat(entity.sprite.x), parseFloat(entity.sprite.y)));
@@ -37,6 +48,13 @@ var CollisionTarget = Class.extend({
 			next = ctxt.points[i].add(new Point2D(parseFloat(entity.sprite.x), parseFloat(entity.sprite.y)));
 			graphics.lineTo(next.x, next.y);
 		}
+		
+		//var text = new createjs.Text(entity.name + ' - ' + ctxt.name, "10px Arial", "#0000");
+		//text.x = orig.x
+		//text.y = orig.y;
+		////text.textBaseline = "alphabetic";
+		//
+		//container.addChild(new createjs.Shape(graphics))
 		
 		return graphics;
 		
@@ -128,7 +146,7 @@ var CollisionTarget = Class.extend({
 				drawnCollider = [params.game.stage.addChild(new createjs.Shape(graphics))];
 
 				graphics = new createjs.Graphics();
-				graphics.setStrokeStyle(1);
+				graphics.setStrokeStyle(2);
 				graphics.beginStroke("blue");
 				
 				orig = transformedPoints[0];

@@ -263,6 +263,9 @@ var GAME = BASE.extend({
 		ctxt.centerElem(ctxt.$touchSteer, true, false);
 		
 		
+		if (localStorage && localStorage.highScoreName) {
+			ctxt.$highScoreName.val(localStorage.highScoreName);
+		}
 		
 		ctxt.initHill();
 		
@@ -973,19 +976,10 @@ var GAME = BASE.extend({
 			}
 
 			if (e.y + entity.spriteSheet._frameHeight < -100) {
-				//ctxt.stage.removeChild(e);
-				//ctxt.under.removeChild(e);
-				//ctxt.movingElements.splice(i, 1);
 				entity.remove();
 			} else if (e.y + entity.spriteSheet._frameHeight < ctxt.boarder.y + ctxt.boarder.spriteSheet._frameHeight && !entity.playerPassed) {
 				ctxt.movingElements[i].playerPassed = true;
 				performSorting = true;
-				//if (!entity.alwaysUnder && !entity.isUnder) {
-				//	//ctxt.over.removeChild(e);
-				//	//ctxt.under.addChild(e);
-				//	//entity.isUnder = true;
-				//	//console.log('moved ' + entity.name + ' to under');
-				//}
 			}
 			
 			entity.checkCollisionAgainst({points: boarderPoints});
@@ -1073,6 +1067,9 @@ var GAME = BASE.extend({
 		
 		ctxt.$submitHighScore.on('click', function(e) {
 			var name = ctxt.$highScoreName.val().trim();
+			if (localStorage) {
+				localStorage.highScoreName = name;
+			}
 			if (name.length > 0) {
 				var payload = {name: name, score: parseInt(ctxt.score)}
 				$.post('/scores/submit', payload, function(data) {

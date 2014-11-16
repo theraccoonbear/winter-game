@@ -90,16 +90,35 @@ var Entity = Class.extend({
 	drawBounds: function() {
 		var ctxt = this;
 
+		var colors = ['red','green','blue','orange','purple'];
+		var c = 0;
+		
 		for (var j = 0, length = this._drawnColliders.length; j < length; j++) {
 			ctxt.container.removeChild(this._drawnColliders[j]);
 		}
 
 		if (ctxt.colliders.length > 0) {
+			var g = false;
 			for (var i = 0, l = ctxt.colliders.length; i < l; i++) {
-				var g = ctxt.colliders[0].drawCollider({entity: ctxt});
-				this._drawnColliders.push(ctxt.container.addChild(new createjs.Shape(g)));
+				var opts = {
+					entity: ctxt,
+					color: colors[c]
+				};
+				
+				c++;
+				if (c > colors.length - 1) {
+					c = 0;
+				}
+				
+				if (g !== false) {
+					opts.graphics = g;
+				}
+				g = ctxt.colliders[i].drawCollider(opts);
 			}
+			var s = new createjs.Shape(g);
+			this._drawnColliders.push(ctxt.container.addChild(s));
 		}
+
 	},
 	
 	remove: function() {
