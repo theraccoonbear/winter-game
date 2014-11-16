@@ -214,5 +214,14 @@ var BASE = Class.extend({
 		return base64
 	},
 	
+	month: function(mon, short_name) {
+		short_name = typeof short_name === 'undefined' ? false : short_name;
+		var names = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+		mon -= 1;
+		var name = typeof names[mon] !== 'undefinded' ? names[mon] : 'Unknown';
+		name = short_name ? name.substring(0, 3) : name;
+		return name;
+	},
+	
 	_xyz: null
 });

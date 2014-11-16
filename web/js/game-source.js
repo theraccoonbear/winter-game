@@ -132,6 +132,8 @@ var GAME = BASE.extend({
 	jumping: false,
 	crashing: false,
 	stopping: false,
+	
+	menuOpen: false,
 
 	_drawnBoarderCollider: null,
 	debug: false,
@@ -445,10 +447,16 @@ var GAME = BASE.extend({
 	
 	initControls: function() {
 		var ctxt = this;
+		
+		
+		
 		$(document).on('keydown', function(e) {
+			if (ctxt.menuOpen) {
+				return;
+			}
 			
 			var which = String.fromCharCode(e.which).toUpperCase().charCodeAt(0);
-			//console.log('key ' + e.which, which);
+			
 			switch (which) {
 				case 37:
 					ctxt.steer('left');
@@ -1031,17 +1039,29 @@ var GAME = BASE.extend({
 		ctxt.stage.update(event);
 	},
 	
-	loadHighScores: function() {
+	loadHighScores: function(o) {
 		var ctxt = this;
+		
+		o = $.extend({}, o);
 		//$('.popupPanel').hide();
 		ctxt.$highScores.show();
 		$.getJSON('/scores/list', function(data) {
 			var $table = ctxt.$highScores.find('table > tbody');
 			$table.empty();
+			if (data.payload.length == 0) {
+				data.payload.push({name: "No high scores", score: "", created: ""});
+			}
 			$.each(data.payload, function(idx, entry) {
-				var $row = $('<tr><td>' + entry.name + '</td><td>' + entry.score + "</td><td>" + entry.created + "</tr>");
+				var dateObj = new Date(Date.parse(entry.created));
+				var date = ctxt.month(dateObj.getMonth(), true) + ' ' + dateObj.getDate() + ', ' + dateObj.getFullYear();
+				var $row = $('<tr class="hs-entry"><td class="hs-place">' + (idx + 1) + '</td><td class="hs-name">' + entry.name + '</td><td class="hs-score">' + entry.score.commafy() + '</td><td class="hs-data">' + date + "</tr>");
 				$table.append($row);
 			});
+			
+			if (typeof o.after === 'function') {
+				o.after();
+			}
+			
 		});
 	},
 	
@@ -1056,7 +1076,13 @@ var GAME = BASE.extend({
 			if (name.length > 0) {
 				var payload = {name: name, score: parseInt(ctxt.score)}
 				$.post('/scores/submit', payload, function(data) {
-					//console.log('/scores/submit', payload, data);
+					if (data.success) {
+						//var magnificPopup = $.magnificPopup.instance; 
+						//magnificPopup.close();
+						ctxt.loadHighScores({
+							after: function() { ctxt.$highScoreOpener.click(); }
+						});
+					}
 				}, 'json');
 			}
 		});

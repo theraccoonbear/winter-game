@@ -103,8 +103,13 @@ $app->match('/scores/{action}', function($action) use ($app) {
 	
 	switch ($action) {
 		case 'list':
-			$sql = "SELECT name, score, created FROM high_scores ORDER BY score DESC";
-			$resp = $app['db']->fetchAll($sql);
+			$sql = "SELECT name, score, created FROM high_scores ORDER BY score DESC LIMIT 30";
+			$ret = $app['db']->fetchAll($sql);
+			foreach ($ret as $idx => $rec) {
+				$rec['name'] = htmlentities($rec['name']);
+				$rec['score'] = htmlentities($rec['score']);
+				$resp[] = $rec;
+			}
 			break;
 		case 'submit':
 			//$resp = $request;

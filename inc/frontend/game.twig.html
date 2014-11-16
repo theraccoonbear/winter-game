@@ -49,7 +49,7 @@
 					<li><img src="images/txt-distance.svg" alt=""> <span id="distance" class="txt-sPanel">0</span></li>
 					<li><img src="images/txt-score.svg" alt=""> <span id="score" class="txt-sPanel">0</span></li>
 					<li id="inline-popups">
-						<a href="#test-popup" data-effect="mfp-zoom-in"><img src="images/icon-help-sm.svg" alt="Help" class="icon-help"></a>
+						<a href="#highScores" id="highScoreOpener" data-effect="mfp-zoom-in"><img src="images/icon-help-sm.svg" alt="Help" class="icon-help"></a>
 						<a href="#submitScore" id="submitScoreOpener" data-effect="mfp-zoom-in"></a>
 					</li>
 				</ul>
@@ -67,7 +67,7 @@
 	
 	<!-- Lightbox -->
 	<!-- Popup itself -->
-	<div id="test-popup" class="white-popup mfp-with-anim mfp-hide">
+	<div id="highScores" class="white-popup mfp-with-anim mfp-hide">
 		
 		<!--<div id="helpConfig" class="popupPanel">
 			This is where help and config stuff goes.
@@ -75,8 +75,9 @@
 		
 		<div id="highScores" class="popupPanel">
 			<h1>High Scores</h1>
-			<table>
+			<table class="highScoreList">
 				<thead>
+					<th>#</th>
 					<th>Name</th>
 					<th>Score</th>
 					<th>Date</th>
@@ -116,10 +117,19 @@
 		  delegate: 'a',
 		  removalDelay: 500, //delay removal by X to allow out-animation
 		  callbacks: {
-				beforeOpen: function(o) {
+				beforeOpen: function() {
+					//console.log(this);
+					var id = $(this.st.el[0]).attr('id');
+					game.menuOpen = true;
 					if (!game.paused()) { game.pause(); }	
 					this.st.mainClass = this.st.el.attr('data-effect');
-					game.loadHighScores();
+					if (id == 'highScoreOpener') {
+						game.loadHighScores();
+					}
+					
+				},
+				afterClose: function() {
+					game.menuOpen = false;
 				}
 		  },
 		  midClick: true // allow opening popup on middle mouse click. Always set it to true if you don't provide alternative source.
