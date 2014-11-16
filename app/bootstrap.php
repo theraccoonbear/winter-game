@@ -1,7 +1,5 @@
 <?php
 
-error_reporting(E_ALL);
-
 require_once(__DIR__ . '/../vendor/autoload.php');
 
 use Silex\Provider\DoctrineServiceProvider;
@@ -42,6 +40,21 @@ $app->register(new DoctrineServiceProvider());
 $app->before(function() use ($app) {
   $schema = $app['db']->getSchemaManager();
 
+	//print "uh oh!";
+	//exit(0);
+	
+	if (!$schema->tablesExist('high_scores')) {
+		$table = new Table('high_scores');
+		$table->addColumn('id', 'integer', array('unsigned' => true,'autoincrement' => true));
+		$table->addColumn('name', 'string');
+		$table->addColumn('email', 'string');
+		$table->addColumn('score', 'integer');
+		$table->addColumn('created', 'datetime');
+		$table->setPrimaryKey(array('id'));
+		$schema->createTable($table);
+  }
+
+	
 //  // Email news form
 //  if (!$schema->tablesExist('email_news')) {
 //		$table = new Table('email_news');

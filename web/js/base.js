@@ -110,6 +110,14 @@ var BASE = Class.extend({
 			}
 		});
 		
+		$('[id]').each(function(i, e) {
+			var $e = $(e);
+			var id = $e.attr('id');
+			if (!ctxt['$' + id]) {
+				ctxt['$' + id] = $e;
+			}
+		});
+		
 		ctxt.$debug = $('#debug');
 	},
 	

@@ -16,15 +16,16 @@ var GAME = BASE.extend({
 		'#dispPercent',
 		'#scorePanel',
 		'#pauseState',
-		'#menuButton'
+		'#menuButton',
+		'#highScores'
 	],
 	
 	playerVertPositionFactor: 0.2,
 	
 	touchTargets: ['#touchSteer'],
 	
-	manifestSize: "!!manifest-size!!",
-	manifest: "!!manifest-data!!",
+	manifestSizes: "{{manifest-sizes}}",
+	manifest: "{{manifest-data}}",
 	
 	//manifest: [
 	//	{src:"images/boarder-large.png", id:"boarder-large"},
@@ -191,12 +192,21 @@ var GAME = BASE.extend({
 	getManSize: function(after) {
 		var ctxt = this;
 		
-		$.post('manifest-size.php', {manifest: ctxt.manifest}, function(data) {
-			ctxt.manifestSizes = data;
-			if (typeof after === 'function') {
-				after.apply(ctxt);
-			}
-		}, 'json');
+		//ctxt.manifestSizes = {
+		//	assets: ctxt.manifest,
+		//	total: ctxt.manifestSize
+		//};
+		
+		if (typeof after === 'function') {
+			after.apply(ctxt);
+		}
+		
+		//$.post('manifest-size.php', {manifest: ctxt.manifest}, function(data) {
+		//	ctxt.manifestSizes = data;
+		//	if (typeof after === 'function') {
+		//		after.apply(ctxt);
+		//	}
+		//}, 'json');
 	},
 	
 	updateProgress: function() {
@@ -325,6 +335,10 @@ var GAME = BASE.extend({
 		//ctxt.stage.addChild(ctxt.under);
 		//ctxt.stage.addChild(ctxt.between);
 		//ctxt.stage.addChild(ctxt.over);
+	},
+	
+	paused: function() {
+		return createjs.Ticker.getPaused();
 	},
 	
 	pause: function() {
@@ -486,6 +500,11 @@ var GAME = BASE.extend({
 	
 	boost: function(o) {
 		var ctxt = this;
+		
+		if (ctxt.crashing || ctxt.stopping) {
+			return;
+		}
+		
 		var def = {
 			percentage: 50,
 			duration: 5000,
@@ -978,6 +997,7 @@ var GAME = BASE.extend({
 				ctxt.speed = 0;
 				ctxt.stopSound();
 				createjs.Ticker.setPaused(true);
+				ctxt.gameEnded();
 			}
 		}
 		
@@ -1011,6 +1031,36 @@ var GAME = BASE.extend({
 		ctxt.stage.update(event);
 	},
 	
+	loadHighScores: function() {
+		var ctxt = this;
+		//$('.popupPanel').hide();
+		ctxt.$highScores.show();
+		$.getJSON('/scores/list', function(data) {
+			var $table = ctxt.$highScores.find('table > tbody');
+			$table.empty();
+			$.each(data.payload, function(idx, entry) {
+				var $row = $('<tr><td>' + entry.name + '</td><td>' + entry.score + "</td><td>" + entry.created + "</tr>");
+				$table.append($row);
+			});
+		});
+	},
+	
+	gameEnded: function() {
+		var ctxt = this;
+		ctxt.$submitScore.show();
+		
+		ctxt.$submitScoreOpener.click();
+		
+		ctxt.$submitHighScore.on('click', function(e) {
+			var name = ctxt.$highScoreName.val().trim();
+			if (name.length > 0) {
+				var payload = {name: name, score: parseInt(ctxt.score)}
+				$.post('/scores/submit', payload, function(data) {
+					//console.log('/scores/submit', payload, data);
+				}, 'json');
+			}
+		});
+	},
 	
 	_xyz: null
 });
