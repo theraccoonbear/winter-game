@@ -671,7 +671,7 @@ var JumpLeft = Jump.extend({
 
 		//collide with sides
 		this.addCollider({
-			points: "105,22-14,92-128,166-210,85",
+			points: "87,32-16,94-130,169-201,94-87,32",
 			name: 'crash-edges',
 			action: function(o) {
 				//('JumpLeft side collision!');
@@ -681,7 +681,7 @@ var JumpLeft = Jump.extend({
 
 		//enter ramp
 		this.addCollider({
-			points: "89,31-118,12-208,52",
+			points: "126,4-88,29-202,92-244,55-126,4",
 			name: 'enter-ramp',
 			disables: ['crash-edges', 'enter-ramp'],
 			enables: ['jump-edge', 'exit-ramp'],
@@ -693,7 +693,7 @@ var JumpLeft = Jump.extend({
 		//trigger jump
 		this.addCollider({
 			enabled: false, //disabled by default
-			points: "70,38-32,57-132,112-170,91",
+			points: "82,33-27,57-138,120-183,88-179,86-136,113-38,57-86,36-82,33",
 			name: 'jump-edge',
 			disables: ['jump-edge'],
 			action: function(o) {
@@ -708,7 +708,7 @@ var JumpLeft = Jump.extend({
 		//clear ramp
 		this.addCollider({
 			enabled: false, //disabled by default
-			points: "129,5-6,97-129,178-251,50-129,5",
+			points: "120,0-19,49-1,97-129,179-255,50-131,1-120,0",
 			name: 'exit-ramp',
 			disables: ['jump-edge', 'exit-ramp'],
 			enables: ['crash-edges', 'enter-ramp'],
@@ -737,7 +737,7 @@ var JumpRight = Jump.extend({
 
 		//collide with sides
 		this.addCollider({
-			points: "37,84-120,170-240,91-149,22",
+			points: "52,91-123,167-239,90-168,32-52,91",
 			name: 'crash-edges',
 			action: function(o) {
 				//('Jump side collision!');
@@ -747,7 +747,7 @@ var JumpRight = Jump.extend({
 
 		//enter ramp
 		this.addCollider({
-			points: "44,55-138,12-156,24",
+			points: "17,48-45,92-169,28-126,4-17,48",
 			name: 'enter-ramp',
 			disables: ['crash-edges', 'enter-ramp'],
 			enables: ['jump-edge', 'exit-ramp'],
@@ -759,7 +759,7 @@ var JumpRight = Jump.extend({
 		//trigger jump
 		this.addCollider({
 			enabled: false, //disabled by default
-			points: "84,89-118,117-227,57-179,35",
+			points: "71,84-116,119-227,57-172,30-165,33-211,57-118,108-77,81-71,84",
 			name: 'jump-edge',
 			disables: ['jump-edge'],
 			action: function(o) {
@@ -774,7 +774,7 @@ var JumpRight = Jump.extend({
 		//clear ramp
 		this.addCollider({
 			enabled: false, //disabled by default
-			points: "0,48-126,0-253,96-116,185-0,48",
+			points: "1,50-119,181-247,92-240,51-135,0-119,0-1,50",
 			name: 'exit-ramp',
 			disables: ['jump-edge', 'exit-ramp'],
 			enables: ['crash-edges', 'enter-ramp'],
@@ -803,7 +803,7 @@ var JumpCenter = Jump.extend({
 
 		//collide with sides
 		this.addCollider({
-			points: "50,44-23,166-256,170-224,45",
+			points: "40,65-25,159-255,163-231,64-40,65",
 			name: 'crash-edges',
 			action: function(o) {
 				//('Jump side collision!');
@@ -813,7 +813,7 @@ var JumpCenter = Jump.extend({
 
 		//enter ramp
 		this.addCollider({
-			points: "56,36-56,26-221,26-221,36",
+			points: "46,17-33,63-236,62-219,17-46,17",
 			name: 'enter-ramp',
 			disables: ['crash-edges', 'enter-ramp'],
 			enables: ['jump-edge', 'exit-ramp'],
@@ -825,7 +825,7 @@ var JumpCenter = Jump.extend({
 		//trigger jump
 		this.addCollider({
 			enabled: false, //disabled by default
-			points: "47,78-37,122-238,124-227,77",
+			points: "43,68-37,125-239,126-227,67-220,68-230,120-44,119-50,68-43,68",
 			name: 'jump-edge',
 			disables: ['jump-edge'],
 			action: function(o) {
@@ -840,7 +840,7 @@ var JumpCenter = Jump.extend({
 		//clear ramp
 		this.addCollider({
 			enabled: false, //disabled by default
-			points: "26,8-0,196-280,194-234,12-26,8",
+			points: "37,7-1,187-278,188-231,5-37,7",
 			name: 'exit-ramp',
 			disables: ['jump-edge', 'exit-ramp'],
 			enables: ['crash-edges', 'enter-ramp'],
