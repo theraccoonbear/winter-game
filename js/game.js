@@ -100,8 +100,8 @@ var GAME = BASE.extend({
 		'right3': 	{d: 32.35,  sound: {id: 'snow-1', rate: 0.25}, boardTip: {x: 648, y: 225}}
 	},
 	
-	initSpeed: 15,
-	speed: 15,
+	initSpeed: 8,
+	speed: 8,
 	level: 1,
 	nextLevelAt: 150,
 	score: 0,
