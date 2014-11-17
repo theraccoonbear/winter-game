@@ -441,10 +441,14 @@ var GAME = BASE.extend({
 		ctxt.groundImg = ctxt.loader.getResult("snow-surface-2");
 		ctxt.ground = new createjs.Shape();
 		ctxt.ground.graphics.beginBitmapFill(ctxt.groundImg).drawRect(-ctxt.groundImg.width, -dim.height, dim.width + (2 * ctxt.groundImg.width), dim.height + ctxt.groundImg.height);
+
 		ctxt.ground.tileW = ctxt.groundImg.width;
 		ctxt.ground.tileH = ctxt.groundImg.height;
 		ctxt.ground.y = dim.height - ctxt.groundImg.height;
 		
+		dim = ctxt.baseline;
+		ctxt.ground.graphics.beginBitmapFill(ctxt.groundImg).drawRect(-ctxt.groundImg.width, 0, dim.width + (2 * ctxt.groundImg.width), dim.height + ctxt.groundImg.height);
+
 		ctxt.stage.addChild(ctxt.ground);
 		
 	},
@@ -636,7 +640,7 @@ var GAME = BASE.extend({
 				'height': touch_height
 			});
 		
-		ctxt.ground.graphics.beginBitmapFill(ctxt.groundImg).drawRect(-ctxt.groundImg.width, 0, dim.width + (2 * ctxt.groundImg.width), dim.height + ctxt.groundImg.height);
+		//ctxt.ground.graphics.beginBitmapFill(ctxt.groundImg).drawRect(-ctxt.groundImg.width, 0, dim.width + (2 * ctxt.groundImg.width), dim.height + ctxt.groundImg.height);
 			
 		
 		ctxt.centerElem(ctxt.$touchSteer, true, false);
