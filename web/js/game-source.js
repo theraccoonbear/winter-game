@@ -117,13 +117,17 @@ var GAME = BASE.extend({
 	height: 0,
 	
 	lastObstAt: 0,
+	initObstEvery: 5,
 	obstEvery: 5,
 	
 	lastBonusAt: 0,
+	initBonusEvery: 25,
 	bonusEvery: 25,
 	
 	lastInterAt: 0,
+	initInterEvery: 30,
 	interEvery: 30,
+	nextInterBumpAt: 500,
 	
 	under: null,
 	between: null,
@@ -312,6 +316,12 @@ var GAME = BASE.extend({
 		ctxt.lastObstAt = 0;
 		ctxt.lastBonusAt = 0;
 		ctxt.lastInterAt = 0;
+		ctxt.nextInterBumpAt = 500;
+		
+		ctxt.bonusEvery = ctxt.initBonusEvery;
+		ctxt.obstEvery = ctxt.initObstEvery;
+		ctxt.interEvery = ctxt.initInterEvery;
+		
 		ctxt.speed = ctxt.initSpeed;
 		
 		ctxt.setupStart();
@@ -917,6 +927,15 @@ var GAME = BASE.extend({
 		ctxt.score += ctxt.crashing || ctxt.stopping ? 0 : distThisTick;
 		ctxt.$score.html(parseInt(ctxt.score).commafy());
 
+		if (ctxt.distance > ctxt.nextInterBumpAt) {
+			ctxt.sweetMessage({message: ctxt.nextInterBumpAt + ' feet, way to go!'});
+			ctxt.nextInterBumpAt += 500;
+			ctxt.interEvery -= 0.5;
+			if (ctxt.interEvery < 0.5) {
+				ctxt.interEvery = 0.5;
+			}
+		}
+		
 		var boarderBottomCenterX = ctxt.steerSpeeds[ctxt.steerDirections[ctxt.direction]].boardTip.x;
 		var boarderBottomCenterY = ctxt.steerSpeeds[ctxt.steerDirections[ctxt.direction]].boardTip.y;
 		var boarderPerpendicularLeft = ctxt.getSpeedVector({angle: ctxt.steerSpeeds[ctxt.steerDirections[ctxt.direction]].d + 90, speed: 10});
