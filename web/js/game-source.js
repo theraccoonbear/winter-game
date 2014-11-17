@@ -273,6 +273,7 @@ var GAME = BASE.extend({
 		
 		ctxt.initBoarder();
 		
+		ctxt.eventHooks();
 		
 		ctxt.initControls();
 		
@@ -446,6 +447,28 @@ var GAME = BASE.extend({
 		
 		ctxt.stage.addChild(ctxt.ground);
 		
+	},
+	
+	eventHooks: function() {
+		var ctxt = this;
+		ctxt.$submitHighScore.on('click', function(e) {
+			var name = ctxt.$highScoreName.val().trim();
+			if (localStorage) {
+				localStorage.highScoreName = name;
+			}
+			if (name.length > 0) {
+				var payload = {name: name, score: parseInt(ctxt.score)}
+				$.post('/scores/submit', payload, function(data) {
+					if (data.success) {
+						//var magnificPopup = $.magnificPopup.instance; 
+						//magnificPopup.close();
+						ctxt.loadHighScores({
+							after: function() { ctxt.$highScoreOpener.click(); }
+						});
+					}
+				}, 'json');
+			}
+		});
 	},
 	
 	initControls: function() {
@@ -1065,24 +1088,7 @@ var GAME = BASE.extend({
 		
 		ctxt.$submitScoreOpener.click();
 		
-		ctxt.$submitHighScore.on('click', function(e) {
-			var name = ctxt.$highScoreName.val().trim();
-			if (localStorage) {
-				localStorage.highScoreName = name;
-			}
-			if (name.length > 0) {
-				var payload = {name: name, score: parseInt(ctxt.score)}
-				$.post('/scores/submit', payload, function(data) {
-					if (data.success) {
-						//var magnificPopup = $.magnificPopup.instance; 
-						//magnificPopup.close();
-						ctxt.loadHighScores({
-							after: function() { ctxt.$highScoreOpener.click(); }
-						});
-					}
-				}, 'json');
-			}
-		});
+		
 	},
 	
 	_xyz: null
