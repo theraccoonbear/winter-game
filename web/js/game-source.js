@@ -936,7 +936,7 @@ var GAME = BASE.extend({
 		var distThisTick = Math.abs(speed.y);
 		ctxt.distance += distThisTick / 20;
 		ctxt.$distance.html(parseInt(ctxt.distance).commafy() + "'");
-		ctxt.score += ctxt.crashing || ctxt.stopping ? 0 : distThisTick;
+		ctxt.score += ctxt.crashing || ctxt.stopping ? 0 : (distThisTick * (ctxt.speed / ctxt.initSpeed));
 		ctxt.$score.html(parseInt(ctxt.score).commafy());
 
 		if (ctxt.distance > ctxt.nextInterBumpAt) {
