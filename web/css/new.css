@@ -25,7 +25,21 @@ body {
 	right: 0px;
 	top: 0px;
 	bottom: 0px;
-	z-index: 10000;
+	z-index: 9900;
+}
+
+.overlay {
+	z-index: 9950;
+}
+
+#splashImage {
+	position : absolute;
+	width    : 100%;
+	top: 1px;
+	/*top      : 50%;
+	left     : 50%;
+	transform: translate(-50%, -50%);*/
+	z-index  : 9925;
 }
 
 #spinner {
