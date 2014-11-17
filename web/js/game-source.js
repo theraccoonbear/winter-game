@@ -469,6 +469,12 @@ var GAME = BASE.extend({
 				}, 'json');
 			}
 		});
+		
+		ctxt.$restartLevel.on('click', function(e) {
+			$.magnificPopup.instance.close();
+			ctxt.start();
+		});
+		
 	},
 	
 	initControls: function() {
