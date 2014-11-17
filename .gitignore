@@ -7,5 +7,5 @@ vendor
 web/.htaccess
 bak/
 *.log
-!js/vendor
-!js/vendor/*
+!web/js/vendor
+!web/js/vendor/*
