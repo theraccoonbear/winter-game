@@ -574,15 +574,27 @@ var GAME = BASE.extend({
 
 	crash: function () {
 		var ctxt = this;
+		
+		var playCrash = false;
+		
+		
 		if (ctxt.crashing || ctxt.stopping) {
 			ctxt.sweetMessage({message: '-1000 points'});
 			ctxt.score -= 1000;
+			if (ctxt.speed >= 0.25 * ctxt.initSpeed) {
+				playCrash = true;
+			}
 		} else {
+			playCrash = true;
 			ctxt.crashing = true;
-			var dirName = ctxt.steerDirections[ctxt.direction];
-			ctxt.boarder.gotoAndPlay(dirName + "-crash");
 			ctxt.sweetMessage({message: 'Ouch! You Bit It!'});
 		}
+		
+		if (playCrash) {
+			var dirName = ctxt.steerDirections[ctxt.direction];
+			ctxt.boarder.gotoAndPlay(dirName + "-crash");
+		}
+		
 	},
 	
 	reflowUI: function() {
