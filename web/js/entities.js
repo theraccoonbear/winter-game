@@ -681,7 +681,7 @@ var JumpLeft = Jump.extend({
 
 		//enter ramp
 		this.addCollider({
-			points: "118,12-208,52",
+			points: "89,31-118,12-208,52",
 			name: 'enter-ramp',
 			disables: ['crash-edges', 'enter-ramp'],
 			enables: ['jump-edge', 'exit-ramp'],
@@ -747,7 +747,7 @@ var JumpRight = Jump.extend({
 
 		//enter ramp
 		this.addCollider({
-			points: "44,55-138,12",
+			points: "44,55-138,12-156,24",
 			name: 'enter-ramp',
 			disables: ['crash-edges', 'enter-ramp'],
 			enables: ['jump-edge', 'exit-ramp'],
@@ -813,7 +813,7 @@ var JumpCenter = Jump.extend({
 
 		//enter ramp
 		this.addCollider({
-			points: "66,26-211,26",
+			points: "56,36-56,26-221,26-221,36",
 			name: 'enter-ramp',
 			disables: ['crash-edges', 'enter-ramp'],
 			enables: ['jump-edge', 'exit-ramp'],
