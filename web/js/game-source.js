@@ -601,7 +601,7 @@ var GAME = BASE.extend({
 		
 		
 		if (ctxt.crashing || ctxt.stopping) {
-			ctxt.sweetMessage({message: '-1000 points'});
+			ctxt.sweetMessage({message: 'Oof!'});
 			ctxt.score -= 1000;
 			if (ctxt.speed >= 0.25 * ctxt.initSpeed) {
 				playCrash = true;
@@ -609,7 +609,7 @@ var GAME = BASE.extend({
 		} else {
 			playCrash = true;
 			ctxt.crashing = true;
-			ctxt.sweetMessage({message: 'Ouch! You Bit It!'});
+			ctxt.sweetMessage({message: 'Ouch! You Bit It Hard!'});
 		}
 		
 		if (playCrash) {

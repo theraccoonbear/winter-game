@@ -303,7 +303,7 @@ var Coin = Bonus.extend({
 		var ctxt = this;
 		Coin.super.constructor.call(this, options);
 		this.addCollider({
-			points: "8,30-8,42-42,42-42,30-8,30",
+			points: "0,0-0,50-50,50-50,0-0,0",
 			action: function(o) {
 				//console.log('Tree Hit!', typeof o !== "undefined" ? o : "");
 				ctxt.game.score += 3000;
@@ -335,7 +335,7 @@ var Beer = Bonus.extend({
 		Beer.super.constructor.call(this, options);
 		
 		this.addCollider({
-			points: "8,30-8,42-42,42-42,30-8,30",
+			points: "0,0-0,50-50,50-50,0-0,0",
 			action: function(o) {
 				//console.log('Tree Hit!', typeof o !== "undefined" ? o : "");
 				ctxt.game.score += 1000;
