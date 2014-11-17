@@ -477,7 +477,8 @@ var GAME = BASE.extend({
 		
 		
 		$(document).on('keydown', function(e) {
-			if (ctxt.menuOpen) {
+			
+			if (ctxt.menuOpen || e.ctrlKey || e.metaKey) {
 				return;
 			}
 			
