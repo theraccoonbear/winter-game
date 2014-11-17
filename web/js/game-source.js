@@ -335,10 +335,11 @@ var GAME = BASE.extend({
 		ctxt.reflowUI();
 		
 		var msgs = ['Ready?','3...','2...','1...','GO!']
-		var countDown = 0;
+		var countDown = 1;
+		
+		ctxt.sweetMessage({message: msgs[0]});
 		
 		var countDownInt = setInterval(function() {
-			
 			if (countDown >= msgs.length) {
 				clearInterval(countDownInt);
 			} else {
