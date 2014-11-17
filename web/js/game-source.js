@@ -27,38 +27,6 @@ var GAME = BASE.extend({
 	manifestSizes: "{{manifest-sizes}}",
 	manifest: "{{manifest-data}}",
 	
-	//manifest: [
-	//	{src:"images/boarder-large.png", id:"boarder-large"},
-	//	{src:"images/sprite-boarder.png", id:"boarder-small"},
-	//	{src:"images/obstacles/rock-1.png", id:"rock-1"},
-	//	{src:"images/obstacles/rock-2.png", id:"rock-2"},
-	//	{src:"images/obstacles/rock-3.png", id:"rock-3"},
-	//	{src:"images/obstacles/rock-4.png", id:"rock-4"},
-	//	
-	//	{src:"images/obstacles/tree-single.png", id:"tree-1"},
-	//	{src:"images/obstacles/tree-stump.png", id:"stump-1"},
-	//	
-	//	{src:"images/banners/start.png", id:"start-banner"},
-	//	
-	//	{src:"images/bonuses/beer.png", id:"beer"},
-	//	{src:"images/bonuses/coin.png", id:"coin"},
-	//	
-	//	{src:"images/interaction/jump-center.png ", id:"jump-center", type: createjs.LoadQueue.IMAGE},
-	//	{src:"images/interaction/jump-left.png", id:"jump-left", type: createjs.LoadQueue.IMAGE},
-	//	{src:"images/interaction/jump-right.png", id:"jump-right", type: createjs.LoadQueue.IMAGE},
-	//
-	//	//{src:"images/misc/sinistar-sprite.gif", id:"sinistar"},
-	//	
-	//	//{src:"images/snow-bg.jpg", id:"snow-surface"},
-	//	{src:"images/snow-bg-2.jpg", id:"snow-surface-2"},
-	//	//
-	//	{src:"sounds/snow-1.xogg", id: "snow-1", type: createjs.LoadQueue.BINARY}
-	//	//,
-	//	//{src:"sounds/snow-2.xogg", id: "snow-2", type: createjs.LoadQueue.BINARY},
-	//	//{src:"sounds/snow-3.xogg", id: "snow-3", type: createjs.LoadQueue.BINARY},
-	//	//{src:"sounds/snow-4.xogg", id: "snow-4", type: createjs.LoadQueue.BINARY}
-	//],
-	
 	totalBytesLoaded: 0,
 	
 	sprites: {},
@@ -117,8 +85,8 @@ var GAME = BASE.extend({
 	height: 0,
 	
 	lastObstAt: 0,
-	initObstEvery: 5,
-	obstEvery: 5,
+	initObstEvery: 3,
+	obstEvery: 3,
 	
 	lastBonusAt: 0,
 	initBonusEvery: 25,

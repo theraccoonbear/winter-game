@@ -157,10 +157,25 @@ var Entity = Class.extend({
 		var inter = {status: 'No Intersection'};
 		var attempts = 0;
 		
+		var direction = ctxt.game.steerDirections[ctxt.game.direction];
+		var left = direction.indexOf('left') > -1;
+		var right = direction.indexOf('righ') > -1;
+		
 		do {
+			var fromSide = Math.random() <= 0.5;
 			attempts++;
-			x = Math.random() * dim.width;
-			y = (dim.height + 50);
+			if (!left && !right) {
+				x = Math.random() * dim.width;
+				y = (dim.height + 50);
+			} else {
+				if (fromSide) {
+					x = right ? 0 - w : dim.width;
+					y = (Math.random() * dim.height) + 50;
+				} else {
+					x = (Math.random() * dim.width) + (right ? -50 : 50);
+					y = (dim.height + 50);
+				}
+			}
 			var proposed_pt_1 = new Point2D(x, y);
 			var proposed_pt_2 = new Point2D(x + w, y + h);
 			
