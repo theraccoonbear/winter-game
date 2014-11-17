@@ -288,6 +288,7 @@ var GAME = BASE.extend({
 		ctxt.initSound();
 		
 		createjs.Ticker.timingMode = createjs.Ticker.RAF;
+		createjs.Ticker.setPaused(true);
 		createjs.Ticker.addEventListener("tick", function(event) {
 			ctxt.tick(event);
 		});
@@ -300,6 +301,8 @@ var GAME = BASE.extend({
 	
 	start: function() {
 		var ctxt = this;
+		
+		createjs.Ticker.setPaused(true);
 		
 		for (var i = ctxt.movingElements.length - 1; i >= 0; i--) {
 			var ent = ctxt.movingElements[i];
@@ -331,7 +334,25 @@ var GAME = BASE.extend({
 		
 		ctxt.reflowUI();
 		
-		createjs.Ticker.setPaused(false);
+		var msgs = ['Ready?','3...','2...','1...','GO!']
+		var countDown = 0;
+		
+		var countDownInt = setInterval(function() {
+			
+			if (countDown >= msgs.length) {
+				clearInterval(countDownInt);
+			} else {
+				ctxt.sweetMessage({message: msgs[countDown]});
+			}
+			
+			countDown++;
+			if (countDown >= msgs.length) {
+				createjs.Ticker.setPaused(false);
+			}
+			
+		}, 750);
+		
+		
 		
 		ctxt.stage.update();
 	},

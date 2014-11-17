@@ -90,7 +90,8 @@ var Entity = Class.extend({
 	drawBounds: function() {
 		var ctxt = this;
 
-		var colors = ['red','green','blue','orange','purple'];
+		var colors = ['Red','Green','Blue','Orange','Purple'];
+		var light_colors = ['LightRed','LightGreen','LightBlue','LightOrange','LightPurple'];
 		var c = 0;
 		
 		for (var j = 0, length = this._drawnColliders.length; j < length; j++) {
@@ -102,7 +103,7 @@ var Entity = Class.extend({
 			for (var i = 0, l = ctxt.colliders.length; i < l; i++) {
 				var opts = {
 					entity: ctxt,
-					color: colors[c]
+					color: ctxt.colliders.enabled !== false ? colors[c] : light_colors[c]
 				};
 				
 				c++;
