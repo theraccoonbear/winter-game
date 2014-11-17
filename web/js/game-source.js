@@ -1041,6 +1041,11 @@ var GAME = BASE.extend({
 			ctxt.doSorting();
 		}
 		
+		//ctxt.drawBoardLines({
+		//	x: speed.x,
+		//	y: speed.y
+		//});
+		
 		
 		t = ctxt.distance;
 		
@@ -1082,6 +1087,43 @@ var GAME = BASE.extend({
 		
 		//ctxt.reflowUI();
 		ctxt.stage.update(event);
+	},
+	
+	drawBoardLines: function(o) {
+		var ctxt = this;
+		
+		var def = {
+			x: 0,
+			y: 0
+		};
+		
+		o = $.extend({}, def, o);
+		
+		if (typeof ctxt.boardLines === 'undefined') {
+			
+			ctxt.boardLines = new createjs.Graphics();
+			ctxt.boardLines.setStrokeStyle(2);
+			ctxt.boardLines.beginStroke('black');
+			//ctxt.boardLines.moveTo(ctxt.boarder.x + (ctxt.boarder.spriteSheet._frameWidth / 2), ctxt.dimensions().height); //ctxt.boarder.y  + (ctxt.boarder.spriteSheet._frameHeight / 2));
+			ctxt.boardLines.moveTo(0, 0);
+			ctxt.boardLines.lineTo(ctxt.dimensions().width, ctxt.dimensions().height);
+			ctxt.boardLinesContainer = new createjs.Container();
+			ctxt.boardLinesShape = new createjs.Shape(ctxt.boardLines);
+		}
+		
+		ctxt.boardLines.lineTo(ctxt.boarder.x + o.x, ctxt.boarder.y + o.y);
+		ctxt.boardLinesContainer.addChild(ctxt.boardLinesShape);
+		ctxt.stage.addChildAt(ctxt.boardLinesContainer, ctxt.stage.getNumChildren() - 1);
+		
+		ctxt.boardLinesShape.x += o.x;
+		ctxt.boardLinesShape.y += o.y;
+		
+		if ((new Date()).getTime() % 1000) {
+			console.log(ctxt.boardLinesShape.x, ctxt.boardLinesShape.y);
+		}
+		
+		ctxt.boardLines.moveTo(ctxt.boardLinesShape.x, ctxt.boardLinesShape.y);
+		
 	},
 	
 	loadHighScores: function(o) {
