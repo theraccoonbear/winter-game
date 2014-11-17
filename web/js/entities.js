@@ -90,7 +90,8 @@ var Entity = Class.extend({
 	drawBounds: function() {
 		var ctxt = this;
 
-		var colors = ['red','green','blue','orange','purple'];
+		var colors = ['Red','Green','Blue','Orange','Purple'];
+		var light_colors = ['LightRed','LightGreen','LightBlue','LightOrange','LightPurple'];
 		var c = 0;
 		
 		for (var j = 0, length = this._drawnColliders.length; j < length; j++) {
@@ -102,7 +103,7 @@ var Entity = Class.extend({
 			for (var i = 0, l = ctxt.colliders.length; i < l; i++) {
 				var opts = {
 					entity: ctxt,
-					color: colors[c]
+					color: ctxt.colliders.enabled !== false ? colors[c] : light_colors[c]
 				};
 				
 				c++;
@@ -156,10 +157,25 @@ var Entity = Class.extend({
 		var inter = {status: 'No Intersection'};
 		var attempts = 0;
 		
+		var direction = ctxt.game.steerDirections[ctxt.game.direction];
+		var left = direction.indexOf('left') > -1;
+		var right = direction.indexOf('righ') > -1;
+		
 		do {
+			var fromSide = Math.random() <= 0.5;
 			attempts++;
-			x = Math.random() * dim.width;
-			y = (dim.height + 50);
+			if (!left && !right) {
+				x = Math.random() * dim.width;
+				y = (dim.height + 50);
+			} else {
+				if (fromSide) {
+					x = right ? 0 - w : dim.width;
+					y = (Math.random() * dim.height) + 50;
+				} else {
+					x = (Math.random() * dim.width) + (right ? -50 : 50);
+					y = (dim.height + 50);
+				}
+			}
 			var proposed_pt_1 = new Point2D(x, y);
 			var proposed_pt_2 = new Point2D(x + w, y + h);
 			
@@ -302,7 +318,7 @@ var Coin = Bonus.extend({
 		var ctxt = this;
 		Coin.super.constructor.call(this, options);
 		this.addCollider({
-			points: "8,30-8,42-42,42-42,30-8,30",
+			points: "0,0-0,50-50,50-50,0-0,0",
 			action: function(o) {
 				//console.log('Tree Hit!', typeof o !== "undefined" ? o : "");
 				ctxt.game.score += 3000;
@@ -334,7 +350,7 @@ var Beer = Bonus.extend({
 		Beer.super.constructor.call(this, options);
 		
 		this.addCollider({
-			points: "8,30-8,42-42,42-42,30-8,30",
+			points: "0,0-0,50-50,50-50,0-0,0",
 			action: function(o) {
 				//console.log('Tree Hit!', typeof o !== "undefined" ? o : "");
 				ctxt.game.score += 1000;

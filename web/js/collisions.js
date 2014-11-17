@@ -50,6 +50,8 @@ var CollisionTarget = Class.extend({
 			graphics.lineTo(next.x, next.y);
 		}
 		
+		graphics.lineTo(orig.x, orig.y);
+		
 		//var text = new createjs.Text(entity.name + ' - ' + ctxt.name, "10px Arial", "#0000");
 		//text.x = orig.x
 		//text.y = orig.y;

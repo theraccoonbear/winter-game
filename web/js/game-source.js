@@ -27,38 +27,6 @@ var GAME = BASE.extend({
 	manifestSizes: "{{manifest-sizes}}",
 	manifest: "{{manifest-data}}",
 	
-	//manifest: [
-	//	{src:"images/boarder-large.png", id:"boarder-large"},
-	//	{src:"images/sprite-boarder.png", id:"boarder-small"},
-	//	{src:"images/obstacles/rock-1.png", id:"rock-1"},
-	//	{src:"images/obstacles/rock-2.png", id:"rock-2"},
-	//	{src:"images/obstacles/rock-3.png", id:"rock-3"},
-	//	{src:"images/obstacles/rock-4.png", id:"rock-4"},
-	//	
-	//	{src:"images/obstacles/tree-single.png", id:"tree-1"},
-	//	{src:"images/obstacles/tree-stump.png", id:"stump-1"},
-	//	
-	//	{src:"images/banners/start.png", id:"start-banner"},
-	//	
-	//	{src:"images/bonuses/beer.png", id:"beer"},
-	//	{src:"images/bonuses/coin.png", id:"coin"},
-	//	
-	//	{src:"images/interaction/jump-center.png ", id:"jump-center", type: createjs.LoadQueue.IMAGE},
-	//	{src:"images/interaction/jump-left.png", id:"jump-left", type: createjs.LoadQueue.IMAGE},
-	//	{src:"images/interaction/jump-right.png", id:"jump-right", type: createjs.LoadQueue.IMAGE},
-	//
-	//	//{src:"images/misc/sinistar-sprite.gif", id:"sinistar"},
-	//	
-	//	//{src:"images/snow-bg.jpg", id:"snow-surface"},
-	//	{src:"images/snow-bg-2.jpg", id:"snow-surface-2"},
-	//	//
-	//	{src:"sounds/snow-1.xogg", id: "snow-1", type: createjs.LoadQueue.BINARY}
-	//	//,
-	//	//{src:"sounds/snow-2.xogg", id: "snow-2", type: createjs.LoadQueue.BINARY},
-	//	//{src:"sounds/snow-3.xogg", id: "snow-3", type: createjs.LoadQueue.BINARY},
-	//	//{src:"sounds/snow-4.xogg", id: "snow-4", type: createjs.LoadQueue.BINARY}
-	//],
-	
 	totalBytesLoaded: 0,
 	
 	sprites: {},
@@ -117,8 +85,8 @@ var GAME = BASE.extend({
 	height: 0,
 	
 	lastObstAt: 0,
-	initObstEvery: 5,
-	obstEvery: 5,
+	initObstEvery: 3,
+	obstEvery: 3,
 	
 	lastBonusAt: 0,
 	initBonusEvery: 25,
@@ -288,6 +256,7 @@ var GAME = BASE.extend({
 		ctxt.initSound();
 		
 		createjs.Ticker.timingMode = createjs.Ticker.RAF;
+		createjs.Ticker.setPaused(true);
 		createjs.Ticker.addEventListener("tick", function(event) {
 			ctxt.tick(event);
 		});
@@ -300,6 +269,8 @@ var GAME = BASE.extend({
 	
 	start: function() {
 		var ctxt = this;
+		
+		createjs.Ticker.setPaused(true);
 		
 		for (var i = ctxt.movingElements.length - 1; i >= 0; i--) {
 			var ent = ctxt.movingElements[i];
@@ -331,7 +302,26 @@ var GAME = BASE.extend({
 		
 		ctxt.reflowUI();
 		
-		createjs.Ticker.setPaused(false);
+		var msgs = ['Ready?','3...','2...','1...','GO!']
+		var countDown = 1;
+		
+		ctxt.sweetMessage({message: msgs[0]});
+		
+		var countDownInt = setInterval(function() {
+			if (countDown >= msgs.length) {
+				clearInterval(countDownInt);
+			} else {
+				ctxt.sweetMessage({message: msgs[countDown]});
+			}
+			
+			countDown++;
+			if (countDown >= msgs.length) {
+				createjs.Ticker.setPaused(false);
+			}
+			
+		}, 750);
+		
+		
 		
 		ctxt.stage.update();
 	},
@@ -479,6 +469,12 @@ var GAME = BASE.extend({
 				}, 'json');
 			}
 		});
+		
+		ctxt.$restartLevel.on('click', function(e) {
+			$.magnificPopup.instance.close();
+			ctxt.start();
+		});
+		
 	},
 	
 	initControls: function() {
@@ -579,7 +575,7 @@ var GAME = BASE.extend({
 		
 		
 		if (ctxt.crashing || ctxt.stopping) {
-			ctxt.sweetMessage({message: '-1000 points'});
+			ctxt.sweetMessage({message: 'Oof!'});
 			ctxt.score -= 1000;
 			if (ctxt.speed >= 0.25 * ctxt.initSpeed) {
 				playCrash = true;
@@ -587,7 +583,7 @@ var GAME = BASE.extend({
 		} else {
 			playCrash = true;
 			ctxt.crashing = true;
-			ctxt.sweetMessage({message: 'Ouch! You Bit It!'});
+			ctxt.sweetMessage({message: 'Ouch! You Bit It Hard!'});
 		}
 		
 		if (playCrash) {
