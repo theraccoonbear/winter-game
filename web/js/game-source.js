@@ -101,6 +101,7 @@ var GAME = BASE.extend({
 	between: null,
 	over: null,
 	
+	starting: false,
 	jumping: false,
 	crashing: false,
 	stopping: false,
@@ -270,6 +271,8 @@ var GAME = BASE.extend({
 	start: function() {
 		var ctxt = this;
 		
+		ctxt.starting = true;
+		
 		createjs.Ticker.setPaused(true);
 		
 		for (var i = ctxt.movingElements.length - 1; i >= 0; i--) {
@@ -316,6 +319,7 @@ var GAME = BASE.extend({
 			
 			countDown++;
 			if (countDown >= msgs.length) {
+				ctxt.starting = false;
 				createjs.Ticker.setPaused(false);
 			}
 			
@@ -488,7 +492,7 @@ var GAME = BASE.extend({
 		
 		$(document).on('keydown', function(e) {
 			
-			if (ctxt.menuOpen || e.ctrlKey || e.metaKey) {
+			if (ctxt.menuOpen || e.ctrlKey || e.metaKey || ctxt.starting) {
 				return;
 			}
 			
