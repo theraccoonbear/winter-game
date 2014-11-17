@@ -227,9 +227,9 @@ var Entity = Class.extend({
 	checkCollisionAgainst: function(options) {
 		var ctxt = this;
 
-		if (ctxt.jumpable && ctxt.game.jumping) {
-			return;
-		}
+		//if (ctxt.jumpable && ctxt.game.jumping) {
+		//	return;
+		//}
 		
 		var checkCollisionOptions = {};
 
@@ -245,10 +245,15 @@ var Entity = Class.extend({
 		
 		for (var i = 0, l = ctxt.colliders.length; i < l; i++) {
 			if (ctxt.colliders[i].checkCollision(checkCollisionOptions)) {
+				// we collided
 
-				if (typeof ctxt.colliders[i].action) {
-					ctxt.colliders[i].action({game: ctxt.game});
-				}
+				//if (ctxt.jumpable && ctxt.game.jumping) {
+				//	if (typeof ctxt.colliders[i].jumpAction === 'function') {
+				//		ctxt.colliders[i].jumpAction({game: ctxt.game});
+				//	}
+				//} else if (typeof ctxt.colliders[i].action) {
+				//	ctxt.colliders[i].action({game: ctxt.game});
+				//}
 			}
 		}
 	},
@@ -415,6 +420,10 @@ var Stump = Obstacle.extend({
 			action: function(o) {
 				//console.log('Stump Hit!', typeof o !== "undefined" ? o : "");
 				ctxt.game.crash();
+			},
+			jumpAction: function(o) {
+				ctxt.game.score += 1000;
+				ctxt.game.sweetMessage({message: 'Nicely cleared!'});
 			}
 		});
 		
@@ -493,6 +502,10 @@ var Rock1 = Rock.extend({
 			action: function(o) {
 				//('Rock 1 Hit!', typeof o !== "undefined" ? o : "");
 				ctxt.game.crash();
+			},
+			jumpAction: function(o) {
+				ctxt.game.score += 1000;
+				ctxt.game.sweetMessage({message: 'Nicely cleared!'});
 			}
 		});
 		
@@ -518,6 +531,10 @@ var Rock2 = Rock.extend({
 			action: function(o) {
 				//('Rock 2 Hit!', typeof o !== "undefined" ? o : "");
 				ctxt.game.crash();
+			},
+			jumpAction: function(o) {
+				ctxt.game.score += 1000;
+				ctxt.game.sweetMessage({message: 'Nicely cleared!'});
 			}
 		});
 		
@@ -543,6 +560,10 @@ var Rock3 = Rock.extend({
 			action: function(o) {
 				//console.log('Rock 3 Hit!', typeof o !== "undefined" ? o : "");
 				ctxt.game.crash();
+			},
+			jumpAction: function(o) {
+				ctxt.game.score += 1000;
+				ctxt.game.sweetMessage({message: 'Nicely cleared!'});
 			}
 		});
 		
@@ -568,6 +589,10 @@ var Rock4 = Rock.extend({
 			action: function(o) {
 				//('Rock 4 Hit!', typeof o !== "undefined" ? o : "");
 				ctxt.game.crash();
+			},
+			jumpAction: function(o) {
+				ctxt.game.score += 1000;
+				ctxt.game.sweetMessage({message: 'Nicely cleared!'});
 			}
 		});
 		

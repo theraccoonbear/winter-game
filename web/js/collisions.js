@@ -3,6 +3,7 @@
 var CollisionTarget = Class.extend({
 	points: [],
 	action: null,
+	jumpAction: null,
 	enabled: true,
 	enables: [],
 	disables: [],
@@ -161,7 +162,9 @@ var CollisionTarget = Class.extend({
 				params.game.stage.update();
 			}
 
-			if (typeof ctxt.action === "function") {
+			if (entity.jumpable && params.game.jumping && typeof ctxt.jumpAction === 'function') {
+				ctxt.jumpAction();
+			} else if (typeof ctxt.action === "function") {
 				ctxt.action();
 			}
 
