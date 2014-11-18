@@ -1124,6 +1124,10 @@ var GAME = BASE.extend({
 				x: ctxt.baseline.width / 2,
 				y: ctxt.boarder.y + (ctxt.boarder.spriteSheet._frameHeight * (2/3))
 			};
+			ctxt.lastBoardLineAt = {
+				x: ctxt.line.x,
+				y: ctxt.line.y
+			};
 			
 			ctxt.boardLines.moveTo(ctxt.line.x, ctxt.line.y);
 			ctxt.boardLinesContainer = new createjs.Container();
@@ -1132,13 +1136,24 @@ var GAME = BASE.extend({
 			ctxt.stage.addChildAt(ctxt.boardLinesShape, ctxt.stage.getChildIndex(ctxt.boarder) - 1);
 		} else {
 		
-			var xc = (ctxt.line.x + (ctxt.line.x - o.speed.x)) / 2;
-			var yc = (ctxt.line.y + (ctxt.line.y - o.speed.y)) / 2;
-			if (ctxt.jumping || ctxt.crashing || ctxt.stopping) {
-				ctxt.boardLinesShape.graphics.moveTo(xc, yc);
-			} else {
+			var dist_since_last = Math.sqrt(Math.pow(ctxt.line.x - ctxt.lastBoardLineAt.x, 2) + Math.pow(ctxt.line.y - ctxt.lastBoardLineAt.y, 2));
+			if (dist_since_last > 20) {
 				
-				ctxt.boardLinesShape.graphics.quadraticCurveTo(ctxt.line.x, ctxt.line.y, xc, yc);
+				//var xc = (ctxt.line.x + (ctxt.line.x - o.speed.x)) / 2;
+				//var yc = (ctxt.line.y + (ctxt.line.y - o.speed.y)) / 2;
+				var xc = (ctxt.line.x + ctxt.lastBoardLineAt.x) / 2;
+				var yc = (ctxt.line.y + ctxt.lastBoardLineAt.y) / 2;
+				
+				if (ctxt.jumping || ctxt.crashing || ctxt.stopping) {
+					ctxt.boardLinesShape.graphics.moveTo(xc, yc);
+				} else {
+					ctxt.boardLinesShape.graphics.quadraticCurveTo(ctxt.line.x, ctxt.line.y, xc, yc);
+				}
+				
+				ctxt.lastBoardLineAt = {
+					x: ctxt.line.x,
+					y: ctxt.line.y
+				};
 			}
 		}
 		
