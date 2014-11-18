@@ -17,7 +17,8 @@ var GAME = BASE.extend({
 		'#scorePanel',
 		'#pauseState',
 		'#menuButton',
-		'#highScores'
+		'#highScores',
+		'.restartLevel'
 	],
 	
 	playerVertPositionFactor: 0.2,
