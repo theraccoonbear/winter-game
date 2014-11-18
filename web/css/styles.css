@@ -265,6 +265,12 @@ body {
 	background: #8bd4de;
 }
 
+td.hs-name{
+	white-space: nowrap;
+	width: 120px;
+	overflow: hidden;
+	display: inline-block;
+}
 
 /* debug */
 #debugBox {
