@@ -67,9 +67,9 @@ var GAME = BASE.extend({
 		'left2': 		{d: 131.59, sound: {id: 'snow-1', rate: 0.5}, boardTip: {x: 713, y: 223}},
 		'left1': 		{d: 111.59, sound: {id: 'snow-1', rate: 0.75}, boardTip: {x: 690, y: 230}},
 		'straight': {d: 90.00,  sound: {id: 'snow-1', rate: 1}, boardTip: {x: 679, y: 235}},
-		'right1': 	{d: 68.41,  sound: {id: 'snow-1', rate: 0.75}, boardTip: {x: 670, y: 230}},
-		'right2': 	{d: 48.81,  sound: {id: 'snow-1', rate: 0.5}, boardTip: {x: 655, y: 235}},
-		'right3': 	{d: 32.35,  sound: {id: 'snow-1', rate: 0.25}, boardTip: {x: 648, y: 225}}
+		'right1': 	{d: 68.41,  sound: {id: 'snow-1', rate: 0.75}, boardTip: {x: 665, y: 225}},
+		'right2': 	{d: 48.81,  sound: {id: 'snow-1', rate: 0.5}, boardTip: {x: 655, y: 220}},
+		'right3': 	{d: 32.35,  sound: {id: 'snow-1', rate: 0.25}, boardTip: {x: 650, y: 220}}
 	},
 	
 	initSpeed: 8,
@@ -85,8 +85,8 @@ var GAME = BASE.extend({
 	height: 0,
 	
 	lastObstAt: 0,
-	initObstEvery: 3,
-	obstEvery: 3,
+	initObstEvery: 8,
+	obstEvery: 8,
 	
 	lastBonusAt: 0,
 	initBonusEvery: 25,
@@ -281,7 +281,9 @@ var GAME = BASE.extend({
 		}
 		
 		ctxt.distance = 0;
+		ctxt.$distance.html(0);
 		ctxt.score = 0;
+		ctxt.$score.html(0);
 		ctxt.direction = 3;
 		ctxt.jumping = false;
 		ctxt.crashing = false;
@@ -954,8 +956,8 @@ var GAME = BASE.extend({
 		
 		var boarderBottomCenterX = ctxt.steerSpeeds[ctxt.steerDirections[ctxt.direction]].boardTip.x;
 		var boarderBottomCenterY = ctxt.steerSpeeds[ctxt.steerDirections[ctxt.direction]].boardTip.y;
-		var boarderPerpendicularLeft = ctxt.getSpeedVector({angle: ctxt.steerSpeeds[ctxt.steerDirections[ctxt.direction]].d + 90, speed: 10});
-		var boarderPerpendicularRight = ctxt.getSpeedVector({angle: ctxt.steerSpeeds[ctxt.steerDirections[ctxt.direction]].d - 90, speed: 10});
+		var boarderPerpendicularLeft = ctxt.getSpeedVector({angle: ctxt.steerSpeeds[ctxt.steerDirections[ctxt.direction]].d + 90, speed: 8});
+		var boarderPerpendicularRight = ctxt.getSpeedVector({angle: ctxt.steerSpeeds[ctxt.steerDirections[ctxt.direction]].d - 90, speed: 8});
 		var boarderParallel = ctxt.getSpeedVector({speed: 4});
 		var boarderFrontLeft = {
 			x: boarderBottomCenterX + boarderPerpendicularLeft.x,
@@ -1049,10 +1051,9 @@ var GAME = BASE.extend({
 			ctxt.doSorting();
 		}
 		
-		//ctxt.drawBoardLines({
-		//	x: speed.x,
-		//	y: speed.y
-		//});
+		ctxt.drawBoardLines({
+			speed: speed
+		});
 		
 		
 		t = ctxt.distance;
@@ -1069,28 +1070,34 @@ var GAME = BASE.extend({
 		
 		if (t > 20) {
 			var obst_delta = t - ctxt.lastObstAt;
+			var bonus_delta = t - ctxt.lastBonusAt;
+			var inter_delta = t - ctxt.lastInterAt;
+			
+			//console.log('Inter = ' + inter_delta + ' of ' + ctxt.interEvery);
+			//console.log('Obst = ' + obst_delta + ' of ' + ctxt.obstEvery);
+			//console.log('Bonus = ' + bonus_delta + ' of ' + ctxt.bonusEvery);
+			
+			
 			if (obst_delta >= ctxt.obstEvery) {
 				ctxt.addEntity({interactives: false, obstacles: true, bonus: false});
 				ctxt.lastObstAt = t;
 			}
 			
-			var bonus_delta = t - ctxt.lastBonusAt;
+			
 			if (bonus_delta >= ctxt.bonusEvery) {
 				ctxt.addEntity({interactives: false, obstacles: false, bonus: true});
 				ctxt.lastBonusAt = t;
 			}
 			
-			var inter_delta = t - ctxt.lastInterAt;
+			
 			if (inter_delta >= ctxt.interEvery) {
 				ctxt.addEntity({interactives: true, obstacles: false, bonus: false});
 				ctxt.lastInterAt = t;
 			}
 			
-			if (ctxt.distance > ctxt.nextLevelAt) {
-				//ctxt.nextLevelAt *= 2;
-				//ctxt.level++;
-				//ctxt.sweetMessage({message: "Level " + ctxt.level});
-			}
+			
+			
+			
 		}
 		
 		//ctxt.reflowUI();
@@ -1101,8 +1108,9 @@ var GAME = BASE.extend({
 		var ctxt = this;
 		
 		var def = {
-			x: 0,
-			y: 0
+			speed: {
+				x: 0, y: 0
+			}
 		};
 		
 		o = $.extend({}, def, o);
@@ -1110,27 +1118,49 @@ var GAME = BASE.extend({
 		if (typeof ctxt.boardLines === 'undefined') {
 			
 			ctxt.boardLines = new createjs.Graphics();
-			ctxt.boardLines.setStrokeStyle(2);
-			ctxt.boardLines.beginStroke('black');
-			//ctxt.boardLines.moveTo(ctxt.boarder.x + (ctxt.boarder.spriteSheet._frameWidth / 2), ctxt.dimensions().height); //ctxt.boarder.y  + (ctxt.boarder.spriteSheet._frameHeight / 2));
-			ctxt.boardLines.moveTo(0, 0);
-			ctxt.boardLines.lineTo(ctxt.dimensions().width, ctxt.dimensions().height);
+			ctxt.boardLines.setStrokeStyle(16, 'round');
+			ctxt.boardLines.beginStroke('Grey');
+			ctxt.line = {
+				x: ctxt.baseline.width / 2,
+				y: ctxt.boarder.y + (ctxt.boarder.spriteSheet._frameHeight * (2/3))
+			};
+			ctxt.lastBoardLineAt = {
+				x: ctxt.line.x,
+				y: ctxt.line.y
+			};
+			
+			ctxt.boardLines.moveTo(ctxt.line.x, ctxt.line.y);
 			ctxt.boardLinesContainer = new createjs.Container();
 			ctxt.boardLinesShape = new createjs.Shape(ctxt.boardLines);
+			ctxt.boardLinesShape.alpha = 0.2;
+			ctxt.stage.addChildAt(ctxt.boardLinesShape, ctxt.stage.getChildIndex(ctxt.boarder) - 1);
+		} else {
+		
+			var dist_since_last = Math.sqrt(Math.pow(ctxt.line.x - ctxt.lastBoardLineAt.x, 2) + Math.pow(ctxt.line.y - ctxt.lastBoardLineAt.y, 2));
+			if (dist_since_last > 20) {
+				
+				//var xc = (ctxt.line.x + (ctxt.line.x - o.speed.x)) / 2;
+				//var yc = (ctxt.line.y + (ctxt.line.y - o.speed.y)) / 2;
+				var xc = (ctxt.line.x + ctxt.lastBoardLineAt.x) / 2;
+				var yc = (ctxt.line.y + ctxt.lastBoardLineAt.y) / 2;
+				
+				if (ctxt.jumping || ctxt.crashing || ctxt.stopping) {
+					ctxt.boardLinesShape.graphics.moveTo(xc, yc);
+				} else {
+					ctxt.boardLinesShape.graphics.quadraticCurveTo(ctxt.line.x, ctxt.line.y, xc, yc);
+				}
+				
+				ctxt.lastBoardLineAt = {
+					x: ctxt.line.x,
+					y: ctxt.line.y
+				};
+			}
 		}
 		
-		ctxt.boardLines.lineTo(ctxt.boarder.x + o.x, ctxt.boarder.y + o.y);
-		ctxt.boardLinesContainer.addChild(ctxt.boardLinesShape);
-		ctxt.stage.addChildAt(ctxt.boardLinesContainer, ctxt.stage.getNumChildren() - 1);
-		
-		ctxt.boardLinesShape.x += o.x;
-		ctxt.boardLinesShape.y += o.y;
-		
-		if ((new Date()).getTime() % 1000) {
-			console.log(ctxt.boardLinesShape.x, ctxt.boardLinesShape.y);
-		}
-		
-		ctxt.boardLines.moveTo(ctxt.boardLinesShape.x, ctxt.boardLinesShape.y);
+    ctxt.boardLinesShape.x += o.speed.x;
+    ctxt.boardLinesShape.y += o.speed.y;
+    ctxt.line.x -= o.speed.x;
+    ctxt.line.y -= o.speed.y;
 		
 	},
 	
