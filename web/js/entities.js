@@ -376,6 +376,39 @@ var Beer = Bonus.extend({
 	_xyz: null
 }); // class Beer
 
+var Crown = Bonus.extend({
+	constructor: function(options) {
+		var ctxt = this;
+		Crown.super.constructor.call(this, options);
+		
+		this.addCollider({
+			points: "0,0;0,80;80,80;80,0;0,0",
+			action: function(o) {
+				ctxt.game.score += 1000;
+				ctxt.game.wearing = true;
+				ctxt.game.wearUntil = ctxt.game.distance + 100;
+				ctxt.game.sweetMessage({message:'WEAR THE CROWN!'});
+				ctxt.remove();
+			}
+		});
+		
+	},
+	
+	initSprite: function() {
+		var ctxt = this;
+		
+		ctxt.spriteSheet = new createjs.SpriteSheet({
+			"images": [ctxt.game.loader.getResult("crown")],
+			"frames": {"width": 80, "height": 80},
+			"animations": {
+				"default": [0, 12,'default', 0.5]
+			}
+		});
+		
+	},
+	_xyz: null
+}); // class Crown
+
 var Tree = Obstacle.extend({
 	name: "Tree",
 	

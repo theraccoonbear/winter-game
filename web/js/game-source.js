@@ -36,6 +36,7 @@ var GAME = BASE.extend({
 	bonuses: [
 		{id: 'coin', cls: 'Coin'},
 		{id: 'beer', cls: 'Beer'},
+		{id: 'crown', cls: 'Crown'}
 	],
 	
 	props: [
@@ -105,6 +106,8 @@ var GAME = BASE.extend({
 	jumping: false,
 	crashing: false,
 	stopping: false,
+	wearing: false,
+	wearUntil: 0,
 	
 	menuOpen: false,
 
@@ -583,7 +586,6 @@ var GAME = BASE.extend({
 		
 		var playCrash = false;
 		
-		
 		if (ctxt.crashing || ctxt.stopping) {
 			ctxt.sweetMessage({message: 'Oof!'});
 			ctxt.score -= 1000;
@@ -591,9 +593,13 @@ var GAME = BASE.extend({
 				playCrash = true;
 			}
 		} else {
-			playCrash = true;
-			ctxt.crashing = true;
-			ctxt.sweetMessage({message: 'Ouch! You Bit It Hard!'});
+			if (ctxt.wearing) {
+				ctxt.sweetMessage({message: "CROWN WEARING INVINCIBILITY!"});
+			} else {
+				playCrash = true;
+				ctxt.crashing = true;
+				ctxt.sweetMessage({message: 'Ouch! You Bit It Hard!'});
+			}
 		}
 		
 		if (playCrash) {
@@ -1019,6 +1025,18 @@ var GAME = BASE.extend({
 		var performSorting = false;
 		
 		ctxt.stage.setChildIndex(ctxt.ground, 0);
+		
+		if (ctxt.wearing) {
+			if (ctxt.distance >= ctxt.wearUntil) {
+				ctxt.wearing = false;
+			} else if (ctxt.boarder.alpha != 0.5) {
+				ctxt.boarder.alpha = 0.5
+			}
+		} else {
+			if (ctxt.boarder.alpha != 1) {
+				ctxt.boarder.alpha = 1;
+			}
+		}
 		
 		for (var i = ctxt.movingElements.length - 1; i >= 0; i--) {
 			var entity = ctxt.movingElements[i];
