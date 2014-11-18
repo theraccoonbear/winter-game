@@ -67,9 +67,9 @@ var GAME = BASE.extend({
 		'left2': 		{d: 131.59, sound: {id: 'snow-1', rate: 0.5}, boardTip: {x: 713, y: 223}},
 		'left1': 		{d: 111.59, sound: {id: 'snow-1', rate: 0.75}, boardTip: {x: 690, y: 230}},
 		'straight': {d: 90.00,  sound: {id: 'snow-1', rate: 1}, boardTip: {x: 679, y: 235}},
-		'right1': 	{d: 68.41,  sound: {id: 'snow-1', rate: 0.75}, boardTip: {x: 670, y: 230}},
-		'right2': 	{d: 48.81,  sound: {id: 'snow-1', rate: 0.5}, boardTip: {x: 655, y: 235}},
-		'right3': 	{d: 32.35,  sound: {id: 'snow-1', rate: 0.25}, boardTip: {x: 648, y: 225}}
+		'right1': 	{d: 68.41,  sound: {id: 'snow-1', rate: 0.75}, boardTip: {x: 665, y: 225}},
+		'right2': 	{d: 48.81,  sound: {id: 'snow-1', rate: 0.5}, boardTip: {x: 655, y: 220}},
+		'right3': 	{d: 32.35,  sound: {id: 'snow-1', rate: 0.25}, boardTip: {x: 650, y: 220}}
 	},
 	
 	initSpeed: 8,
@@ -956,8 +956,8 @@ var GAME = BASE.extend({
 		
 		var boarderBottomCenterX = ctxt.steerSpeeds[ctxt.steerDirections[ctxt.direction]].boardTip.x;
 		var boarderBottomCenterY = ctxt.steerSpeeds[ctxt.steerDirections[ctxt.direction]].boardTip.y;
-		var boarderPerpendicularLeft = ctxt.getSpeedVector({angle: ctxt.steerSpeeds[ctxt.steerDirections[ctxt.direction]].d + 90, speed: 10});
-		var boarderPerpendicularRight = ctxt.getSpeedVector({angle: ctxt.steerSpeeds[ctxt.steerDirections[ctxt.direction]].d - 90, speed: 10});
+		var boarderPerpendicularLeft = ctxt.getSpeedVector({angle: ctxt.steerSpeeds[ctxt.steerDirections[ctxt.direction]].d + 90, speed: 8});
+		var boarderPerpendicularRight = ctxt.getSpeedVector({angle: ctxt.steerSpeeds[ctxt.steerDirections[ctxt.direction]].d - 90, speed: 8});
 		var boarderParallel = ctxt.getSpeedVector({speed: 4});
 		var boarderFrontLeft = {
 			x: boarderBottomCenterX + boarderPerpendicularLeft.x,
