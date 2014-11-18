@@ -17,6 +17,7 @@
 
 	<link rel="stylesheet" href="css/normalize.css">
 	<link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro:400,600,700,900' rel='stylesheet' type='text/css'>
+	<link href='http://fonts.googleapis.com/css?family=Roboto+Condensed:400,700,300' rel='stylesheet' type='text/css'>
 	<link rel="stylesheet" href="css/main.css">
 	<link rel="stylesheet" href="css/styles.css">
 	<link rel="stylesheet" href="css/new.css">
@@ -77,18 +78,20 @@
 			This is where help and config stuff goes.
 		</div>-->
 		
-		<div id="highScores" class="popupPanel">
-			<a href="#" id="restartLevel">Restart</a>
+		<div id="highScore" class="popupPanel">
 			<h1>High Scores</h1>
-			<table class="highScoreList">
-				<thead>
-					<th>#</th>
-					<th>Name</th>
-					<th>Score</th>
-					<th>Date</th>
-				</thead>
-				<tbody></tbody>
-			</table>
+			<div class="highScoreWrap">
+					<table class="highScoreList">
+						<thead>
+							<th>#</th>
+							<th>Name</th>
+							<th>Score</th>
+							<th>Date</th>
+						</thead>
+						<tbody></tbody>
+					</table>
+			</div><!-- /.highScoreWrap -->
+			<a href="#" id="restartLevel" class="btn width-100">Restart</a>
 		</div>
 	
 	
@@ -97,7 +100,11 @@
 	
 	<div id="submitScore" class="popupPanel white-popup mfp-with-anim mfp-hide">
 		<h1>Submit Score</h1>
-		<label for="highScoreName">Name: <input id="highScoreName"</label> <button id="submitHighScore">Submit</button>
+		<label for="highScoreName">
+			Name: <br>
+			<input id="highScoreName" class="highScoreInput width-100">
+		</label> 
+		<button id="submitHighScore" class="highScoreBtn width-100">Submit</button>
 	</div><!-- #submitScore -->
 
 	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
