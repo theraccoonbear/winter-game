@@ -17,7 +17,8 @@ var GAME = BASE.extend({
 		'#scorePanel',
 		'#pauseState',
 		'#menuButton',
-		'#highScores'
+		'#highScores',
+		'.restartLevel'
 	],
 	
 	playerVertPositionFactor: 0.2,
@@ -36,6 +37,7 @@ var GAME = BASE.extend({
 	bonuses: [
 		{id: 'coin', cls: 'Coin'},
 		{id: 'beer', cls: 'Beer'},
+		{id: 'crown', cls: 'Crown'}
 	],
 	
 	props: [
@@ -105,6 +107,8 @@ var GAME = BASE.extend({
 	jumping: false,
 	crashing: false,
 	stopping: false,
+	wearing: false,
+	wearUntil: 0,
 	
 	menuOpen: false,
 
@@ -583,7 +587,6 @@ var GAME = BASE.extend({
 		
 		var playCrash = false;
 		
-		
 		if (ctxt.crashing || ctxt.stopping) {
 			ctxt.sweetMessage({message: 'Oof!'});
 			ctxt.score -= 1000;
@@ -591,9 +594,13 @@ var GAME = BASE.extend({
 				playCrash = true;
 			}
 		} else {
-			playCrash = true;
-			ctxt.crashing = true;
-			ctxt.sweetMessage({message: 'Ouch! You Bit It Hard!'});
+			if (ctxt.wearing) {
+				ctxt.sweetMessage({message: "CROWN WEARING INVINCIBILITY!"});
+			} else {
+				playCrash = true;
+				ctxt.crashing = true;
+				ctxt.sweetMessage({message: 'Ouch! You Bit It Hard!'});
+			}
 		}
 		
 		if (playCrash) {
@@ -714,6 +721,33 @@ var GAME = BASE.extend({
 		ctxt.steerAbs(where);
 	},
 	
+	initTrail: function() {
+		var ctxt = this;
+		
+		if (typeof ctxt.boardLinesShape !== 'undefined') {
+			ctxt.stage.removeChild(ctxt.boardLinesShape);
+		}
+		
+		ctxt.boardLines = new createjs.Graphics();
+		ctxt.boardLines.setStrokeStyle(16, 'round');
+		ctxt.boardLines.beginStroke('Grey');
+		ctxt.line = {
+			x: ctxt.baseline.width / 2,
+			y: ctxt.boarder.y + (ctxt.boarder.spriteSheet._frameHeight * (2/3))
+		};
+		ctxt.lastBoardLineAt = {
+			x: ctxt.line.x,
+			y: ctxt.line.y
+		};
+		
+		ctxt.boardLines.moveTo(ctxt.line.x, ctxt.line.y);
+		ctxt.boardLinesContainer = new createjs.Container();
+		ctxt.boardLinesShape = new createjs.Shape(ctxt.boardLines);
+		ctxt.boardLinesShape.alpha = 0.2;
+		ctxt.stage.addChildAt(ctxt.boardLinesShape, ctxt.stage.getChildIndex(ctxt.boarder) - 1);
+		
+	},
+	
 	initBoarder: function() {
 		var ctxt = this;
 		
@@ -758,7 +792,7 @@ var GAME = BASE.extend({
         
 		ctxt.boarder.framerate = 30;
 		ctxt.stage.addChild(ctxt.boarder);
-		//ctxt.between.addChild(ctxt.boarder);
+		ctxt.initTrail();
 	},
 	
 	getAssetById: function(id) {
@@ -1020,6 +1054,18 @@ var GAME = BASE.extend({
 		
 		ctxt.stage.setChildIndex(ctxt.ground, 0);
 		
+		if (ctxt.wearing) {
+			if (ctxt.distance >= ctxt.wearUntil) {
+				ctxt.wearing = false;
+			} else if (ctxt.boarder.alpha != 0.5) {
+				ctxt.boarder.alpha = 0.5
+			}
+		} else {
+			if (ctxt.boarder.alpha != 1) {
+				ctxt.boarder.alpha = 1;
+			}
+		}
+		
 		for (var i = ctxt.movingElements.length - 1; i >= 0; i--) {
 			var entity = ctxt.movingElements[i];
 			var e = entity.sprite;
@@ -1115,32 +1161,29 @@ var GAME = BASE.extend({
 		
 		o = $.extend({}, def, o);
 		
-		if (typeof ctxt.boardLines === 'undefined') {
-			
-			ctxt.boardLines = new createjs.Graphics();
-			ctxt.boardLines.setStrokeStyle(16, 'round');
-			ctxt.boardLines.beginStroke('Grey');
-			ctxt.line = {
-				x: ctxt.baseline.width / 2,
-				y: ctxt.boarder.y + (ctxt.boarder.spriteSheet._frameHeight * (2/3))
-			};
-			ctxt.lastBoardLineAt = {
-				x: ctxt.line.x,
-				y: ctxt.line.y
-			};
-			
-			ctxt.boardLines.moveTo(ctxt.line.x, ctxt.line.y);
-			ctxt.boardLinesContainer = new createjs.Container();
-			ctxt.boardLinesShape = new createjs.Shape(ctxt.boardLines);
-			ctxt.boardLinesShape.alpha = 0.2;
-			ctxt.stage.addChildAt(ctxt.boardLinesShape, ctxt.stage.getChildIndex(ctxt.boarder) - 1);
-		} else {
+		//if (typeof ctxt.boardLines === 'undefined') {
+		//	
+		//	ctxt.boardLines = new createjs.Graphics();
+		//	ctxt.boardLines.setStrokeStyle(16, 'round');
+		//	ctxt.boardLines.beginStroke('Grey');
+		//	ctxt.line = {
+		//		x: ctxt.baseline.width / 2,
+		//		y: ctxt.boarder.y + (ctxt.boarder.spriteSheet._frameHeight * (2/3))
+		//	};
+		//	ctxt.lastBoardLineAt = {
+		//		x: ctxt.line.x,
+		//		y: ctxt.line.y
+		//	};
+		//	
+		//	ctxt.boardLines.moveTo(ctxt.line.x, ctxt.line.y);
+		//	ctxt.boardLinesContainer = new createjs.Container();
+		//	ctxt.boardLinesShape = new createjs.Shape(ctxt.boardLines);
+		//	ctxt.boardLinesShape.alpha = 0.2;
+		//	ctxt.stage.addChildAt(ctxt.boardLinesShape, ctxt.stage.getChildIndex(ctxt.boarder) - 1);
+		//} else {
 		
 			var dist_since_last = Math.sqrt(Math.pow(ctxt.line.x - ctxt.lastBoardLineAt.x, 2) + Math.pow(ctxt.line.y - ctxt.lastBoardLineAt.y, 2));
 			if (dist_since_last > 20) {
-				
-				//var xc = (ctxt.line.x + (ctxt.line.x - o.speed.x)) / 2;
-				//var yc = (ctxt.line.y + (ctxt.line.y - o.speed.y)) / 2;
 				var xc = (ctxt.line.x + ctxt.lastBoardLineAt.x) / 2;
 				var yc = (ctxt.line.y + ctxt.lastBoardLineAt.y) / 2;
 				
@@ -1155,12 +1198,17 @@ var GAME = BASE.extend({
 					y: ctxt.line.y
 				};
 			}
-		}
+		//}
 		
     ctxt.boardLinesShape.x += o.speed.x;
     ctxt.boardLinesShape.y += o.speed.y;
     ctxt.line.x -= o.speed.x;
     ctxt.line.y -= o.speed.y;
+		
+		if (ctxt.line.y > 10000) {
+			console.log('new trail');
+			ctxt.initTrail();
+		}
 		
 	},
 	

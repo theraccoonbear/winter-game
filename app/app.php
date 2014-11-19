@@ -50,6 +50,7 @@ $asset_manifest = array(
 			
 	array("src" => "images/bonuses/beer.png", "id" => "beer"),
 	array("src" => "images/bonuses/coin.png", "id" => "coin"),
+	array("src" => "images/bonuses/crown.png", "id" => "crown"),
 			
 	array("src" => "images/interaction/jump-center.png", "id" => "jump-center"),
 	array("src" => "images/interaction/jump-left.png", "id" => "jump-left"),
