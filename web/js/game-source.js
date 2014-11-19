@@ -478,7 +478,10 @@ var GAME = BASE.extend({
 						//var magnificPopup = $.magnificPopup.instance; 
 						//magnificPopup.close();
 						ctxt.loadHighScores({
-							after: function() { ctxt.$highScoreOpener.click(); }
+							after: function() {
+								//ctxt.$highScoreOpener.click();
+								ctxt.sweetPopup({id: '#highScores'});
+							}
 						});
 					}
 				}, 'json');
