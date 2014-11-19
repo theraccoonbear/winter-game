@@ -54,7 +54,7 @@
 					<li><img src="images/txt-distance.svg" alt=""> <span id="distance" class="txt-sPanel">0</span></li>
 					<li><img src="images/txt-score.svg" alt=""> <span id="score" class="txt-sPanel">0</span></li>
 					<li id="inline-popups">
-						<a href="#highScores" id="highScoreOpener" data-effect="mfp-zoom-in"><img src="images/icon-help-sm.svg" alt="Help" class="icon-help"></a>
+						<a href="#" id="highScoreOpener" data-effect="mfp-zoom-in"><img src="images/icon-help-sm.svg" alt="Help" class="icon-help"></a>
 						<a href="#submitScore" id="submitScoreOpener" data-effect="mfp-zoom-in"></a>
 					</li>
 				</ul>
@@ -71,14 +71,16 @@
 	<!-- /#gameArea -->
 	
 	<!-- Lightbox -->
+	<div class="popupPanel">
+		<div id="helpDialog" class="popupPanel white-popup mfp-with-anim mfp-hide">
+			This is where help and config stuff goes.
+		</div>
+	</div>
+
 	<!-- Popup itself -->
 	<div id="highScores" class="white-popup mfp-with-anim mfp-hide">
 		
-		<!--<div id="helpConfig" class="popupPanel">
-			This is where help and config stuff goes.
-		</div>-->
-		
-		<div id="highScore" class="popupPanel">
+		<div class="popupPanel">
 			<h1>High Scores</h1>
 			<div class="highScoreWrap">
 					<table class="highScoreList">
@@ -126,27 +128,27 @@
 	<script src="js/vendor/jquery.magnific-popup.min.js"></script>
 	<script>
 		// Inline popups
-		$('#inline-popups').magnificPopup({
-		  delegate: 'a',
-		  removalDelay: 500, //delay removal by X to allow out-animation
-		  callbacks: {
-				beforeOpen: function() {
-					//console.log(this);
-					var id = $(this.st.el[0]).attr('id');
-					game.menuOpen = true;
-					if (!game.paused()) { game.pause(); }	
-					this.st.mainClass = this.st.el.attr('data-effect');
-					if (id == 'highScoreOpener') {
-						game.loadHighScores();
-					}
-					
-				},
-				afterClose: function() {
-					game.menuOpen = false;
-				}
-		  },
-		  midClick: true // allow opening popup on middle mouse click. Always set it to true if you don't provide alternative source.
-		});
+//		$('#inline-popups').magnificPopup({
+//		  delegate: 'a',
+//		  removalDelay: 500, //delay removal by X to allow out-animation
+//		  callbacks: {
+//				beforeOpen: function() {
+//					//console.log(this);
+//					var id = $(this.st.el[0]).attr('id');
+//					game.menuOpen = true;
+//					if (!game.paused()) { game.pause(); }	
+//					this.st.mainClass = this.st.el.attr('data-effect');
+//					if (id == 'highScoreOpener') {
+//						game.loadHighScores();
+//					}
+//					
+//				},
+//				afterClose: function() {
+//					game.menuOpen = false;
+//				}
+//		  },
+//		  midClick: true // allow opening popup on middle mouse click. Always set it to true if you don't provide alternative source.
+//		});
 
 	</script>
 
