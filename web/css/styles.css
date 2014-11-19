@@ -220,7 +220,7 @@ body {
 .highScoreInput{
 	border: 1px solid #9b9b9b;	
 	padding: 10px;
-	margin: 5px 0 0 0;
+	margin: 5px 0 0px 0;
 }
 .highScoreBtn{
 	border: 0;
@@ -229,8 +229,21 @@ body {
 	color: #fff;
 	text-transform: uppercase;
 	transition: background .5s;
+	outline: none;
 }
 .highScoreBtn:hover{
+	background: #8bd4de;		
+}
+
+.restartBtn{
+	border: 0;
+	background: #5ba3ad;
+	padding: 10px 0;
+	color: #fff;
+	text-transform: uppercase;
+	transition: background .5s;
+}
+.restartBtn:hover{
 	background: #8bd4de;		
 }
 
