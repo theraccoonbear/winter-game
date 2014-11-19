@@ -489,6 +489,10 @@ var GAME = BASE.extend({
 			ctxt.start();
 		});
 		
+		ctxt.$highScoreOpener.on('click',function(e){
+			ctxt.sweetPopup({id:'#helpDialog'});
+		});
+		
 	},
 	
 	initControls: function() {
@@ -857,6 +861,22 @@ var GAME = BASE.extend({
 		};
 		
 		return ret;
+	},
+	
+	sweetPopup: function(o) {
+		var ctxt = this;
+		var opts = {
+			id: '#helpDialog'
+		};
+		
+		opts = $.extend({}, opts, o);
+		$('.icon-help').magnificPopup({
+			items: {
+				src: opts.id,
+				type: 'inline'
+			}
+		});
+	
 	},
 	
 	sweetMessage: function(o) {
