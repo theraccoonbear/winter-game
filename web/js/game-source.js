@@ -1283,7 +1283,7 @@ var GAME = BASE.extend({
 		//ctxt.$submitScore.show();
 		
 		//ctxt.$submitScoreOpener.click();
-		ctxt.sweetPopup('#submitScore');
+		ctxt.sweetPopup({id: '#submitScore'});
 		
 	},
 	
