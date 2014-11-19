@@ -384,9 +384,11 @@ var Crown = Bonus.extend({
 		this.addCollider({
 			points: "0,0;0,80;80,80;80,0;0,0",
 			action: function(o) {
-				ctxt.game.score += 1000;
-				ctxt.game.wearing = true;
-				ctxt.game.wearUntil = ctxt.game.distance + 100;
+				//ctxt.game.score += 1000;
+				//ctxt.game.wearing = true;
+				//ctxt.game.wearUntil = (new Date()).getTime() + 8000; //ctxt.game.distance + 100;
+				ctxt.game.wearUntil = (new Date()).getTime() + 8000;
+				ctxt.game.don();
 				ctxt.game.sweetMessage({message:'WEAR THE CROWN!'});
 				ctxt.remove();
 			}

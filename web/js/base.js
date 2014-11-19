@@ -34,6 +34,10 @@ var BASE = Class.extend({
 	
 	touchHandling: function() {
 		var ctxt = this;
+		document.addEventListener("touchstart", function (e) {
+				e.preventDefault();
+				return false;
+		}, false);
 		
 		$.each(ctxt.touchTargets, function(i, sel) {
 			$(sel).on('touchstart', function(e) {

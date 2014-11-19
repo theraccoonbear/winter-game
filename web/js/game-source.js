@@ -302,6 +302,7 @@ var GAME = BASE.extend({
 		ctxt.obstEvery = ctxt.initObstEvery;
 		ctxt.interEvery = ctxt.initInterEvery;
 		
+		ctxt.doff();
 		ctxt.speed = ctxt.initSpeed;
 		
 		ctxt.setupStart();
@@ -799,6 +800,38 @@ var GAME = BASE.extend({
 		ctxt.initTrail();
 	},
 	
+	crownLogic: function() {
+		var ctxt = this;
+		var now = (new Date()).getTime();
+		
+		if (now < ctxt.wearUntil) {
+			ctxt.don();
+		} else {
+			ctxt.doff();
+		}
+	},
+	
+	don: function() {
+		var ctxt = this;
+		
+		var now = (new Date()).getTime();
+		var delta = ctxt.wearUntil - now;
+		var alpha_state = 0.5;
+		if (delta < 3000) {
+			alpha_state = (Math.round(delta / 250) * 250) % 500 ? 1 : 0.5;
+		}
+		ctxt.wearing = true;
+		ctxt.boarder.alpha = alpha_state;
+	},
+	
+	doff: function() {
+		var ctxt = this;
+		
+		ctxt.wearing = false;
+		ctxt.boarder.alpha = 1;
+		ctxt.wearUntil = 0;
+	},
+	
 	getAssetById: function(id) {
 		var ctxt = this;
 		var ret = false;
@@ -1074,17 +1107,7 @@ var GAME = BASE.extend({
 		
 		ctxt.stage.setChildIndex(ctxt.ground, 0);
 		
-		if (ctxt.wearing) {
-			if (ctxt.distance >= ctxt.wearUntil) {
-				ctxt.wearing = false;
-			} else if (ctxt.boarder.alpha != 0.5) {
-				ctxt.boarder.alpha = 0.5
-			}
-		} else {
-			if (ctxt.boarder.alpha != 1) {
-				ctxt.boarder.alpha = 1;
-			}
-		}
+		ctxt.crownLogic();
 		
 		for (var i = ctxt.movingElements.length - 1; i >= 0; i--) {
 			var entity = ctxt.movingElements[i];
