@@ -1280,10 +1280,10 @@ var GAME = BASE.extend({
 	
 	gameEnded: function() {
 		var ctxt = this;
-		ctxt.$submitScore.show();
+		//ctxt.$submitScore.show();
 		
-		ctxt.$submitScoreOpener.click();
-		
+		//ctxt.$submitScoreOpener.click();
+		ctxt.sweetPopup('#submitScore');
 		
 	},
 	
