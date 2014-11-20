@@ -76,8 +76,9 @@ var GAME = BASE.extend({
 	
 	initSpeed: 8,
 	speed: 8,
-	level: 1,
-	nextLevelAt: 150,
+	//level: 1,
+	//nextLevelAt: 150,
+	activeLevel: false,
 	score: 0,
 	distance: 0,
 	
@@ -102,6 +103,9 @@ var GAME = BASE.extend({
 	under: null,
 	between: null,
 	over: null,
+	
+	hill_x: 0,
+	hill_y: 0,
 	
 	starting: false,
 	jumping: false,
@@ -284,6 +288,8 @@ var GAME = BASE.extend({
 			ent.remove();
 		}
 		
+		ctxt.hill_x = 0;
+		ctxt.hill_y = 0;
 		ctxt.distance = 0;
 		ctxt.$distance.html(0);
 		ctxt.score = 0;
@@ -297,6 +303,8 @@ var GAME = BASE.extend({
 		ctxt.lastBonusAt = 0;
 		ctxt.lastInterAt = 0;
 		ctxt.nextInterBumpAt = 500;
+		
+		ctxt.activeLevel = new JumpLevel({game: ctxt});//new RandomLevel({game: ctxt});
 		
 		ctxt.bonusEvery = ctxt.initBonusEvery;
 		ctxt.obstEvery = ctxt.initObstEvery;
@@ -1050,6 +1058,10 @@ var GAME = BASE.extend({
 		
 		var distThisTick = Math.abs(speed.y);
 		ctxt.distance += distThisTick / 20;
+		
+		ctxt.hill_x -= speed.x;
+		ctxt.hill_y -= speed.y;
+		
 		ctxt.$distance.html(parseInt(ctxt.distance).commafy() + "'");
 		ctxt.score += ctxt.crashing || ctxt.stopping ? 0 : (distThisTick * (ctxt.speed / ctxt.initSpeed));
 		ctxt.$score.html(parseInt(ctxt.score).commafy());
@@ -1179,37 +1191,40 @@ var GAME = BASE.extend({
 			}
 		}
 		
-		if (t > 20) {
-			var obst_delta = t - ctxt.lastObstAt;
-			var bonus_delta = t - ctxt.lastBonusAt;
-			var inter_delta = t - ctxt.lastInterAt;
-			
-			//console.log('Inter = ' + inter_delta + ' of ' + ctxt.interEvery);
-			//console.log('Obst = ' + obst_delta + ' of ' + ctxt.obstEvery);
-			//console.log('Bonus = ' + bonus_delta + ' of ' + ctxt.bonusEvery);
-			
-			
-			if (obst_delta >= ctxt.obstEvery) {
-				ctxt.addEntity({interactives: false, obstacles: true, bonus: false});
-				ctxt.lastObstAt = t;
-			}
-			
-			
-			if (bonus_delta >= ctxt.bonusEvery) {
-				ctxt.addEntity({interactives: false, obstacles: false, bonus: true});
-				ctxt.lastBonusAt = t;
-			}
-			
-			
-			if (inter_delta >= ctxt.interEvery) {
-				ctxt.addEntity({interactives: true, obstacles: false, bonus: false});
-				ctxt.lastInterAt = t;
-			}
-			
-			
-			
-			
-		}
+		
+		ctxt.activeLevel.tick();
+		
+		//if (t > 20) {
+		//	var obst_delta = t - ctxt.lastObstAt;
+		//	var bonus_delta = t - ctxt.lastBonusAt;
+		//	var inter_delta = t - ctxt.lastInterAt;
+		//	
+		//	//console.log('Inter = ' + inter_delta + ' of ' + ctxt.interEvery);
+		//	//console.log('Obst = ' + obst_delta + ' of ' + ctxt.obstEvery);
+		//	//console.log('Bonus = ' + bonus_delta + ' of ' + ctxt.bonusEvery);
+		//	
+		//	
+		//	if (obst_delta >= ctxt.obstEvery) {
+		//		ctxt.addEntity({interactives: false, obstacles: true, bonus: false});
+		//		ctxt.lastObstAt = t;
+		//	}
+		//	
+		//	
+		//	if (bonus_delta >= ctxt.bonusEvery) {
+		//		ctxt.addEntity({interactives: false, obstacles: false, bonus: true});
+		//		ctxt.lastBonusAt = t;
+		//	}
+		//	
+		//	
+		//	if (inter_delta >= ctxt.interEvery) {
+		//		ctxt.addEntity({interactives: true, obstacles: false, bonus: false});
+		//		ctxt.lastInterAt = t;
+		//	}
+		//	
+		//	
+		//	
+		//	
+		//}
 		
 		//ctxt.reflowUI();
 		ctxt.stage.update(event);

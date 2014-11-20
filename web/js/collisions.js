@@ -89,7 +89,7 @@ var CollisionTarget = Class.extend({
 
 		//switch to check for exactly false so true/undefined will be equivalent to enabled
 		if (ctxt.enabled === false) {
-			return;
+			return {status: 'No Intersection', points: []};
 		}
 		
 		for (i = 0; i < numPoints; i++) {
@@ -176,6 +176,8 @@ var CollisionTarget = Class.extend({
 				}
 			}
 		}
+		
+		return result;
 	},
 	
 	_xyz: null

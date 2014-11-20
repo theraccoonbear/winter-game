@@ -260,7 +260,14 @@ var Entity = Class.extend({
 		}
 		
 		for (var i = 0, l = ctxt.colliders.length; i < l; i++) {
-			if (ctxt.colliders[i].checkCollision(checkCollisionOptions)) {
+			var res = ctxt.colliders[i].checkCollision(checkCollisionOptions);
+			if (res.points.length > 0) {
+				if (typeof ctxt.colCallback === 'function') {
+					ctxt.colCallback({
+						entity: ctxt,
+						collider: ctxt.colliders[i]
+					});
+				}
 				// we collided
 
 				//if (ctxt.jumpable && ctxt.game.jumping) {
