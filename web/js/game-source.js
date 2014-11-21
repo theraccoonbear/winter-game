@@ -107,6 +107,7 @@ var GAME = BASE.extend({
 	
 	starting: false,
 	jumping: false,
+	boosting: false,
 	crashing: false,
 	stopping: false,
 	wearing: false,
@@ -605,18 +606,23 @@ var GAME = BASE.extend({
 		};
 		
 		o = $.extend({}, def, o);;
-		var origSpeed = ctxt.speed;
+		if (!ctxt.boosting) {
+			ctxt.preBoostSpeed = ctxt.speed;
+		}
+		
+		ctxt.boosting = true;
+		ctxt.boostDecRate = (ctxt.speed - ctxt.preBoostSpeed) / (o.duration / o.interval);
 		ctxt.speed *= (1 + (o.percentage / 100))//1.5;
 		
-		var per = (ctxt.speed - origSpeed) / (o.duration / o.interval)//20;
+		//var per = (ctxt.speed - origSpeed) / (o.duration / o.interval)//20;
 		
-		var boostInt = setInterval(function() {
-			ctxt.speed -= per;
-			if (ctxt.speed <= origSpeed && !ctxt.crashing && !ctxt.stopping) {
-				ctxt.speed = origSpeed;
-				clearInterval(boostInt);
-			}
-		}, o.interval);
+		//var boostInt = setInterval(function() {
+		//	ctxt.speed -= per;
+		//	if (ctxt.speed <= origSpeed && !ctxt.crashing && !ctxt.stopping) {
+		//		ctxt.speed = origSpeed;
+		//		clearInterval(boostInt);
+		//	}
+		//}, o.interval);
 		
 	},
 
@@ -1210,6 +1216,19 @@ var GAME = BASE.extend({
 				ctxt.stopSound();
 				createjs.Ticker.setPaused(true);
 				ctxt.gameEnded();
+			}
+		} else if (ctxt.boosting) {
+			//ctxt.preBoostSpeed = ctxt.speed;
+			//ctxt.boosting = true;
+			//ctxt.boostDecRate = (ctxt.speed - origSpeed) / (o.duration / o.interval);
+			//ctxt.speed *= (1 + (o.percentage / 100))//1.5;
+			
+			if (ctxt.speed > ctxt.preBoostSpeed) {
+				ctxt.speed -= ctxt.boostDecRate;
+			}
+			if (ctxt.speed <= ctxt.preBoostSpeed) {
+				ctxt.speed = ctxt.preBoostSpeed;
+				ctxt.boosting = false;
 			}
 		}
 		
