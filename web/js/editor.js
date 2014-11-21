@@ -109,7 +109,14 @@ var Editor = BASE.extend({
 		console.log(JSON.stringify(ctxt.level, false, 2))
 		localStorage.currentLevel = JSON.stringify(ctxt.level, false, 2);
 		
-		ctxt.game.addEntity(ent_opts);
+		ctxt.game.addEntity({
+			id: id,
+			x: pos.left,
+			y: pos.top
+		});
+		
+		ctxt.game.stage.update();
+		
 	},
 	
 	setup: function() {
