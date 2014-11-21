@@ -16,44 +16,17 @@ var GAME = BASE.extend({
 		'#dispPercent',
 		'#scorePanel',
 		'#pauseState',
-		'#menuButton'
+		'#menuButton',
+		'#highScores',
+		'.restartLevel'
 	],
 	
 	playerVertPositionFactor: 0.2,
 	
 	touchTargets: ['#touchSteer'],
 	
-	manifest: [
-		//{src:"images/boarder-small-3.png", id:"boarder-small"},
-		{src:"images/sprite-boarder.png", id:"boarder-small"},
-		{src:"images/obstacles/rock-1.png", id:"rock-1"},
-		{src:"images/obstacles/rock-2.png", id:"rock-2"},
-		{src:"images/obstacles/rock-3.png", id:"rock-3"},
-		{src:"images/obstacles/rock-4.png", id:"rock-4"},
-		
-		{src:"images/obstacles/tree-single.png", id:"tree-1"},
-		{src:"images/obstacles/tree-stump.png", id:"stump-1"},
-		
-		{src:"images/banners/start.png", id:"start-banner"},
-		
-		{src:"images/bonuses/beer.png", id:"beer"},
-		{src:"images/bonuses/coin.png", id:"coin"},
-		
-		{src:"images/interaction/jump-center.png ", id:"jump-center", type: createjs.LoadQueue.IMAGE},
-		{src:"images/interaction/jump-left.png", id:"jump-left", type: createjs.LoadQueue.IMAGE},
-		{src:"images/interaction/jump-right.png", id:"jump-right", type: createjs.LoadQueue.IMAGE},
-
-		//{src:"images/misc/sinistar-sprite.gif", id:"sinistar"},
-		
-		//{src:"images/snow-bg.jpg", id:"snow-surface"},
-		{src:"images/snow-bg-2.jpg", id:"snow-surface-2"},
-		//
-		{src:"sounds/snow-1.xogg", id: "snow-1", type: createjs.LoadQueue.BINARY}
-		//,
-		//{src:"sounds/snow-2.xogg", id: "snow-2", type: createjs.LoadQueue.BINARY},
-		//{src:"sounds/snow-3.xogg", id: "snow-3", type: createjs.LoadQueue.BINARY},
-		//{src:"sounds/snow-4.xogg", id: "snow-4", type: createjs.LoadQueue.BINARY}
-	],
+	manifestSizes: "{{manifest-sizes}}",
+	manifest: "{{manifest-data}}",
 	
 	totalBytesLoaded: 0,
 	
@@ -64,6 +37,7 @@ var GAME = BASE.extend({
 	bonuses: [
 		{id: 'coin', cls: 'Coin'},
 		{id: 'beer', cls: 'Beer'},
+		{id: 'crown', cls: 'Crown'}
 	],
 	
 	props: [
@@ -95,15 +69,14 @@ var GAME = BASE.extend({
 		'left2': 		{d: 131.59, sound: {id: 'snow-1', rate: 0.5}, boardTip: {x: 713, y: 223}},
 		'left1': 		{d: 111.59, sound: {id: 'snow-1', rate: 0.75}, boardTip: {x: 690, y: 230}},
 		'straight': {d: 90.00,  sound: {id: 'snow-1', rate: 1}, boardTip: {x: 679, y: 235}},
-		'right1': 	{d: 68.41,  sound: {id: 'snow-1', rate: 0.75}, boardTip: {x: 670, y: 230}},
-		'right2': 	{d: 48.81,  sound: {id: 'snow-1', rate: 0.5}, boardTip: {x: 655, y: 235}},
-		'right3': 	{d: 32.35,  sound: {id: 'snow-1', rate: 0.25}, boardTip: {x: 648, y: 225}}
+		'right1': 	{d: 68.41,  sound: {id: 'snow-1', rate: 0.75}, boardTip: {x: 665, y: 225}},
+		'right2': 	{d: 48.81,  sound: {id: 'snow-1', rate: 0.5}, boardTip: {x: 655, y: 220}},
+		'right3': 	{d: 32.35,  sound: {id: 'snow-1', rate: 0.25}, boardTip: {x: 650, y: 220}}
 	},
 	
 	initSpeed: 8,
 	speed: 8,
-	level: 1,
-	nextLevelAt: 150,
+	activeLevel: false,
 	score: 0,
 	distance: 0,
 	
@@ -113,21 +86,33 @@ var GAME = BASE.extend({
 	height: 0,
 	
 	lastObstAt: 0,
-	obstEvery: 5,
+	initObstEvery: 8,
+	obstEvery: 8,
 	
 	lastBonusAt: 0,
+	initBonusEvery: 25,
 	bonusEvery: 25,
 	
 	lastInterAt: 0,
+	initInterEvery: 30,
 	interEvery: 30,
+	nextInterBumpAt: 500,
 	
 	under: null,
 	between: null,
 	over: null,
 	
+	hill_x: 0,
+	hill_y: 0,
+	
+	starting: false,
 	jumping: false,
 	crashing: false,
 	stopping: false,
+	wearing: false,
+	wearUntil: 0,
+	
+	menuOpen: false,
 
 	_drawnBoarderCollider: null,
 	debug: false,
@@ -135,6 +120,7 @@ var GAME = BASE.extend({
 	sounds: {},
 	
 	state: 'loading',
+	editor: false,
 	
 	constructor: function(o) {
 		var ctxt = this;
@@ -185,15 +171,38 @@ var GAME = BASE.extend({
 		});
 	},
 	
+	edit: function() {
+		var ctxt = this;
+		if (ctxt.editor === false) {
+			ctxt.editor = new Editor({game: ctxt});
+		}
+		
+		if (ctxt.editor.editing) {
+			ctxt.editor.end();
+		} else {
+			ctxt.editor.begin();
+		}
+		
+	},
+	
 	getManSize: function(after) {
 		var ctxt = this;
 		
-		$.post('manifest-size.php', {manifest: ctxt.manifest}, function(data) {
-			ctxt.manifestSizes = data;
-			if (typeof after === 'function') {
-				after.apply(ctxt);
-			}
-		}, 'json');
+		//ctxt.manifestSizes = {
+		//	assets: ctxt.manifest,
+		//	total: ctxt.manifestSize
+		//};
+		
+		if (typeof after === 'function') {
+			after.apply(ctxt);
+		}
+		
+		//$.post('manifest-size.php', {manifest: ctxt.manifest}, function(data) {
+		//	ctxt.manifestSizes = data;
+		//	if (typeof after === 'function') {
+		//		after.apply(ctxt);
+		//	}
+		//}, 'json');
 	},
 	
 	updateProgress: function() {
@@ -222,7 +231,7 @@ var GAME = BASE.extend({
 		var total_percent = ((ctxt.totalBytesLoaded / ctxt.manifestSizes.total) * 100).toFixed(2) + '%';
 		ctxt.updateProgress();
 		
-		//console.log('PROGRESS', ev.item.id, ev.item.src, file_percent, total_percent);
+		//console.log('PROGRESS', ev.item.id, ev.item.src, file_percent);
 	},
 	
 	fileComplete: function(ev) {
@@ -248,6 +257,9 @@ var GAME = BASE.extend({
 		ctxt.centerElem(ctxt.$touchSteer, true, false);
 		
 		
+		if (localStorage && localStorage.highScoreName) {
+			ctxt.$highScoreName.val(localStorage.highScoreName);
+		}
 		
 		ctxt.initHill();
 		
@@ -255,6 +267,7 @@ var GAME = BASE.extend({
 		
 		ctxt.initBoarder();
 		
+		ctxt.eventHooks();
 		
 		ctxt.initControls();
 		
@@ -265,6 +278,7 @@ var GAME = BASE.extend({
 		ctxt.initSound();
 		
 		createjs.Ticker.timingMode = createjs.Ticker.RAF;
+		createjs.Ticker.setPaused(true);
 		createjs.Ticker.addEventListener("tick", function(event) {
 			ctxt.tick(event);
 		});
@@ -278,21 +292,41 @@ var GAME = BASE.extend({
 	start: function() {
 		var ctxt = this;
 		
+		ctxt.starting = true;
+		
+		createjs.Ticker.setPaused(true);
+		
 		for (var i = ctxt.movingElements.length - 1; i >= 0; i--) {
 			var ent = ctxt.movingElements[i];
 			ent.remove();
 		}
 		
+		ctxt.hill_x = 0;
+		ctxt.hill_y = 0;
 		ctxt.distance = 0;
+		ctxt.$distance.html(0);
 		ctxt.score = 0;
+		ctxt.$score.html(0);
 		ctxt.direction = 3;
 		ctxt.jumping = false;
 		ctxt.crashing = false;
 		ctxt.stopping = false;
+		if (ctxt.editor && ctxt.editor.editing) {
+			ctxt.editor.end();
+		}
 		
 		ctxt.lastObstAt = 0;
 		ctxt.lastBonusAt = 0;
 		ctxt.lastInterAt = 0;
+		ctxt.nextInterBumpAt = 500;
+		
+		ctxt.activeLevel = new JumpLevel({game: ctxt});//new RandomLevel({game: ctxt});
+		
+		ctxt.bonusEvery = ctxt.initBonusEvery;
+		ctxt.obstEvery = ctxt.initObstEvery;
+		ctxt.interEvery = ctxt.initInterEvery;
+		
+		ctxt.doff();
 		ctxt.speed = ctxt.initSpeed;
 		
 		ctxt.setupStart();
@@ -302,7 +336,30 @@ var GAME = BASE.extend({
 		
 		ctxt.reflowUI();
 		
+		//var msgs = ['Ready?','3...','2...','1...','GO!']
+		//var countDown = 1;
+		//
+		//ctxt.sweetMessage({message: msgs[0]});
+		//
+		//var countDownInt = setInterval(function() {
+		//	if (countDown >= msgs.length) {
+		//		clearInterval(countDownInt);
+		//	} else {
+		//		ctxt.sweetMessage({message: msgs[countDown]});
+		//	}
+		//	
+		//	countDown++;
+		//	if (countDown >= msgs.length) {
+		//		ctxt.starting = false;
+		//		createjs.Ticker.setPaused(false);
+		//	}
+		//	
+		//}, 750);
+		
+		ctxt.starting = false;
 		createjs.Ticker.setPaused(false);
+		
+		
 		
 		ctxt.stage.update();
 	},
@@ -322,6 +379,10 @@ var GAME = BASE.extend({
 		//ctxt.stage.addChild(ctxt.under);
 		//ctxt.stage.addChild(ctxt.between);
 		//ctxt.stage.addChild(ctxt.over);
+	},
+	
+	paused: function() {
+		return createjs.Ticker.getPaused();
 	},
 	
 	pause: function() {
@@ -418,20 +479,66 @@ var GAME = BASE.extend({
 		ctxt.groundImg = ctxt.loader.getResult("snow-surface-2");
 		ctxt.ground = new createjs.Shape();
 		ctxt.ground.graphics.beginBitmapFill(ctxt.groundImg).drawRect(-ctxt.groundImg.width, -dim.height, dim.width + (2 * ctxt.groundImg.width), dim.height + ctxt.groundImg.height);
+
 		ctxt.ground.tileW = ctxt.groundImg.width;
 		ctxt.ground.tileH = ctxt.groundImg.height;
 		ctxt.ground.y = dim.height - ctxt.groundImg.height;
 		
+		dim = ctxt.baseline;
+		ctxt.ground.graphics.beginBitmapFill(ctxt.groundImg).drawRect(-ctxt.groundImg.width, 0, dim.width + (2 * ctxt.groundImg.width), dim.height + ctxt.groundImg.height);
+
 		ctxt.stage.addChild(ctxt.ground);
+		
+	},
+	
+	eventHooks: function() {
+		var ctxt = this;
+		ctxt.$submitHighScore.on('click', function(e) {
+			var name = ctxt.$highScoreName.val().trim();
+			if (localStorage) {
+				localStorage.highScoreName = name;
+			}
+			if (name.length > 0) {
+				var payload = {name: name, score: parseInt(ctxt.score)}
+				$.post('/scores/submit', payload, function(data) {
+					if (data.success) {
+						//var magnificPopup = $.magnificPopup.instance; 
+						//magnificPopup.close();
+						ctxt.loadHighScores({
+							after: function() {
+								//ctxt.$highScoreOpener.click();
+								ctxt.sweetPopup({id: '#highScores'});
+							}
+						});
+					}
+				}, 'json');
+			}
+		});
+		
+		ctxt.$restartLevel.on('click', function(e) {
+			$.magnificPopup.instance.close();
+			ctxt.start();
+		});
+		
+		ctxt.$highScoreOpener.on('click',function(e){
+			ctxt.sweetPopup({id:'#helpDialog'});
+		});
 		
 	},
 	
 	initControls: function() {
 		var ctxt = this;
+		
+		
+		
 		$(document).on('keydown', function(e) {
 			
+			if (ctxt.menuOpen || e.ctrlKey || e.metaKey || ctxt.starting) {
+				return;
+			}
+			
 			var which = String.fromCharCode(e.which).toUpperCase().charCodeAt(0);
-			//console.log('key ' + e.which, which);
+			console.log(which);
 			switch (which) {
 				case 37:
 					ctxt.steer('left');
@@ -442,11 +549,14 @@ var GAME = BASE.extend({
 				case 32:
 					ctxt.jump();
 					break;
-				case 67:
+				case 67: // c
 					ctxt.crash();
 					break;
-				case 68:
+				case 68: // d
 					ctxt.debug = !ctxt.debug;
+					break;
+				case 69: // e
+					ctxt.edit();
 					break;
 				case 82:
 					ctxt.start();
@@ -483,6 +593,11 @@ var GAME = BASE.extend({
 	
 	boost: function(o) {
 		var ctxt = this;
+		
+		if (ctxt.crashing || ctxt.stopping) {
+			return;
+		}
+		
 		var def = {
 			percentage: 50,
 			duration: 5000,
@@ -497,7 +612,7 @@ var GAME = BASE.extend({
 		
 		var boostInt = setInterval(function() {
 			ctxt.speed -= per;
-			if (ctxt.speed <= origSpeed) {
+			if (ctxt.speed <= origSpeed && !ctxt.crashing && !ctxt.stopping) {
 				ctxt.speed = origSpeed;
 				clearInterval(boostInt);
 			}
@@ -507,15 +622,30 @@ var GAME = BASE.extend({
 
 	crash: function () {
 		var ctxt = this;
+		
+		var playCrash = false;
+		
 		if (ctxt.crashing || ctxt.stopping) {
-			ctxt.sweetMessage({message: '-1000 points'});
+			ctxt.sweetMessage({message: 'Oof!'});
 			ctxt.score -= 1000;
+			if (ctxt.speed >= 0.25 * ctxt.initSpeed) {
+				playCrash = true;
+			}
 		} else {
-			ctxt.crashing = true;
+			if (ctxt.wearing) {
+				ctxt.sweetMessage({message: "CROWN WEARING INVINCIBILITY!"});
+			} else {
+				playCrash = true;
+				ctxt.crashing = true;
+				ctxt.sweetMessage({message: 'Ouch! You Bit It Hard!'});
+			}
+		}
+		
+		if (playCrash) {
 			var dirName = ctxt.steerDirections[ctxt.direction];
 			ctxt.boarder.gotoAndPlay(dirName + "-crash");
-			ctxt.sweetMessage({message: 'Ouch! You Bit It!'});
 		}
+		
 	},
 	
 	reflowUI: function() {
@@ -561,7 +691,7 @@ var GAME = BASE.extend({
 				'height': touch_height
 			});
 		
-		ctxt.ground.graphics.beginBitmapFill(ctxt.groundImg).drawRect(-ctxt.groundImg.width, 0, dim.width + (2 * ctxt.groundImg.width), dim.height + ctxt.groundImg.height);
+		//ctxt.ground.graphics.beginBitmapFill(ctxt.groundImg).drawRect(-ctxt.groundImg.width, 0, dim.width + (2 * ctxt.groundImg.width), dim.height + ctxt.groundImg.height);
 			
 		
 		ctxt.centerElem(ctxt.$touchSteer, true, false);
@@ -629,6 +759,33 @@ var GAME = BASE.extend({
 		ctxt.steerAbs(where);
 	},
 	
+	initTrail: function() {
+		var ctxt = this;
+		
+		if (typeof ctxt.boardLinesShape !== 'undefined') {
+			ctxt.stage.removeChild(ctxt.boardLinesShape);
+		}
+		
+		ctxt.boardLines = new createjs.Graphics();
+		ctxt.boardLines.setStrokeStyle(16, 'round');
+		ctxt.boardLines.beginStroke('Grey');
+		ctxt.line = {
+			x: ctxt.baseline.width / 2,
+			y: ctxt.boarder.y + (ctxt.boarder.spriteSheet._frameHeight * (2/3))
+		};
+		ctxt.lastBoardLineAt = {
+			x: ctxt.line.x,
+			y: ctxt.line.y
+		};
+		
+		ctxt.boardLines.moveTo(ctxt.line.x, ctxt.line.y);
+		ctxt.boardLinesContainer = new createjs.Container();
+		ctxt.boardLinesShape = new createjs.Shape(ctxt.boardLines);
+		ctxt.boardLinesShape.alpha = 0.2;
+		ctxt.stage.addChildAt(ctxt.boardLinesShape, ctxt.stage.getChildIndex(ctxt.boarder) - 1);
+		
+	},
+	
 	initBoarder: function() {
 		var ctxt = this;
 		
@@ -673,7 +830,39 @@ var GAME = BASE.extend({
         
 		ctxt.boarder.framerate = 30;
 		ctxt.stage.addChild(ctxt.boarder);
-		//ctxt.between.addChild(ctxt.boarder);
+		ctxt.initTrail();
+	},
+	
+	crownLogic: function() {
+		var ctxt = this;
+		var now = (new Date()).getTime();
+		
+		if (now < ctxt.wearUntil) {
+			ctxt.don();
+		} else {
+			ctxt.doff();
+		}
+	},
+	
+	don: function() {
+		var ctxt = this;
+		
+		var now = (new Date()).getTime();
+		var delta = ctxt.wearUntil - now;
+		var alpha_state = 0.5;
+		if (delta < 3000) {
+			alpha_state = (Math.round(delta / 250) * 250) % 500 ? 1 : 0.5;
+		}
+		ctxt.wearing = true;
+		ctxt.boarder.alpha = alpha_state;
+	},
+	
+	doff: function() {
+		var ctxt = this;
+		
+		ctxt.wearing = false;
+		ctxt.boarder.alpha = 1;
+		ctxt.wearUntil = 0;
 	},
 	
 	getAssetById: function(id) {
@@ -738,6 +927,41 @@ var GAME = BASE.extend({
 		};
 		
 		return ret;
+	},
+	
+	sweetPopup: function(o) {
+		var ctxt = this;
+		var opts = {
+			id: '#helpDialog'
+		};
+		
+		opts = $.extend({}, opts, o);
+		//$('.icon-help').magnificPopup({
+		$.magnificPopup.open({
+			items: {
+				src: opts.id,
+				type: 'inline'
+			},
+			mainClass: 'mfp-zoom-in',
+			//mainClass: 'mfp-with-anim', // this class is for CSS animation below
+			zoom: {
+				enabled: true, // By default it's false, so don't forget to enable it
+			
+				duration: 300, // duration of the effect, in milliseconds
+				easing: 'ease-in-out', // CSS transition easing function 
+			
+				// The "opener" function should return the element from which popup will be zoomed in
+				// and to which popup will be scaled down
+				// By defailt it looks for an image tag:
+				opener: function(openerElement) {
+					return $('body');
+				//	// openerElement is the element on which popup was initialized, in this case its <a> tag
+				//	// you don't need to add "opener" option if this code matches your needs, it's defailt one.
+				//	return openerElement.is('img') ? openerElement : openerElement.find('img');
+				}
+			}
+		});
+	
 	},
 	
 	sweetMessage: function(o) {
@@ -856,14 +1080,27 @@ var GAME = BASE.extend({
 		
 		var distThisTick = Math.abs(speed.y);
 		ctxt.distance += distThisTick / 20;
+		
+		ctxt.hill_x -= speed.x;
+		ctxt.hill_y -= speed.y;
+		
 		ctxt.$distance.html(parseInt(ctxt.distance).commafy() + "'");
-		ctxt.score += ctxt.crashing || ctxt.stopping ? 0 : distThisTick;
+		ctxt.score += ctxt.crashing || ctxt.stopping ? 0 : (distThisTick * (ctxt.speed / ctxt.initSpeed));
 		ctxt.$score.html(parseInt(ctxt.score).commafy());
 
+		if (ctxt.distance > ctxt.nextInterBumpAt) {
+			ctxt.sweetMessage({message: ctxt.nextInterBumpAt + ' feet, way to go!'});
+			ctxt.nextInterBumpAt += 500;
+			ctxt.interEvery -= 0.5;
+			if (ctxt.interEvery < 0.5) {
+				ctxt.interEvery = 0.5;
+			}
+		}
+		
 		var boarderBottomCenterX = ctxt.steerSpeeds[ctxt.steerDirections[ctxt.direction]].boardTip.x;
 		var boarderBottomCenterY = ctxt.steerSpeeds[ctxt.steerDirections[ctxt.direction]].boardTip.y;
-		var boarderPerpendicularLeft = ctxt.getSpeedVector({angle: ctxt.steerSpeeds[ctxt.steerDirections[ctxt.direction]].d + 90, speed: 10});
-		var boarderPerpendicularRight = ctxt.getSpeedVector({angle: ctxt.steerSpeeds[ctxt.steerDirections[ctxt.direction]].d - 90, speed: 10});
+		var boarderPerpendicularLeft = ctxt.getSpeedVector({angle: ctxt.steerSpeeds[ctxt.steerDirections[ctxt.direction]].d + 90, speed: 8});
+		var boarderPerpendicularRight = ctxt.getSpeedVector({angle: ctxt.steerSpeeds[ctxt.steerDirections[ctxt.direction]].d - 90, speed: 8});
 		var boarderParallel = ctxt.getSpeedVector({speed: 4});
 		var boarderFrontLeft = {
 			x: boarderBottomCenterX + boarderPerpendicularLeft.x,
@@ -926,6 +1163,8 @@ var GAME = BASE.extend({
 		
 		ctxt.stage.setChildIndex(ctxt.ground, 0);
 		
+		ctxt.crownLogic();
+		
 		for (var i = ctxt.movingElements.length - 1; i >= 0; i--) {
 			var entity = ctxt.movingElements[i];
 			var e = entity.sprite;
@@ -943,19 +1182,10 @@ var GAME = BASE.extend({
 			}
 
 			if (e.y + entity.spriteSheet._frameHeight < -100) {
-				//ctxt.stage.removeChild(e);
-				//ctxt.under.removeChild(e);
-				//ctxt.movingElements.splice(i, 1);
 				entity.remove();
 			} else if (e.y + entity.spriteSheet._frameHeight < ctxt.boarder.y + ctxt.boarder.spriteSheet._frameHeight && !entity.playerPassed) {
 				ctxt.movingElements[i].playerPassed = true;
 				performSorting = true;
-				//if (!entity.alwaysUnder && !entity.isUnder) {
-				//	//ctxt.over.removeChild(e);
-				//	//ctxt.under.addChild(e);
-				//	//entity.isUnder = true;
-				//	//console.log('moved ' + entity.name + ' to under');
-				//}
 			}
 			
 			entity.checkCollisionAgainst({points: boarderPoints});
@@ -966,6 +1196,10 @@ var GAME = BASE.extend({
 			ctxt.doSorting();
 		}
 		
+		ctxt.drawBoardLines({
+			speed: speed
+		});
+		
 		
 		t = ctxt.distance;
 		
@@ -975,39 +1209,123 @@ var GAME = BASE.extend({
 				ctxt.speed = 0;
 				ctxt.stopSound();
 				createjs.Ticker.setPaused(true);
+				ctxt.gameEnded();
 			}
 		}
 		
-		if (t > 20) {
-			var obst_delta = t - ctxt.lastObstAt;
-			if (obst_delta >= ctxt.obstEvery) {
-				ctxt.addEntity({interactives: false, obstacles: true, bonus: false});
-				ctxt.lastObstAt = t;
-			}
-			
-			var bonus_delta = t - ctxt.lastBonusAt;
-			if (bonus_delta >= ctxt.bonusEvery) {
-				ctxt.addEntity({interactives: false, obstacles: false, bonus: true});
-				ctxt.lastBonusAt = t;
-			}
-			
-			var inter_delta = t - ctxt.lastInterAt;
-			if (inter_delta >= ctxt.interEvery) {
-				ctxt.addEntity({interactives: true, obstacles: false, bonus: false});
-				ctxt.lastInterAt = t;
-			}
-			
-			if (ctxt.distance > ctxt.nextLevelAt) {
-				//ctxt.nextLevelAt *= 2;
-				//ctxt.level++;
-				//ctxt.sweetMessage({message: "Level " + ctxt.level});
-			}
-		}
+		
+		ctxt.activeLevel.tick();
+		
+		//if (t > 20) {
+		//	var obst_delta = t - ctxt.lastObstAt;
+		//	var bonus_delta = t - ctxt.lastBonusAt;
+		//	var inter_delta = t - ctxt.lastInterAt;
+		//	
+		//	//console.log('Inter = ' + inter_delta + ' of ' + ctxt.interEvery);
+		//	//console.log('Obst = ' + obst_delta + ' of ' + ctxt.obstEvery);
+		//	//console.log('Bonus = ' + bonus_delta + ' of ' + ctxt.bonusEvery);
+		//	
+		//	
+		//	if (obst_delta >= ctxt.obstEvery) {
+		//		ctxt.addEntity({interactives: false, obstacles: true, bonus: false});
+		//		ctxt.lastObstAt = t;
+		//	}
+		//	
+		//	
+		//	if (bonus_delta >= ctxt.bonusEvery) {
+		//		ctxt.addEntity({interactives: false, obstacles: false, bonus: true});
+		//		ctxt.lastBonusAt = t;
+		//	}
+		//	
+		//	
+		//	if (inter_delta >= ctxt.interEvery) {
+		//		ctxt.addEntity({interactives: true, obstacles: false, bonus: false});
+		//		ctxt.lastInterAt = t;
+		//	}
+		//	
+		//	
+		//	
+		//	
+		//}
 		
 		//ctxt.reflowUI();
 		ctxt.stage.update(event);
 	},
 	
+	drawBoardLines: function(o) {
+		var ctxt = this;
+		
+		var def = {
+			speed: {
+				x: 0, y: 0
+			}
+		};
+		
+		o = $.extend({}, def, o);
+		
+		var dist_since_last = Math.sqrt(Math.pow(ctxt.line.x - ctxt.lastBoardLineAt.x, 2) + Math.pow(ctxt.line.y - ctxt.lastBoardLineAt.y, 2));
+		if (dist_since_last > 20) {
+			var xc = (ctxt.line.x + ctxt.lastBoardLineAt.x) / 2;
+			var yc = (ctxt.line.y + ctxt.lastBoardLineAt.y) / 2;
+			
+			if (ctxt.jumping || ctxt.crashing || ctxt.stopping) {
+				ctxt.boardLinesShape.graphics.moveTo(xc, yc);
+			} else {
+				ctxt.boardLinesShape.graphics.quadraticCurveTo(ctxt.line.x, ctxt.line.y, xc, yc);
+			}
+			
+			ctxt.lastBoardLineAt = {
+				x: ctxt.line.x,
+				y: ctxt.line.y
+			};
+		}
+		
+    ctxt.boardLinesShape.x += o.speed.x;
+    ctxt.boardLinesShape.y += o.speed.y;
+    ctxt.line.x -= o.speed.x;
+    ctxt.line.y -= o.speed.y;
+		
+		if (ctxt.line.y > 10000) {
+			console.log('new trail');
+			ctxt.initTrail();
+		}
+		
+	},
+	
+	loadHighScores: function(o) {
+		var ctxt = this;
+		
+		o = $.extend({}, o);
+		//$('.popupPanel').hide();
+		ctxt.$highScores.show();
+		$.getJSON('/scores/list', function(data) {
+			var $table = ctxt.$highScores.find('table > tbody');
+			$table.empty();
+			if (data.payload.length == 0) {
+				data.payload.push({name: "No high scores", score: "", created: ""});
+			}
+			$.each(data.payload, function(idx, entry) {
+				var dateObj = new Date(Date.parse(entry.created));
+				var date = ctxt.month(dateObj.getMonth(), true) + ' ' + dateObj.getDate() + ', ' + dateObj.getFullYear();
+				var $row = $('<tr class="hs-entry"><td class="hs-place">' + (idx + 1) + '</td><td class="hs-name">' + entry.name + '</td><td class="hs-score">' + entry.score.commafy() + '</td><td class="hs-data">' + date + "</tr>");
+				$table.append($row);
+			});
+			
+			if (typeof o.after === 'function') {
+				o.after();
+			}
+			
+		});
+	},
+	
+	gameEnded: function() {
+		var ctxt = this;
+		//ctxt.$submitScore.show();
+		
+		//ctxt.$submitScoreOpener.click();
+		ctxt.sweetPopup({id: '#submitScore'});
+		
+	},
 	
 	_xyz: null
 });

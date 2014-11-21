@@ -3,6 +3,7 @@
 var CollisionTarget = Class.extend({
 	points: [],
 	action: null,
+	jumpAction: null,
 	enabled: true,
 	enables: [],
 	disables: [],
@@ -23,11 +24,22 @@ var CollisionTarget = Class.extend({
 	
 	drawCollider: function(o) {
 		var ctxt = this;
+		
+		var def = {
+			graphics: new createjs.Graphics(),
+			color: 'red',
+		};
+		
+		//console.log('drawing ' + ctxt.name);
+		
+		o = $.extend({}, def, o);
 		var entity = o.entity;
 		
-		var graphics = new createjs.Graphics();
+		var graphics = o.graphics;
 		graphics.setStrokeStyle(2);
-		graphics.beginStroke("red");
+		graphics.beginStroke(o.color);
+		
+		var container = new createjs.Container();
 		
 		
 		var orig = ctxt.points[0].add(new Point2D(parseFloat(entity.sprite.x), parseFloat(entity.sprite.y)));
@@ -37,6 +49,15 @@ var CollisionTarget = Class.extend({
 			next = ctxt.points[i].add(new Point2D(parseFloat(entity.sprite.x), parseFloat(entity.sprite.y)));
 			graphics.lineTo(next.x, next.y);
 		}
+		
+		graphics.lineTo(orig.x, orig.y);
+		
+		//var text = new createjs.Text(entity.name + ' - ' + ctxt.name, "10px Arial", "#0000");
+		//text.x = orig.x
+		//text.y = orig.y;
+		////text.textBaseline = "alphabetic";
+		//
+		//container.addChild(new createjs.Shape(graphics))
 		
 		return graphics;
 		
@@ -68,7 +89,7 @@ var CollisionTarget = Class.extend({
 
 		//switch to check for exactly false so true/undefined will be equivalent to enabled
 		if (ctxt.enabled === false) {
-			return;
+			return {status: 'No Intersection', points: []};
 		}
 		
 		for (i = 0; i < numPoints; i++) {
@@ -82,11 +103,12 @@ var CollisionTarget = Class.extend({
 		}
 
 		if (result.status !== 'No Intersection') {
+			console.log("Hit collider called \"" + ctxt.name + '" on "' + entity.name + '" entity');
 			for (i = 0, l = ctxt.disables.length; i < l; i++) {
 				name = ctxt.disables[i];
 				col = entity.getColliderByName({name: name});
 				if (col !== false) {
-					//console.log('disabled collider: ' + name);
+					console.log('    disabled collider: ' + name);
 					col.enabled = false;
 				}
 			}
@@ -95,10 +117,11 @@ var CollisionTarget = Class.extend({
 				name = ctxt.enables[i];
 				col = entity.getColliderByName({name: name});
 				if (col !== false) {
-					//console.log('enabled collider: ' + name);
+					console.log('    enabled collider: ' + name);
 					col.enabled = true;
 				}
 			}
+			console.log('==========================================');
 
 			//disable collider so it doesn't trigger again
 			ctxt.enabled = false;
@@ -126,7 +149,7 @@ var CollisionTarget = Class.extend({
 				drawnCollider = [params.game.stage.addChild(new createjs.Shape(graphics))];
 
 				graphics = new createjs.Graphics();
-				graphics.setStrokeStyle(1);
+				graphics.setStrokeStyle(2);
 				graphics.beginStroke("blue");
 				
 				orig = transformedPoints[0];
@@ -141,7 +164,9 @@ var CollisionTarget = Class.extend({
 				params.game.stage.update();
 			}
 
-			if (typeof ctxt.action === "function") {
+			if (entity.jumpable && params.game.jumping && typeof ctxt.jumpAction === 'function') {
+				ctxt.jumpAction();
+			} else if (typeof ctxt.action === "function") {
 				ctxt.action();
 			}
 
@@ -151,6 +176,8 @@ var CollisionTarget = Class.extend({
 				}
 			}
 		}
+		
+		return result;
 	},
 	
 	_xyz: null

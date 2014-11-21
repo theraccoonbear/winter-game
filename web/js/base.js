@@ -34,6 +34,10 @@ var BASE = Class.extend({
 	
 	touchHandling: function() {
 		var ctxt = this;
+		document.addEventListener("touchstart", function (e) {
+				e.preventDefault();
+				return false;
+		}, false);
 		
 		$.each(ctxt.touchTargets, function(i, sel) {
 			$(sel).on('touchstart', function(e) {
@@ -107,6 +111,14 @@ var BASE = Class.extend({
 				ctxt.$document = $(document);
 			} else {
 				ctxt['$' + s.replace(/^[#\.]/, '')] = $(s);
+			}
+		});
+		
+		$('[id]').each(function(i, e) {
+			var $e = $(e);
+			var id = $e.attr('id');
+			if (!ctxt['$' + id]) {
+				ctxt['$' + id] = $e;
 			}
 		});
 		
@@ -204,6 +216,15 @@ var BASE = Class.extend({
 		}
 		
 		return base64
+	},
+	
+	month: function(mon, short_name) {
+		short_name = typeof short_name === 'undefined' ? false : short_name;
+		var names = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+		mon -= 1;
+		var name = typeof names[mon] !== 'undefinded' ? names[mon] : 'Unknown';
+		name = short_name ? name.substring(0, 3) : name;
+		return name;
 	},
 	
 	_xyz: null

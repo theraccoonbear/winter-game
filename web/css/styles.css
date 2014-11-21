@@ -203,7 +203,87 @@ body {
   margin: 0 auto; 
 }
 
+.popupPanel{
+	font-family: 'Source Sans Pro', sans-serif;
+	color: #454545;
+	font-size: 15px;
+}
+.popupPanel h1{
+	font-family: 'Roboto Condensed', sans-serif;
+	color: #9DC9D0;
+	font-size: 20px;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 1px;
+}
 
+.highScoreInput{
+	border: 1px solid #9b9b9b;	
+	padding: 10px;
+	margin: 5px 0 0px 0;
+}
+.highScoreBtn{
+	border: 0;
+	background: #67B9C5;
+	padding: 10px 0;
+	color: #fff;
+	text-transform: uppercase;
+	transition: background .5s;
+	outline: none;
+}
+.highScoreBtn:hover{
+	background: #8bd4de;		
+}
+
+.restartBtn{
+	border: 0;
+	background: #5ba3ad;
+	padding: 10px 0;
+	color: #fff;
+	text-transform: uppercase;
+	transition: background .5s;
+}
+.restartBtn:hover{
+	background: #8bd4de;		
+}
+
+.highScoreWrap{
+	width: 100%;
+	height: 187px;
+	overflow: hidden;
+	overflow-y: scroll;
+}
+.highScoreList{
+	width: 100%;
+}
+.highScoreList tbody tr:nth-child(2n) {
+	background-color: #f2f2f2;
+}
+.highScoreList th, .highScoreList td{
+	padding: 5px;
+}
+
+.btn{
+	border: 0;
+	background: #67B9C5;
+	padding: 10px 0;
+	color: #fff;
+	text-transform: uppercase;
+	transition: background .5s;
+	display: inline-block;
+	text-decoration: none;
+	text-align: center;
+}
+.btn:hover{
+	background: #8bd4de;
+}
+
+td.hs-name{
+	white-space: nowrap;
+	width: 120px;
+	overflow: hidden;
+	display: inline-block;
+}
 
 /* debug */
 #debugBox {

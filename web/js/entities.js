@@ -26,6 +26,23 @@ var Entity = Class.extend({
 	colliders: [],
 	_drawnColliders: [],
 	
+	constructor: function(options) {
+		var ctxt = this;
+		
+		for (var p in options) {
+			this[p] = options[p];
+		}
+		
+		this.colliders = [];
+		
+		if (typeof this.initSprite === 'function') {
+			this.initSprite();
+			this.spriteSheet.framerate = 30;
+			this.placeSprite();
+		}
+		
+	},
+	
 	dimensions: function() {
 		var ctxt = this;
 		//console.log(ctxt.spriteSheet);
@@ -43,7 +60,7 @@ var Entity = Class.extend({
 		
 		if (typeof options.points === 'string') {
 			var pts = [];
-			var pt_sets = options.points.split('-');
+			var pt_sets = options.points.split(';');
 			for (var i = 0, l = pt_sets.length; i < l; i++) {
 				var coords = pt_sets[i].split(',');
 				var pt = new Point2D(parseFloat(coords[0]), parseFloat(coords[1]));
@@ -71,35 +88,39 @@ var Entity = Class.extend({
 		return ret;
 	},
 	
-	constructor: function(options) {
-		var ctxt = this;
-		for (var p in options) {
-			this[p] = options[p];
-		}
-		
-		this.colliders = [];
-		
-		if (typeof this.initSprite === 'function') {
-			this.initSprite();
-			this.spriteSheet.framerate = 30;
-			this.placeSprite();
-		}
-		
-	},
-	
 	drawBounds: function() {
 		var ctxt = this;
 
+		var colors = ['Red','Green','Blue','Orange','Purple'];
+		var light_colors = ['LightRed','LightGreen','LightBlue','LightOrange','LightPurple'];
+		var c = 0;
+		
 		for (var j = 0, length = this._drawnColliders.length; j < length; j++) {
 			ctxt.container.removeChild(this._drawnColliders[j]);
 		}
 
 		if (ctxt.colliders.length > 0) {
+			var g = false;
 			for (var i = 0, l = ctxt.colliders.length; i < l; i++) {
-				var g = ctxt.colliders[0].drawCollider({entity: ctxt});
-				this._drawnColliders.push(ctxt.container.addChild(new createjs.Shape(g)));
+				var opts = {
+					entity: ctxt,
+					color: ctxt.colliders.enabled !== false ? colors[c] : light_colors[c]
+				};
+				
+				c++;
+				if (c > colors.length - 1) {
+					c = 0;
+				}
+				
+				if (g !== false) {
+					opts.graphics = g;
+				}
+				g = ctxt.colliders[i].drawCollider(opts);
 			}
+			var s = new createjs.Shape(g);
+			this._drawnColliders.push(ctxt.container.addChild(s));
 		}
+
 	},
 	
 	remove: function() {
@@ -137,10 +158,25 @@ var Entity = Class.extend({
 		var inter = {status: 'No Intersection'};
 		var attempts = 0;
 		
+		var direction = ctxt.game.steerDirections[ctxt.game.direction];
+		var left = direction.indexOf('left') > -1;
+		var right = direction.indexOf('righ') > -1;
+		
 		do {
+			var fromSide = Math.random() <= 0.5;
 			attempts++;
-			x = Math.random() * dim.width;
-			y = (dim.height + 50);
+			if (!left && !right) {
+				x = Math.random() * dim.width;
+				y = (dim.height + 50);
+			} else {
+				if (fromSide) {
+					x = right ? 0 - w : dim.width;
+					y = (Math.random() * dim.height) + 50;
+				} else {
+					x = (Math.random() * dim.width) + (right ? -50 : 50);
+					y = (dim.height + 50);
+				}
+			}
 			var proposed_pt_1 = new Point2D(x, y);
 			var proposed_pt_2 = new Point2D(x + w, y + h);
 			
@@ -208,9 +244,9 @@ var Entity = Class.extend({
 	checkCollisionAgainst: function(options) {
 		var ctxt = this;
 
-		if (ctxt.jumpable && ctxt.game.jumping) {
-			return;
-		}
+		//if (ctxt.jumpable && ctxt.game.jumping) {
+		//	return;
+		//}
 		
 		var checkCollisionOptions = {};
 
@@ -225,11 +261,23 @@ var Entity = Class.extend({
 		}
 		
 		for (var i = 0, l = ctxt.colliders.length; i < l; i++) {
-			if (ctxt.colliders[i].checkCollision(checkCollisionOptions)) {
-
-				if (typeof ctxt.colliders[i].action) {
-					ctxt.colliders[i].action({game: ctxt.game});
+			var res = ctxt.colliders[i].checkCollision(checkCollisionOptions);
+			if (res.points.length > 0) {
+				if (typeof ctxt.colCallback === 'function') {
+					ctxt.colCallback({
+						entity: ctxt,
+						collider: ctxt.colliders[i]
+					});
 				}
+				// we collided
+
+				//if (ctxt.jumpable && ctxt.game.jumping) {
+				//	if (typeof ctxt.colliders[i].jumpAction === 'function') {
+				//		ctxt.colliders[i].jumpAction({game: ctxt.game});
+				//	}
+				//} else if (typeof ctxt.colliders[i].action) {
+				//	ctxt.colliders[i].action({game: ctxt.game});
+				//}
 			}
 		}
 	},
@@ -266,19 +314,24 @@ var Bonus = Entity.extend({
 			fatal: false
 		});
 		
-		Obstacle.super.constructor.call(this, options);
+		Bonus.super.constructor.call(this, options);
 	},
 	
 	_xyz: null
 }); // class Bonus
 
 var Coin = Bonus.extend({
+	name: "Coin",
+	id: "coin",
+	_isConcreteClass: true,
+	width: 50,
+	height: 50,
 	
 	constructor: function(options) {
 		var ctxt = this;
 		Coin.super.constructor.call(this, options);
 		this.addCollider({
-			points: "8,30-8,42-42,42-42,30-8,30",
+			points: "0,0;0,50;50,50;50,0;0,0",
 			action: function(o) {
 				//console.log('Tree Hit!', typeof o !== "undefined" ? o : "");
 				ctxt.game.score += 3000;
@@ -304,13 +357,18 @@ var Coin = Bonus.extend({
 }); // class Coin
 
 var Beer = Bonus.extend({
+	name: "Beer",
+	id: "beer",
+	_isConcreteClass: true,
+	width: 50,
+	height: 50,
 	
 	constructor: function(options) {
 		var ctxt = this;
 		Beer.super.constructor.call(this, options);
 		
 		this.addCollider({
-			points: "8,30-8,42-42,42-42,30-8,30",
+			points: "0,0;0,50;50,50;50,0;0,0",
 			action: function(o) {
 				//console.log('Tree Hit!', typeof o !== "undefined" ? o : "");
 				ctxt.game.score += 1000;
@@ -336,22 +394,65 @@ var Beer = Bonus.extend({
 	_xyz: null
 }); // class Beer
 
+var Crown = Bonus.extend({
+	name: "Crown",
+	id: "crown",
+	_isConcreteClass: true,
+	width: 80,
+	height: 80,
+	
+	constructor: function(options) {
+		var ctxt = this;
+		Crown.super.constructor.call(this, options);
+		
+		this.addCollider({
+			points: "0,0;0,80;80,80;80,0;0,0",
+			action: function(o) {
+				//ctxt.game.score += 1000;
+				//ctxt.game.wearing = true;
+				//ctxt.game.wearUntil = (new Date()).getTime() + 8000; //ctxt.game.distance + 100;
+				ctxt.game.wearUntil = (new Date()).getTime() + 8000;
+				ctxt.game.don();
+				ctxt.game.sweetMessage({message:'WEAR THE CROWN!'});
+				ctxt.remove();
+			}
+		});
+		
+	},
+	
+	initSprite: function() {
+		var ctxt = this;
+		
+		ctxt.spriteSheet = new createjs.SpriteSheet({
+			"images": [ctxt.game.loader.getResult("crown")],
+			"frames": {"width": 80, "height": 80},
+			"animations": {
+				"default": [0, 12,'default', 0.5]
+			}
+		});
+		
+	},
+	_xyz: null
+}); // class Crown
+
 var Tree = Obstacle.extend({
+	_isConcreteClass: true,
 	name: "Tree",
+	id: "tree",
+	width: 170,
+	height: 267,
 	
 	constructor: function(options) {
 		var ctxt = this;
 		
-		options.width = 170;
-		options.height = 267;
+		//options.width = 170;
+		//options.height = 267;
 		
 		Tree.super.constructor.call(this, options);
 		
 		this.addCollider({
-			//points: "46,194-66,202-80,198-64,180-46,194",
-			points: "38,192-55,203-81,203-94,192-81,181-55,181-38,192",
+			points: "38,192;55,203;81,203;94,192;81,181;55,181;38,192",
 			action: function(o) {
-				//('Tree Hit!', typeof o !== "undefined" ? o : "");
 				ctxt.game.crash();
 			}
 		});
@@ -382,6 +483,10 @@ var Tree = Obstacle.extend({
 
 var Stump = Obstacle.extend({
 	name: "Stump",
+	id: "stump",
+	_isConcreteClass: true,
+	width: 100,
+	height: 84,
 	
 	constructor: function(options) {
 		var ctxt = this;
@@ -389,13 +494,17 @@ var Stump = Obstacle.extend({
 		options.height = 84;
 		options.jumpable = true;
 		
-		Tree.super.constructor.call(this, options);
+		Stump.super.constructor.call(this, options);
 		
 		this.addCollider({
-			points: "4,45-12,50-13,64-22,66-35,60-45,56-56,55-47,41-28,37-14,36-4,45",
+			points: "4,45;12,50;13,64;22,66;35,60;45,56;56,55;47,41;28,37;14,36;4,45",
 			action: function(o) {
 				//console.log('Stump Hit!', typeof o !== "undefined" ? o : "");
 				ctxt.game.crash();
+			},
+			jumpAction: function(o) {
+				ctxt.game.score += 1000;
+				ctxt.game.sweetMessage({message: 'Nicely cleared!'});
 			}
 		});
 		
@@ -445,6 +554,7 @@ var Rock = Obstacle.extend({
 	initSprite: function() {
 		var ctxt = this;
 		
+		//Rock
 		ctxt.spriteSheet = new createjs.SpriteSheet({
 			"images": [ctxt.game.loader.getResult(ctxt.imageID)],
 			"frames": {"width": ctxt.width, "height": ctxt.height},
@@ -459,6 +569,10 @@ var Rock = Obstacle.extend({
 
 var Rock1 = Rock.extend({
 	name: "Rock1",
+	id: "rock-1",
+	_isConcreteClass: true,
+	width: 111,
+	height: 94,
 	
 	constructor: function(options) {
 		var ctxt = this;
@@ -470,10 +584,14 @@ var Rock1 = Rock.extend({
 		Rock1.super.constructor.call(this, options);
 		
 		this.addCollider({
-			points: "20,7-12,15-8,24-4,30-6,48-23,64-34,70-59,75-72,67-78,54-74,39-70,29-76,20-70,16-64,17-59,6-45,2-34,6-20,7",
+			points: "20,7;12,15;8,24;4,30;6,48;23,64;34,70;59,75;72,67;78,54;74,39;70,29;76,20;70,16;64,17;59,6;45,2;34,6;20,7",
 			action: function(o) {
 				//('Rock 1 Hit!', typeof o !== "undefined" ? o : "");
 				ctxt.game.crash();
+			},
+			jumpAction: function(o) {
+				ctxt.game.score += 1000;
+				ctxt.game.sweetMessage({message: 'Nicely cleared!'});
 			}
 		});
 		
@@ -484,6 +602,10 @@ var Rock1 = Rock.extend({
 
 var Rock2 = Rock.extend({
 	name: "Rock2",
+	id: "rock-2",
+	_isConcreteClass: true,
+	width: 109,
+	height: 88,
 	
 	constructor: function(options) {
 		var ctxt = this;
@@ -495,10 +617,14 @@ var Rock2 = Rock.extend({
 		Rock2.super.constructor.call(this, options);
 
 		this.addCollider({
-			points: "2,23-28,4-37,7-38,22-88,17-92,21-88,26-86,38-95,52-78,71-17,75-10,68-20,60-14,40-20,35-18,29-2,23",
+			points: "2,23;28,4;37,7;38,22;88,17;92,21;88,26;86,38;95,52;78,71;17,75;10,68;20,60;14,40;20,35;18,29;2,23",
 			action: function(o) {
 				//('Rock 2 Hit!', typeof o !== "undefined" ? o : "");
 				ctxt.game.crash();
+			},
+			jumpAction: function(o) {
+				ctxt.game.score += 1000;
+				ctxt.game.sweetMessage({message: 'Nicely cleared!'});
 			}
 		});
 		
@@ -509,6 +635,10 @@ var Rock2 = Rock.extend({
 
 var Rock3 = Rock.extend({
 	name: "Rock3",
+	id: "rock-3",
+	_isConcreteClass: true,
+	width: 105,
+	height: 76,
 	
 	constructor: function(options) {
 		var ctxt = this;
@@ -520,10 +650,14 @@ var Rock3 = Rock.extend({
 		Rock3.super.constructor.call(this, options);
 
 		this.addCollider({
-			points: "2,18-12,9-27,4-47,12-58,2-83,11-84,18-91,22-91,29-86,36-93,48-90,52-78,51-72,57-57,56-53,51-9,48-4,43-1,33-2,18",
+			points: "2,18;12,9;27,4;47,12;58,2;83,11;84,18;91,22;91,29;86,36;93,48;90,52;78,51;72,57;57,56;53,51;9,48;4,43;1,33;2,18",
 			action: function(o) {
 				//console.log('Rock 3 Hit!', typeof o !== "undefined" ? o : "");
 				ctxt.game.crash();
+			},
+			jumpAction: function(o) {
+				ctxt.game.score += 1000;
+				ctxt.game.sweetMessage({message: 'Nicely cleared!'});
 			}
 		});
 		
@@ -534,6 +668,10 @@ var Rock3 = Rock.extend({
 
 var Rock4 = Rock.extend({
 	name: "Rock4",
+	id: "rock-4",
+	_isConcreteClass: true,
+	width: 98,
+	height: 89,
 	
 	constructor: function(options) {
 		var ctxt = this;
@@ -545,10 +683,14 @@ var Rock4 = Rock.extend({
 		Rock4.super.constructor.call(this, options);
 
 		this.addCollider({
-			points: "13,19-37,2-63,18-73,39-68,56-39,77-9,60-1,40-13,19",
+			points: "13,19;37,2;63,18;73,39;68,56;39,77;9,60;1,40;13,19",
 			action: function(o) {
 				//('Rock 4 Hit!', typeof o !== "undefined" ? o : "");
 				ctxt.game.crash();
+			},
+			jumpAction: function(o) {
+				ctxt.game.score += 1000;
+				ctxt.game.sweetMessage({message: 'Nicely cleared!'});
 			}
 		});
 		
@@ -559,11 +701,18 @@ var Rock4 = Rock.extend({
 
 var StartBanner = Entity.extend({
 	name: "StartBanner",
+	id: "start-banner",
+	_isConcreteClass: true,
+	width: 715,
+	height: 163,
 	
 	constructor: function(options) {
 		var ctxt = this;
 		
 		options.collidable = false;
+		options.width = 715;
+		options.height = 163;
+		
 		StartBanner.super.constructor.call(this, options);
 		
 		
@@ -599,6 +748,7 @@ var Jump = Entity.extend({
 	initSprite: function() {
 		var ctxt = this;
 		
+		// Jump
 		ctxt.spriteSheet = new createjs.SpriteSheet({
 			"images": [ctxt.game.loader.getResult(ctxt.imageID)],
 			"frames": {"width": ctxt.width, "height": ctxt.height},
@@ -614,6 +764,10 @@ var Jump = Entity.extend({
 
 var JumpLeft = Jump.extend({
 	name: "JumpLeft",
+	id: "jump-left",
+	_isConcreteClass: true,
+	width: 264,
+	height: 190,
 	
 	constructor: function(options) {
 		var ctxt = this;
@@ -627,7 +781,7 @@ var JumpLeft = Jump.extend({
 
 		//collide with sides
 		this.addCollider({
-			points: "105,22-14,92-128,166-210,85",
+			points: "87,32;16,94;130,169;201,94;87,32",
 			name: 'crash-edges',
 			action: function(o) {
 				//('JumpLeft side collision!');
@@ -637,7 +791,7 @@ var JumpLeft = Jump.extend({
 
 		//enter ramp
 		this.addCollider({
-			points: "118,12-208,52",
+			points: "126,4;88,29;202,92;244,55;126,4",
 			name: 'enter-ramp',
 			disables: ['crash-edges', 'enter-ramp'],
 			enables: ['jump-edge', 'exit-ramp'],
@@ -649,7 +803,7 @@ var JumpLeft = Jump.extend({
 		//trigger jump
 		this.addCollider({
 			enabled: false, //disabled by default
-			points: "70,38-32,57-132,112-170,91",
+			points: "82,33;27,57;138,120;183,88;179,86;136,113;38,57;86,36;82,33",
 			name: 'jump-edge',
 			disables: ['jump-edge'],
 			action: function(o) {
@@ -664,7 +818,8 @@ var JumpLeft = Jump.extend({
 		//clear ramp
 		this.addCollider({
 			enabled: false, //disabled by default
-			points: "129,5-6,97-129,178-251,50-129,5",
+			//points: "120,0;19,49;1,97;129,179;255,50;131,1;120,0",
+			points: "-10,-10;274,-10;274,200;-10,200;-10,-10",
 			name: 'exit-ramp',
 			disables: ['jump-edge', 'exit-ramp'],
 			enables: ['crash-edges', 'enter-ramp'],
@@ -680,7 +835,10 @@ var JumpLeft = Jump.extend({
 
 var JumpRight = Jump.extend({
 	name: "JumpRight",
-	
+	id: "jump-right",
+	_isConcreteClass: true,
+	width: 264,
+	height: 190,
 	
 	constructor: function(options) {
 		var ctxt = this;
@@ -693,7 +851,7 @@ var JumpRight = Jump.extend({
 
 		//collide with sides
 		this.addCollider({
-			points: "37,84-120,170-240,91-149,22",
+			points: "52,91;123,167;239,90;168,32;52,91",
 			name: 'crash-edges',
 			action: function(o) {
 				//('Jump side collision!');
@@ -703,7 +861,7 @@ var JumpRight = Jump.extend({
 
 		//enter ramp
 		this.addCollider({
-			points: "44,55-138,12",
+			points: "17,48;45,92;169,28;126,4;17,48",
 			name: 'enter-ramp',
 			disables: ['crash-edges', 'enter-ramp'],
 			enables: ['jump-edge', 'exit-ramp'],
@@ -715,7 +873,7 @@ var JumpRight = Jump.extend({
 		//trigger jump
 		this.addCollider({
 			enabled: false, //disabled by default
-			points: "84,89-118,117-227,57-179,35",
+			points: "71,84;116,119;227,57;172,30;165,33;211,57;118,108;77,81;71,84",
 			name: 'jump-edge',
 			disables: ['jump-edge'],
 			action: function(o) {
@@ -730,7 +888,8 @@ var JumpRight = Jump.extend({
 		//clear ramp
 		this.addCollider({
 			enabled: false, //disabled by default
-			points: "0,48-126,0-253,96-116,185-0,48",
+			//points: "1,50;119,181;247,92;240,51;135,0;119,0;1,50",
+			points: "-10,-10;274,-10;274,200;-10,200;-10,-10",
 			name: 'exit-ramp',
 			disables: ['jump-edge', 'exit-ramp'],
 			enables: ['crash-edges', 'enter-ramp'],
@@ -747,6 +906,10 @@ var JumpRight = Jump.extend({
 
 var JumpCenter = Jump.extend({
 	name: "JumpCenter",
+	id: "jump-center",
+	_isConcreteClass: true,
+	width: 280,
+	height: 198,
 	
 	constructor: function(options) {
 		var ctxt = this;
@@ -759,7 +922,7 @@ var JumpCenter = Jump.extend({
 
 		//collide with sides
 		this.addCollider({
-			points: "50,44-23,166-256,170-224,45",
+			points: "40,65;25,159;255,163;231,64;40,65",
 			name: 'crash-edges',
 			action: function(o) {
 				//('Jump side collision!');
@@ -769,7 +932,7 @@ var JumpCenter = Jump.extend({
 
 		//enter ramp
 		this.addCollider({
-			points: "66,26-211,26",
+			points: "46,17;33,63;236,62;219,17;46,17",
 			name: 'enter-ramp',
 			disables: ['crash-edges', 'enter-ramp'],
 			enables: ['jump-edge', 'exit-ramp'],
@@ -781,7 +944,7 @@ var JumpCenter = Jump.extend({
 		//trigger jump
 		this.addCollider({
 			enabled: false, //disabled by default
-			points: "47,78-37,122-238,124-227,77",
+			points: "43,68;37,125;239,126;227,67;220,68;230,120;44,119;50,68;43,68",
 			name: 'jump-edge',
 			disables: ['jump-edge'],
 			action: function(o) {
@@ -796,7 +959,8 @@ var JumpCenter = Jump.extend({
 		//clear ramp
 		this.addCollider({
 			enabled: false, //disabled by default
-			points: "26,8-0,196-280,194-234,12-26,8",
+			//points: "37,7;1,187;278,188;231,5;37,7",
+			points: "-10,-10;290,-10;290,208;-10,208;-10,-10",
 			name: 'exit-ramp',
 			disables: ['jump-edge', 'exit-ramp'],
 			enables: ['crash-edges', 'enter-ramp'],
@@ -812,7 +976,15 @@ var JumpCenter = Jump.extend({
 
 
 var Sinistar = Obstacle.extend({
+	name: "Sinistar",
+	id: "sinistar",
+	_isConcreteClass: true,
+	width: 480,
+	height: 360,
+	
 	constructor: function(options) {
+		options.width = 480;
+		options.height = 360;
 		Sinistar.super.constructor.call(this, options);
 	},
 	

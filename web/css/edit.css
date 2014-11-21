@@ -1,0 +1,30 @@
+.editPanel {
+	position: fixed;
+	left: 20px;
+	top: 20px;
+	padding: 10px;
+	border: 2px solid #000;
+	background: #fff;
+	display: none;
+	z-index: 10000;
+}
+
+.entityBoundingBox {
+	position: fixed;
+	left: 0px;
+	top: 0px;
+	width: 0px;
+	height: 0px;
+	z-index: 1000;
+	border: 2px solid #f00;
+	display: none;
+}
+
+.totalOverlay {
+	position: fixed;
+	left: 0px;
+	top: 0px;
+	right: 0px;
+	bottom: 0px;
+	z-index: 9900;
+}
