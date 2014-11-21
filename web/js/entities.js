@@ -71,7 +71,7 @@ var Entity = Class.extend({
 		return ret;
 	},
 	
-	constructor: function(options) {
+	constructor: function Entity (options) {
 		var ctxt = this;
 		for (var p in options) {
 			this[p] = options[p];
@@ -280,7 +280,7 @@ var Entity = Class.extend({
 var Obstacle = Entity.extend({
 	name: "Obstacle",
 	
-	constructor: function(options) {
+	constructor: function Obstacle (options) {
 		var ctxt = this;
 		
 		options = $.extend({}, options, {
@@ -298,7 +298,7 @@ var Obstacle = Entity.extend({
 var Bonus = Entity.extend({
 	name: "Bonus",
 	
-	constructor: function(options) {
+	constructor: function Bonus (options) {
 		var ctxt = this;
 		
 		options = $.extend({}, options, {
@@ -314,7 +314,7 @@ var Bonus = Entity.extend({
 
 var Coin = Bonus.extend({
 	
-	constructor: function(options) {
+	constructor: function Coin (options) {
 		var ctxt = this;
 		Coin.super.constructor.call(this, options);
 		this.addCollider({
@@ -345,7 +345,7 @@ var Coin = Bonus.extend({
 
 var Beer = Bonus.extend({
 	
-	constructor: function(options) {
+	constructor: function Beer (options) {
 		var ctxt = this;
 		Beer.super.constructor.call(this, options);
 		
@@ -377,7 +377,7 @@ var Beer = Bonus.extend({
 }); // class Beer
 
 var Crown = Bonus.extend({
-	constructor: function(options) {
+	constructor: function Crown (options) {
 		var ctxt = this;
 		Crown.super.constructor.call(this, options);
 		
@@ -414,7 +414,7 @@ var Crown = Bonus.extend({
 var Tree = Obstacle.extend({
 	name: "Tree",
 	
-	constructor: function(options) {
+	constructor: function Tree (options) {
 		var ctxt = this;
 		
 		options.width = 170;
@@ -458,7 +458,7 @@ var Tree = Obstacle.extend({
 var Stump = Obstacle.extend({
 	name: "Stump",
 	
-	constructor: function(options) {
+	constructor: function Stump (options) {
 		var ctxt = this;
 		options.width = 100;
 		options.height = 84;
@@ -508,7 +508,7 @@ var Rock = Obstacle.extend({
 	alwaysUnder: true,
 	imageID: false,
 	
-	constructor: function(options) {
+	constructor: function Rock (options) {
 		var ctxt = this;
 		
 		//options.alwaysUnder = true;
@@ -539,7 +539,7 @@ var Rock = Obstacle.extend({
 var Rock1 = Rock.extend({
 	name: "Rock1",
 	
-	constructor: function(options) {
+	constructor: function Rock1 (options) {
 		var ctxt = this;
 		
 		options.width = 111;
@@ -568,7 +568,7 @@ var Rock1 = Rock.extend({
 var Rock2 = Rock.extend({
 	name: "Rock2",
 	
-	constructor: function(options) {
+	constructor: function Rock2 (options) {
 		var ctxt = this;
 		
 		options.width = 109;
@@ -597,7 +597,7 @@ var Rock2 = Rock.extend({
 var Rock3 = Rock.extend({
 	name: "Rock3",
 	
-	constructor: function(options) {
+	constructor: function Rock3 (options) {
 		var ctxt = this;
 		
 		options.width = 105;
@@ -626,7 +626,7 @@ var Rock3 = Rock.extend({
 var Rock4 = Rock.extend({
 	name: "Rock4",
 	
-	constructor: function(options) {
+	constructor: function Rock4 (options) {
 		var ctxt = this;
 		
 		options.width = 98;
@@ -655,7 +655,7 @@ var Rock4 = Rock.extend({
 var StartBanner = Entity.extend({
 	name: "StartBanner",
 	
-	constructor: function(options) {
+	constructor: function StartBanner (options) {
 		var ctxt = this;
 		
 		options.collidable = false;
@@ -683,7 +683,7 @@ var Jump = Entity.extend({
 	name: "Jump",
 	alwaysUnder: true,
 	
-	contstructor: function(options) {
+	contstructor: function Jump (options) {
 		var ctxt = this;
 		
 		options.alwaysUnder = true;
@@ -710,7 +710,7 @@ var Jump = Entity.extend({
 var JumpLeft = Jump.extend({
 	name: "JumpLeft",
 	
-	constructor: function(options) {
+	constructor: function JumpLeft (options) {
 		var ctxt = this;
 		
 		options.imageID = 'jump-left';
@@ -778,7 +778,7 @@ var JumpRight = Jump.extend({
 	name: "JumpRight",
 	
 	
-	constructor: function(options) {
+	constructor: function JumpRight (options) {
 		var ctxt = this;
 		options.alwaysUnder = true;
 		options.imageID = 'jump-right';
@@ -845,7 +845,7 @@ var JumpRight = Jump.extend({
 var JumpCenter = Jump.extend({
 	name: "JumpCenter",
 	
-	constructor: function(options) {
+	constructor: function JumpCenter (options) {
 		var ctxt = this;
 		options.imageID = 'jump-center';
 		options.width = 280;
@@ -910,7 +910,7 @@ var JumpCenter = Jump.extend({
 
 
 var Sinistar = Obstacle.extend({
-	constructor: function(options) {
+	constructor: function Sinistar (options) {
 		Sinistar.super.constructor.call(this, options);
 	},
 	
