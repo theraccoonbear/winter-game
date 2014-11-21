@@ -109,9 +109,9 @@ var JumpLevel = Level.extend({
 	length: 1500,
 	
 	entities: [
-		{id: 'tree', x: 0, y: 250},
-		{id: 'tree', x: 100, y: 350},
-		{id: 'tree', x: -50, y: 450},
+		{id: 'tree', x: 0, y: 1250},
+		{id: 'tree', x: 100, y: 1350},
+		{id: 'tree', x: -50, y: 1450},
 		{id: 'jump-left', x: -100, y: 3000},
 		{id: 'jump-right', x: -100, y: 4000},
 	],

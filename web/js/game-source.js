@@ -122,6 +122,7 @@ var GAME = BASE.extend({
 	sounds: {},
 	
 	state: 'loading',
+	editor: false,
 	
 	constructor: function(o) {
 		var ctxt = this;
@@ -172,6 +173,20 @@ var GAME = BASE.extend({
 		});
 	},
 	
+	edit: function() {
+		var ctxt = this;
+		if (ctxt.editor === false) {
+			ctxt.editor = new Editor({game: ctxt});
+		}
+		
+		if (ctxt.editor.editing) {
+			ctxt.editor.end();
+		} else {
+			ctxt.editor.begin();
+		}
+		
+	},
+	
 	getManSize: function(after) {
 		var ctxt = this;
 		
@@ -218,7 +233,7 @@ var GAME = BASE.extend({
 		var total_percent = ((ctxt.totalBytesLoaded / ctxt.manifestSizes.total) * 100).toFixed(2) + '%';
 		ctxt.updateProgress();
 		
-		console.log('PROGRESS', ev.item.id, ev.item.src, file_percent);
+		//console.log('PROGRESS', ev.item.id, ev.item.src, file_percent);
 	},
 	
 	fileComplete: function(ev) {
@@ -298,6 +313,9 @@ var GAME = BASE.extend({
 		ctxt.jumping = false;
 		ctxt.crashing = false;
 		ctxt.stopping = false;
+		if (ctxt.editor && ctxt.editor.editing) {
+			ctxt.editor.end();
+		}
 		
 		ctxt.lastObstAt = 0;
 		ctxt.lastBonusAt = 0;
@@ -320,25 +338,28 @@ var GAME = BASE.extend({
 		
 		ctxt.reflowUI();
 		
-		var msgs = ['Ready?','3...','2...','1...','GO!']
-		var countDown = 1;
+		//var msgs = ['Ready?','3...','2...','1...','GO!']
+		//var countDown = 1;
+		//
+		//ctxt.sweetMessage({message: msgs[0]});
+		//
+		//var countDownInt = setInterval(function() {
+		//	if (countDown >= msgs.length) {
+		//		clearInterval(countDownInt);
+		//	} else {
+		//		ctxt.sweetMessage({message: msgs[countDown]});
+		//	}
+		//	
+		//	countDown++;
+		//	if (countDown >= msgs.length) {
+		//		ctxt.starting = false;
+		//		createjs.Ticker.setPaused(false);
+		//	}
+		//	
+		//}, 750);
 		
-		ctxt.sweetMessage({message: msgs[0]});
-		
-		var countDownInt = setInterval(function() {
-			if (countDown >= msgs.length) {
-				clearInterval(countDownInt);
-			} else {
-				ctxt.sweetMessage({message: msgs[countDown]});
-			}
-			
-			countDown++;
-			if (countDown >= msgs.length) {
-				ctxt.starting = false;
-				createjs.Ticker.setPaused(false);
-			}
-			
-		}, 750);
+		ctxt.starting = false;
+		createjs.Ticker.setPaused(false);
 		
 		
 		
@@ -519,7 +540,7 @@ var GAME = BASE.extend({
 			}
 			
 			var which = String.fromCharCode(e.which).toUpperCase().charCodeAt(0);
-			
+			console.log(which);
 			switch (which) {
 				case 37:
 					ctxt.steer('left');
@@ -530,11 +551,14 @@ var GAME = BASE.extend({
 				case 32:
 					ctxt.jump();
 					break;
-				case 67:
+				case 67: // c
 					ctxt.crash();
 					break;
-				case 68:
+				case 68: // d
 					ctxt.debug = !ctxt.debug;
+					break;
+				case 69: // e
+					ctxt.edit();
 					break;
 				case 82:
 					ctxt.start();

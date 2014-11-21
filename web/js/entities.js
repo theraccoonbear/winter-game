@@ -26,6 +26,23 @@ var Entity = Class.extend({
 	colliders: [],
 	_drawnColliders: [],
 	
+	constructor: function(options) {
+		var ctxt = this;
+		
+		for (var p in options) {
+			this[p] = options[p];
+		}
+		
+		this.colliders = [];
+		
+		if (typeof this.initSprite === 'function') {
+			this.initSprite();
+			this.spriteSheet.framerate = 30;
+			this.placeSprite();
+		}
+		
+	},
+	
 	dimensions: function() {
 		var ctxt = this;
 		//console.log(ctxt.spriteSheet);
@@ -69,22 +86,6 @@ var Entity = Class.extend({
 		}
 		
 		return ret;
-	},
-	
-	constructor: function(options) {
-		var ctxt = this;
-		for (var p in options) {
-			this[p] = options[p];
-		}
-		
-		this.colliders = [];
-		
-		if (typeof this.initSprite === 'function') {
-			this.initSprite();
-			this.spriteSheet.framerate = 30;
-			this.placeSprite();
-		}
-		
 	},
 	
 	drawBounds: function() {
@@ -313,13 +314,18 @@ var Bonus = Entity.extend({
 			fatal: false
 		});
 		
-		Obstacle.super.constructor.call(this, options);
+		Bonus.super.constructor.call(this, options);
 	},
 	
 	_xyz: null
 }); // class Bonus
 
 var Coin = Bonus.extend({
+	name: "Coin",
+	id: "coin",
+	_isConcreteClass: true,
+	width: 50,
+	height: 50,
 	
 	constructor: function(options) {
 		var ctxt = this;
@@ -351,6 +357,11 @@ var Coin = Bonus.extend({
 }); // class Coin
 
 var Beer = Bonus.extend({
+	name: "Beer",
+	id: "beer",
+	_isConcreteClass: true,
+	width: 50,
+	height: 50,
 	
 	constructor: function(options) {
 		var ctxt = this;
@@ -384,6 +395,12 @@ var Beer = Bonus.extend({
 }); // class Beer
 
 var Crown = Bonus.extend({
+	name: "Crown",
+	id: "crown",
+	_isConcreteClass: true,
+	width: 80,
+	height: 80,
+	
 	constructor: function(options) {
 		var ctxt = this;
 		Crown.super.constructor.call(this, options);
@@ -419,21 +436,23 @@ var Crown = Bonus.extend({
 }); // class Crown
 
 var Tree = Obstacle.extend({
+	_isConcreteClass: true,
 	name: "Tree",
+	id: "tree",
+	width: 170,
+	height: 267,
 	
 	constructor: function(options) {
 		var ctxt = this;
 		
-		options.width = 170;
-		options.height = 267;
+		//options.width = 170;
+		//options.height = 267;
 		
 		Tree.super.constructor.call(this, options);
 		
 		this.addCollider({
-			//points: "46,194;66,202;80,198;64,180;46,194",
 			points: "38,192;55,203;81,203;94,192;81,181;55,181;38,192",
 			action: function(o) {
-				//('Tree Hit!', typeof o !== "undefined" ? o : "");
 				ctxt.game.crash();
 			}
 		});
@@ -464,6 +483,10 @@ var Tree = Obstacle.extend({
 
 var Stump = Obstacle.extend({
 	name: "Stump",
+	id: "stump",
+	_isConcreteClass: true,
+	width: 100,
+	height: 84,
 	
 	constructor: function(options) {
 		var ctxt = this;
@@ -471,7 +494,7 @@ var Stump = Obstacle.extend({
 		options.height = 84;
 		options.jumpable = true;
 		
-		Tree.super.constructor.call(this, options);
+		Stump.super.constructor.call(this, options);
 		
 		this.addCollider({
 			points: "4,45;12,50;13,64;22,66;35,60;45,56;56,55;47,41;28,37;14,36;4,45",
@@ -531,6 +554,7 @@ var Rock = Obstacle.extend({
 	initSprite: function() {
 		var ctxt = this;
 		
+		//Rock
 		ctxt.spriteSheet = new createjs.SpriteSheet({
 			"images": [ctxt.game.loader.getResult(ctxt.imageID)],
 			"frames": {"width": ctxt.width, "height": ctxt.height},
@@ -545,6 +569,10 @@ var Rock = Obstacle.extend({
 
 var Rock1 = Rock.extend({
 	name: "Rock1",
+	id: "rock-1",
+	_isConcreteClass: true,
+	width: 111,
+	height: 94,
 	
 	constructor: function(options) {
 		var ctxt = this;
@@ -574,6 +602,10 @@ var Rock1 = Rock.extend({
 
 var Rock2 = Rock.extend({
 	name: "Rock2",
+	id: "rock-2",
+	_isConcreteClass: true,
+	width: 109,
+	height: 88,
 	
 	constructor: function(options) {
 		var ctxt = this;
@@ -603,6 +635,10 @@ var Rock2 = Rock.extend({
 
 var Rock3 = Rock.extend({
 	name: "Rock3",
+	id: "rock-3",
+	_isConcreteClass: true,
+	width: 105,
+	height: 76,
 	
 	constructor: function(options) {
 		var ctxt = this;
@@ -632,6 +668,10 @@ var Rock3 = Rock.extend({
 
 var Rock4 = Rock.extend({
 	name: "Rock4",
+	id: "rock-4",
+	_isConcreteClass: true,
+	width: 98,
+	height: 89,
 	
 	constructor: function(options) {
 		var ctxt = this;
@@ -661,11 +701,18 @@ var Rock4 = Rock.extend({
 
 var StartBanner = Entity.extend({
 	name: "StartBanner",
+	id: "start-banner",
+	_isConcreteClass: true,
+	width: 715,
+	height: 163,
 	
 	constructor: function(options) {
 		var ctxt = this;
 		
 		options.collidable = false;
+		options.width = 715;
+		options.height = 163;
+		
 		StartBanner.super.constructor.call(this, options);
 		
 		
@@ -701,6 +748,7 @@ var Jump = Entity.extend({
 	initSprite: function() {
 		var ctxt = this;
 		
+		// Jump
 		ctxt.spriteSheet = new createjs.SpriteSheet({
 			"images": [ctxt.game.loader.getResult(ctxt.imageID)],
 			"frames": {"width": ctxt.width, "height": ctxt.height},
@@ -716,6 +764,10 @@ var Jump = Entity.extend({
 
 var JumpLeft = Jump.extend({
 	name: "JumpLeft",
+	id: "jump-left",
+	_isConcreteClass: true,
+	width: 264,
+	height: 190,
 	
 	constructor: function(options) {
 		var ctxt = this;
@@ -783,7 +835,10 @@ var JumpLeft = Jump.extend({
 
 var JumpRight = Jump.extend({
 	name: "JumpRight",
-	
+	id: "jump-right",
+	_isConcreteClass: true,
+	width: 264,
+	height: 190,
 	
 	constructor: function(options) {
 		var ctxt = this;
@@ -851,6 +906,10 @@ var JumpRight = Jump.extend({
 
 var JumpCenter = Jump.extend({
 	name: "JumpCenter",
+	id: "jump-center",
+	_isConcreteClass: true,
+	width: 280,
+	height: 198,
 	
 	constructor: function(options) {
 		var ctxt = this;
@@ -917,7 +976,15 @@ var JumpCenter = Jump.extend({
 
 
 var Sinistar = Obstacle.extend({
+	name: "Sinistar",
+	id: "sinistar",
+	_isConcreteClass: true,
+	width: 480,
+	height: 360,
+	
 	constructor: function(options) {
+		options.width = 480;
+		options.height = 360;
 		Sinistar.super.constructor.call(this, options);
 	},
 	
