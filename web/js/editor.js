@@ -1,6 +1,7 @@
 var Editor = BASE.extend({
 	game: null,
-	edCont: null,
+	prevCont: false,
+	previewEnt: false,
 	entities: {},
 	editing: false,
 	level: [],
@@ -40,14 +41,45 @@ var Editor = BASE.extend({
 		
 		var s = ctxt.scales();
 		
-		var w = ((ctxt.entities[val].prototype.width || 10) + 4) * s.x;
-		var h = ((ctxt.entities[val].prototype.height || 10) + 4) * s.y;
-		
+		var base_w = ctxt.entities[val].prototype.width;
+		var base_h = ctxt.entities[val].prototype.height;
+		var w = ((base_w || 10) + 4) * s.x;
+		var h = ((base_h || 10) + 4) * s.y;
+		var imageID = ctxt.entities[val].prototype.imageID;
 		
 		ctxt.$entBounds.css({
 			width: w,
 			height: h,
 		}).data('width', w).data('height', h).data('id', val)	;
+		
+		var pos = ctxt.$entBounds.position();
+		
+		ctxt.spriteSheet = new createjs.SpriteSheet({
+			"images": [ctxt.game.loader.getResult(imageID)],
+			"frames": {"width": base_w, "height": base_h},
+			"animations": {
+				"default": [0]
+			}
+		});
+		
+		if (ctxt.previewEnt !== false) {
+			ctxt.prevCont.removeChild(ctxt.previewEnt);
+		}
+		
+		ctxt.previewEnt = new createjs.Sprite(ctxt.spriteSheet, "default");
+		ctxt.previewEnt.x = 0;
+		ctxt.previewEnt.y = 0;
+		ctxt.prevCont.addChild(ctxt.previewEnt);
+		
+		//ctxt.previewEnt = ctxt.game.addEntity({
+		//	id: ctxt.$entBounds.data('id'),
+		//	autoPlace: false,
+		//	x: pos.left,
+		//	y: pos.top
+		//});
+		
+		//ctxt.prevCont.addChild(ctxt.previewEnt);
+		
 	},
 	
 	moveEntBox: function(e) {
@@ -80,6 +112,43 @@ var Editor = BASE.extend({
 			left: l,
 			top: t
 		});
+		
+		ctxt.updateCoords();
+		
+		//ctxt.previewEnt.scaleX = ctxt.game.stage.scaleX;
+		//ctxt.previewEnt.scaleY = ctxt.game.stage.scaleY;
+		ctxt.previewEnt.x = (l - $c.position().left) / ctxt.game.stage.scaleX;
+		ctxt.previewEnt.y = (t - $c.position().top) / ctxt.game.stage.scaleY;
+		
+	},
+	
+	getPos: function() {
+		var ctxt = this;
+		
+		var pos = ctxt.$entBounds.position();
+		var gp = ctxt.game.$game.position();
+		var gwh = {
+			w: ctxt.game.$game.width(),
+			h: ctxt.game.$game.height(),
+		}
+		
+		pos.left = ((pos.left - gp.left) / gwh.w) * ctxt.game.baseline.width;
+		pos.top = ((pos.top - gp.top) / gwh.h) * ctxt.game.baseline.height;
+		
+		var ent_opts = {
+			x: pos.left,
+			y: pos.top,
+			hill_x: ctxt.game.hill_x + pos.left,
+			hill_y: ctxt.game.hill_y + pos.top
+		};
+		
+		return ent_opts;
+	},
+	
+	updateCoords: function() {
+		var ctxt = this;
+		var pos = ctxt.getPos();
+		ctxt.$coords.html('x = ' + pos.hill_x.toFixed(0).commafy() + ' ::: y = ' + pos.hill_y.toFixed(0).commafy());
 	},
 	
 	addEntity: function() {
@@ -106,14 +175,31 @@ var Editor = BASE.extend({
 		};
 		
 		ctxt.level.push(ent_opts);
-		console.log(JSON.stringify(ctxt.level, false, 2))
+		//console.log(JSON.stringify(ctxt.level, false, 2))
 		localStorage.currentLevel = JSON.stringify(ctxt.level, false, 2);
+		ctxt.$json.val(localStorage.currentLevel);
 		
 		ctxt.game.addEntity({
 			id: id,
 			x: pos.left,
 			y: pos.top
 		});
+		
+		var mm = ctxt.level.reduce(function(p, c) {
+			var n = p;
+			n.min_x = Math.min(n.min_x, c.hill_x)
+			n.max_x = Math.max(n.max_x, c.hill_x)
+			n.min_y = Math.min(n.min_y, c.hill_y)
+			n.max_y = Math.max(n.max_y, c.hill_y)
+			return n;
+		}, {
+			min_x: 0,
+			max_x: 0,
+			min_y: 0,
+			max_y: 0
+		});
+		
+		console.log(mm);
 		
 		ctxt.game.stage.update();
 		
@@ -122,9 +208,16 @@ var Editor = BASE.extend({
 	setup: function() {
 		var ctxt = this;
 		
-		ctxt.edCont = new createjs.Container();
-			
+		ctxt.prevCont = new createjs.Container();
+		ctxt.game.stage.addChild(ctxt.prevCont);
+		
+		ctxt.$coords = $('<div></div>');
+		
 		ctxt.$palette = $('<select></select>');
+		ctxt.$palLbl = $('<label></label>');
+		ctxt.$palLbl
+			.html('Entity:<br>')
+			.append(ctxt.$palette);
 		
 		$.each(ctxt.entities, function(k, e) {
 			var $opt = $('<option></option>');
@@ -132,12 +225,15 @@ var Editor = BASE.extend({
 			ctxt.$palette.append($opt);
 		});
 		
-		
+		ctxt.$json = $('<textarea></textarea>');
+		ctxt.$json.addClass('jsonOut').val('[]');
 		
 		ctxt.$panel = $('<div></div>');
 		ctxt.$panel
 			.addClass('editPanel')
-			.append(ctxt.$palette)
+			.append(ctxt.$palLbl)
+			.append(ctxt.$coords)
+			.append(ctxt.$json)
 			.appendTo('body');
 			
 		ctxt.$entBounds = $('<div></div>');
@@ -163,8 +259,21 @@ var Editor = BASE.extend({
 					ctxt.moveEntBox(e);
 				},
 			
+			
+			
 				click: function(e) {
-					ctxt.addEntity();
+					var pos = ctxt.game.$game.position();
+					var edges = {
+						left:pos.left,
+						right: pos.left + ctxt.game.$game.width(),
+						top: pos.top,
+						bottom: pos.top + ctxt.game.$game.height()
+					}
+					
+					//console.log(e.clientX + ', ' + e.clientY, pos.left + ' <=> ' + (pos.left + parseFloat(ctxt.game.$game.width())));
+					if (e.clientX >= edges.left && e.clientX <= edges.right && e.clientY >= edges.top && e.clientY <= edges.bottom) {
+						ctxt.addEntity();
+					}
 				}
 			});
 			
@@ -191,6 +300,10 @@ var Editor = BASE.extend({
 		
 		ctxt.editing = true;
 		ctxt.game.speed = 0;
+		ctxt.coordInt = setInterval(function() {
+			ctxt.updateCoords();
+		}, 100);
+		
 	},
 	
 	end: function() {
@@ -201,7 +314,7 @@ var Editor = BASE.extend({
 		ctxt.editing = false;
 		
 		ctxt.game.speed = ctxt.game.initSpeed;
-		
+		clearInterval(ctxt.coordInt);
 		
 		
 	},

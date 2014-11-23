@@ -148,10 +148,10 @@ var GAME = BASE.extend({
 		
 		ctxt.$window.resize(function(e) {
 			var t = new Date();
-			console.log('resize');
+			//console.log('resize');
 			setTimeout(function() {
 				ctxt.reflowUI();
-				console.log('resize done ' + ((new Date()).getTime() - t.getTime()));
+				//console.log('resize done ' + ((new Date()).getTime() - t.getTime()));
 			}, 100);
 		});
 		
@@ -322,7 +322,7 @@ var GAME = BASE.extend({
 		ctxt.nextInterBumpAt = 500;
 		
 		//ctxt.activeLevel = new JumpLevel({game: ctxt});//new RandomLevel({game: ctxt});
-		ctxt.activeLevel = new RandomLevel({game: ctxt});
+		ctxt.activeLevel = new EmptyLevel({game: ctxt});
 		
 		ctxt.bonusEvery = ctxt.initBonusEvery;
 		ctxt.obstEvery = ctxt.initObstEvery;
@@ -543,10 +543,18 @@ var GAME = BASE.extend({
 			console.log(which);
 			switch (which) {
 				case 37:
-					ctxt.steer('left');
+					if (ctxt.speed < 0) {
+						ctxt.steer('right');
+					} else {
+						ctxt.steer('left');
+					}
 					break;
 				case 39:
-					ctxt.steer('right');
+					if (ctxt.speed < 0) {
+						ctxt.steer('left');
+					} else {
+						ctxt.steer('right');
+					}
 					break;
 				case 32:
 					ctxt.jump();
@@ -560,8 +568,11 @@ var GAME = BASE.extend({
 				case 69: // e
 					ctxt.edit();
 					break;
-				case 82:
+				case 82: // r
 					ctxt.start();
+					break;
+				case 83: // s
+					ctxt.speed = 0;
 					break;
 				case 38:
 					ctxt.speed++;
@@ -631,6 +642,10 @@ var GAME = BASE.extend({
 		var ctxt = this;
 		
 		var playCrash = false;
+		
+		if (ctxt.editor.editing) {
+			return;
+		}
 		
 		if (ctxt.crashing || ctxt.stopping) {
 			ctxt.sweetMessage({message: 'Oof!'});
@@ -1040,7 +1055,7 @@ var GAME = BASE.extend({
 		o.game = ctxt;
 
 		var entity = new window[ent.cls](o);
-		ctxt.movingElements.push(entity);
+		//ctxt.movingElements.push(entity);
 		return entity;
 	},
 	
@@ -1085,8 +1100,12 @@ var GAME = BASE.extend({
 		ctxt.ground.x = (ctxt.ground.x + speed.x) % ctxt.ground.tileW;
 		ctxt.ground.y = (ctxt.ground.y + speed.y) % ctxt.ground.tileH;
 		
-		var distThisTick = Math.abs(speed.y);
+		var distThisTick = -speed.y; //Math.abs(speed.y);
 		ctxt.distance += distThisTick / 20;
+		
+		if (ctxt.activeLevel.distance !== false && ctxt.distance >= ctxt.activeLevel.distance) {
+			ctxt.stopping  = true;
+		}
 		
 		ctxt.hill_x -= speed.x;
 		ctxt.hill_y -= speed.y;
@@ -1188,7 +1207,7 @@ var GAME = BASE.extend({
 				ctxt.stage.setChildIndex(entity.container, 1);
 			}
 
-			if (e.y + entity.spriteSheet._frameHeight < -100) {
+			if (!ctxt.editor.editing && e.y + entity.spriteSheet._frameHeight < -100) {
 				entity.remove();
 			} else if (e.y + entity.spriteSheet._frameHeight < ctxt.boarder.y + ctxt.boarder.spriteSheet._frameHeight && !entity.playerPassed) {
 				ctxt.movingElements[i].playerPassed = true;

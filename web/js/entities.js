@@ -11,6 +11,7 @@ var Entity = Class.extend({
 	jumped: false,       // false or function - action when jumped
 	
 	//sprite: null,        // createjs sprite for item
+	imageID: false,
 	spriteAction: 'default',
 	spriteSheet: false,
 	sprite: false,
@@ -22,6 +23,8 @@ var Entity = Class.extend({
 	height: false,
 	alwaysUnder: false,
 	playerPassed: false,
+	
+	autoPlace: true,
 	
 	colliders: [],
 	_drawnColliders: [],
@@ -35,7 +38,7 @@ var Entity = Class.extend({
 		
 		this.colliders = [];
 		
-		if (typeof this.initSprite === 'function') {
+		if (ctxt.autoPlace && typeof this.initSprite === 'function') {
 			this.initSprite();
 			this.spriteSheet.framerate = 30;
 			this.placeSprite();
@@ -238,6 +241,8 @@ var Entity = Class.extend({
 			ctxt.game.stage.addChild(ctxt.container);
 		}
 		
+		ctxt.game.movingElements.push(ctxt);
+		
 		//ctxt.drawBounds();
 	},
 	
@@ -326,6 +331,7 @@ var Coin = Bonus.extend({
 	_isConcreteClass: true,
 	width: 50,
 	height: 50,
+	imageID: 'coin',
 	
 	constructor: function(options) {
 		var ctxt = this;
@@ -362,6 +368,7 @@ var Beer = Bonus.extend({
 	_isConcreteClass: true,
 	width: 50,
 	height: 50,
+	imageID: 'beer',
 	
 	constructor: function(options) {
 		var ctxt = this;
@@ -400,6 +407,7 @@ var Crown = Bonus.extend({
 	_isConcreteClass: true,
 	width: 80,
 	height: 80,
+	imageID: 'crown',
 	
 	constructor: function(options) {
 		var ctxt = this;
@@ -441,6 +449,7 @@ var Tree = Obstacle.extend({
 	id: "tree",
 	width: 170,
 	height: 267,
+	imageID: 'tree-1',
 	
 	constructor: function(options) {
 		var ctxt = this;
@@ -487,6 +496,7 @@ var Stump = Obstacle.extend({
 	_isConcreteClass: true,
 	width: 100,
 	height: 84,
+	imageID: 'stump-1',
 	
 	constructor: function(options) {
 		var ctxt = this;
@@ -573,13 +583,14 @@ var Rock1 = Rock.extend({
 	_isConcreteClass: true,
 	width: 111,
 	height: 94,
+	imageID: 'rock-1',
 	
 	constructor: function(options) {
 		var ctxt = this;
 		
-		options.width = 111;
-		options.height = 94;
-		options.imageID = 'rock-1';
+		//options.width = 111;
+		//options.height = 94;
+		//options.imageID = 'rock-1';
 		
 		Rock1.super.constructor.call(this, options);
 		
@@ -606,13 +617,14 @@ var Rock2 = Rock.extend({
 	_isConcreteClass: true,
 	width: 109,
 	height: 88,
+	imageID: 'rock-2',
 	
 	constructor: function(options) {
 		var ctxt = this;
 		
-		options.width = 109;
-		options.height = 88;
-		options.imageID = 'rock-2';
+		//options.width = 109;
+		//options.height = 88;
+		//options.imageID = 'rock-2';
 		
 		Rock2.super.constructor.call(this, options);
 
@@ -639,13 +651,14 @@ var Rock3 = Rock.extend({
 	_isConcreteClass: true,
 	width: 105,
 	height: 76,
+	imageID: 'rock-3',
 	
 	constructor: function(options) {
 		var ctxt = this;
 		
-		options.width = 105;
-		options.height = 76;
-		options.imageID = 'rock-3';
+		//options.width = 105;
+		//options.height = 76;
+		//options.imageID = 'rock-3';
 		
 		Rock3.super.constructor.call(this, options);
 
@@ -672,13 +685,14 @@ var Rock4 = Rock.extend({
 	_isConcreteClass: true,
 	width: 98,
 	height: 89,
+	imageID: 'rock-4',
 	
 	constructor: function(options) {
 		var ctxt = this;
 		
-		options.width = 98;
-		options.height = 89;
-		options.imageID = 'rock-4';
+		//options.width = 98;
+		//options.height = 89;
+		//options.imageID = 'rock-4';
 		
 		Rock4.super.constructor.call(this, options);
 
@@ -705,6 +719,7 @@ var StartBanner = Entity.extend({
 	_isConcreteClass: true,
 	width: 715,
 	height: 163,
+	imageID: 'start-banner',
 	
 	constructor: function(options) {
 		var ctxt = this;
@@ -768,13 +783,14 @@ var JumpLeft = Jump.extend({
 	_isConcreteClass: true,
 	width: 264,
 	height: 190,
+	imageID: 'jump-left',
 	
 	constructor: function(options) {
 		var ctxt = this;
 		
-		options.imageID = 'jump-left';
-		options.width = 264;
-		options.height = 190;
+		//options.imageID = 'jump-left';
+		//options.width = 264;
+		//options.height = 190;
 		options.alwaysUnder = true;
 		
 		JumpLeft.super.constructor.call(this, options);
@@ -839,14 +855,15 @@ var JumpRight = Jump.extend({
 	_isConcreteClass: true,
 	width: 264,
 	height: 190,
+	imageID: 'jump-right',
 	
 	constructor: function(options) {
 		var ctxt = this;
 		options.alwaysUnder = true;
-		options.imageID = 'jump-right';
-		options.width = 264;
-		options.height = 190;
-		
+		//options.imageID = 'jump-right';
+		//options.width = 264;
+		//options.height = 190;
+		//
 		JumpRight.super.constructor.call(this, options);
 
 		//collide with sides
@@ -910,12 +927,13 @@ var JumpCenter = Jump.extend({
 	_isConcreteClass: true,
 	width: 280,
 	height: 198,
+	imageID: 'jump-center',
 	
 	constructor: function(options) {
 		var ctxt = this;
-		options.imageID = 'jump-center';
-		options.width = 280;
-		options.height = 198;
+		//options.imageID = 'jump-center';
+		//options.width = 280;
+		//options.height = 198;
 		options.alwaysUnder = true;
 		
 		JumpCenter.super.constructor.call(this, options);
@@ -981,6 +999,7 @@ var Sinistar = Obstacle.extend({
 	_isConcreteClass: true,
 	width: 480,
 	height: 360,
+	imageID: 'sinistar',
 	
 	constructor: function(options) {
 		options.width = 480;
