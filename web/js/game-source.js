@@ -321,7 +321,8 @@ var GAME = BASE.extend({
 		ctxt.lastInterAt = 0;
 		ctxt.nextInterBumpAt = 500;
 		
-		ctxt.activeLevel = new JumpLevel({game: ctxt});//new RandomLevel({game: ctxt});
+		//ctxt.activeLevel = new JumpLevel({game: ctxt});//new RandomLevel({game: ctxt});
+		ctxt.activeLevel = new RandomLevel({game: ctxt});
 		
 		ctxt.bonusEvery = ctxt.initBonusEvery;
 		ctxt.obstEvery = ctxt.initObstEvery;
