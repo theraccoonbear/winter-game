@@ -304,6 +304,8 @@ var Editor = BASE.extend({
 			ctxt.updateCoords();
 		}, 100);
 		
+		ctxt.setActiveElem();
+		
 	},
 	
 	end: function() {
