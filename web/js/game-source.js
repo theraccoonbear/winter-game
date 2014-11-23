@@ -321,8 +321,8 @@ var GAME = BASE.extend({
 		ctxt.nextInterBumpAt = 500;
 		
 		//ctxt.activeLevel = new JumpLevel({game: ctxt});//new RandomLevel({game: ctxt});
-		ctxt.activeLevel = new EmptyLevel({game: ctxt});
-		//ctxt.activeLevel = new TestLevel({game: ctxt});
+		//ctxt.activeLevel = new EmptyLevel({game: ctxt});
+		ctxt.activeLevel = new TestLevel({game: ctxt});
 		
 		ctxt.bonusEvery = ctxt.initBonusEvery;
 		ctxt.obstEvery = ctxt.initObstEvery;
@@ -1080,6 +1080,8 @@ var GAME = BASE.extend({
 	
 	doSorting: function() {
 		var ctxt = this;
+		return;
+		
 		ctxt.stage.sortChildren(function(a, b, o) { return ctxt.spriteSorter(a, b, ctxt); });
 	},
 	
