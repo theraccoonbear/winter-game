@@ -313,6 +313,10 @@ var Editor = BASE.extend({
 		
 		ctxt.editing = false;
 		
+		if (ctxt.previewEnt !== false) {
+			ctxt.prevCont.removeChild(ctxt.previewEnt);
+		}
+		
 		ctxt.game.speed = ctxt.game.initSpeed;
 		clearInterval(ctxt.coordInt);
 		

@@ -44,6 +44,7 @@ $asset_manifest = array(
 	array("src" => "images/obstacles/rock-4.png", "id" => "rock-4"),
 			
 	array("src" => "images/obstacles/tree-single.png", "id" => "tree-1"),
+	array("src" => "images/obstacles/tree-cluster.png", "id" => "tree-cluster"),
 	array("src" => "images/obstacles/tree-stump.png", "id" => "stump-1"),
 			
 	array("src" => "images/banners/start.png", "id" => "start-banner"),

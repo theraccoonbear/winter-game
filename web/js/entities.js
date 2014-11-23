@@ -490,6 +490,53 @@ var Tree = Obstacle.extend({
 	_xyz: null
 }); // class Tree
 
+var TreeCluster = Obstacle.extend({
+	_isConcreteClass: true,
+	name: "TreeCluster",
+	id: "tree-cluster",
+	width: 432,
+	height: 617,
+	imageID: 'tree-cluster',
+	
+	constructor: function(options) {
+		var ctxt = this;
+		
+		//options.width = 170;
+		//options.height = 267;
+		
+		TreeCluster.super.constructor.call(this, options);
+		
+		this.addCollider({
+			points: "96,167;56,307;103,455;86,485;181,545;261,463;332,336;245,205",
+			action: function(o) {
+				ctxt.game.crash();
+			}
+		});
+		
+	},
+	
+	initSprite: function() {
+		var ctxt = this;
+		
+		ctxt.spriteSheet = new createjs.SpriteSheet({
+			"images": [ctxt.game.loader.getResult("tree-cluster")],
+			"frames": {"width": ctxt.width, "height": ctxt.height},
+			"animations": {
+				"default": [0]
+			}
+		});
+		
+	},
+	
+	
+	
+	collided: function(o) {
+		
+	},
+	
+	_xyz: null
+}); // class TreeCluster
+
 var Stump = Obstacle.extend({
 	name: "Stump",
 	id: "stump",
@@ -1021,3 +1068,4 @@ var Sinistar = Obstacle.extend({
 	
 	_xyz: null
 });
+

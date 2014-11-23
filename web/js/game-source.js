@@ -56,12 +56,11 @@ var GAME = BASE.extend({
 		{id: 'rock-3', cls: "Rock3"},
 		{id: 'rock-4', cls: "Rock4"},
 		{id: 'tree', cls: "Tree"},
+		{id: 'tree-cluster', cls: "TreeCluster"},
 		{id: 'stump', cls: "Stump"}
 		//,
 		//{id: 'sinistar', cls: "Sinistar"}
 	],
-	
-	//bonuses: ['beer', 'coin'],
 	
 	steerDirections: ['left3', 'left2', 'left1', 'straight', 'right1', 'right2', 'right3'],
 	steerSpeeds: {
@@ -323,6 +322,7 @@ var GAME = BASE.extend({
 		
 		//ctxt.activeLevel = new JumpLevel({game: ctxt});//new RandomLevel({game: ctxt});
 		ctxt.activeLevel = new EmptyLevel({game: ctxt});
+		//ctxt.activeLevel = new TestLevel({game: ctxt});
 		
 		ctxt.bonusEvery = ctxt.initBonusEvery;
 		ctxt.obstEvery = ctxt.initObstEvery;
