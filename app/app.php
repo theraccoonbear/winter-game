@@ -66,7 +66,12 @@ $asset_manifest = array(
 
 // routes
 $app->get('/', function() use ($app) {
-	return $app['twig']->render('game.twig.html', array());
+	
+	$host = $_SERVER['HTTP_HOST'];
+	
+	return $app['twig']->render('game.twig.html', array(
+		'hostname' => $host
+	));
 })->bind('home');
 
 $app->get('/js/game.js', function() use ($app, $asset_manifest) {
